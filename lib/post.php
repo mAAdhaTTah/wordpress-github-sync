@@ -147,4 +147,20 @@ class WordPress_GitHub_Sync_Post {
     );
     add_action( 'save_post', array( &$wpghs, 'push_post' ) );
   }
+
+  function delete() {
+    $args = array(
+      "method"  => "DELETE",
+      "headers" => array(
+          "Authorization" => "token " . $wpghs->oauth_token()
+        ),
+      "body"    => json_encode( array(
+          "message" => "Deleting " . $this->github_path() . " via WordPress",
+          "author"  => $this->last_modified_author(),
+          "sha"     => $this->sha()
+        ) )
+    );
+
+    wp_remote_request( $this->api_endpoint(), $args );
+  }
 }

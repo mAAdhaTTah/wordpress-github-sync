@@ -41,6 +41,7 @@ class WordPress_GitHub_Sync {
 
 		  add_action( 'init', array( &$this, 'l10n' ) );
       add_action( 'save_post', array( &$this, 'save_post_callback' ) );
+      add_action( 'delete_post', array( &$this, 'delete_post_callback' ) );
       add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
 
       if (is_admin()) {
@@ -88,6 +89,19 @@ class WordPress_GitHub_Sync {
 
       $post = new WordPress_GitHub_Sync_Post($post_id);
       $post->push();
+
+    }
+
+    function delete_post_callback( $post_id ) {
+
+      $post = get_post($post_id);
+
+      // Right now CPTs are not supported
+      if ($post->post_type != "page" && $post->post_type != "post")
+        return;
+
+      $post = new WordPress_GitHub_Sync_Post($post_id);
+      $post->delete();
 
     }
 
