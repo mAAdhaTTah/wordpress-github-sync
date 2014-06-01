@@ -272,11 +272,6 @@ class WordPressGitHubSync {
       add_action( 'save_post', array( &$this, 'push_post' ) );
     }
 
-    function create_post($path) {
-
-
-    }
-
 }
 
 $wpghs = new WordPressGitHubSync;
