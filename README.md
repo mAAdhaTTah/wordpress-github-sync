@@ -34,3 +34,8 @@ The sync action is based on two hooks:
 2. [Create a personal oauth token](https://github.com/settings/tokens/new) with the `public_repo` scope (you can also create a bot account for this, if you'd prefer)
 3. Configure your GitHub host, repository, secret,  and OAuth Token on the WordPress <--> GitHub sync settings page within WordPress's administrative interface
 4. Create a WebHook within you repository with the provided callback URL and callback secret
+
+## Prior Art
+
+* [WordPress Post Forking](https://github.com/post-forking/post-forking)
+* [WordPress to Jekyll exporter](https://github.com/benbalter/wordpress-to-jekyll-exporter)
