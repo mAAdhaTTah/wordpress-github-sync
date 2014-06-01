@@ -43,7 +43,7 @@ class WordPress_GitHub_Sync {
     function __construct() {
       self::$instance = &$this;
 
-		  add_action( 'init', array( &$this, 'l10n' ) );
+      add_action( 'init', array( &$this, 'l10n' ) );
       add_action( 'save_post', array( &$this, 'save_post_callback' ) );
       add_action( 'delete_post', array( &$this, 'delete_post_callback' ) );
       add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
