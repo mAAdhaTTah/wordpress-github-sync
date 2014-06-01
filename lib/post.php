@@ -1,7 +1,17 @@
 <?php
+/**
+ * The post object which represents both the GitHub and WordPress post
+ */
 class WordPress_GitHub_Sync_Post {
   public $id = 0;
 
+  /**
+   * Instantiates a new Post object
+   *
+   * $id_or_path - (int|string) either a postID (WordPress) or a path to a file (GitHub)
+   *
+   * Returns the Post object, duh
+   */
   function __construct( $id_or_path ) {
 
     if (is_numeric($id_or_path)) {
@@ -14,21 +24,36 @@ class WordPress_GitHub_Sync_Post {
     $this->post = get_post($this->id);
   }
 
+  /**
+   * Parse the various parts of a filename from a path
+   *
+   * @todo - PAGE SUPPORT
+   */
   function parts_from_path() {
     preg_match("/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.html/", $this->path, $matches);
     return $matches;
   }
 
+  /**
+   * Extract's the post's title from its path
+   */
   function title_from_path() {
     $matches = $this->parts_from_path();
     return $matches[4];
   }
 
+  /**
+   * Extract's the post's date from its path
+   */
   function date_from_path() {
     $matches = $this->parts_from_path();
     return $matches[1] . "-" . $matches[2] . "-" . $matches[3] . "00:00:00";
   }
 
+  /**
+   * Determines the post's WordPress ID from its GitHub path
+   * Creates the WordPress post if it does not exist
+   */
   function id_from_path() {
     global $wpdb;
     $title = $this->title_from_path();
@@ -43,18 +68,25 @@ class WordPress_GitHub_Sync_Post {
     return $id;
   }
 
+  /**
+   * Returns the post type
+   */
   function type() {
-    if ($this->id == 0) {
-      return "github";
-    } else {
-      return $this->post->post_type;
-    }
+    return $this->post->post_type;
   }
 
+  /**
+   * Returns the post name
+   */
   function name() {
     return $this->post->post_name;
   }
 
+  /**
+   * Calculates the proper GitHub path for a given post
+   *
+   * Returns (string) the path relative to repo root
+   */
   function github_path() {
     if ($this->type() == "post") {
       $path = "_posts/";
@@ -66,6 +98,11 @@ class WordPress_GitHub_Sync_Post {
     return $path;
   }
 
+  /**
+   * Determines the last author to modify the post
+   *
+   * Returns Array an array containing the author name and email
+   */
   function last_modified_author() {
     if ( $last_id = get_post_meta( $this->id, '_edit_last', true) ) {
       $user = get_userdata($last_id);
@@ -75,6 +112,11 @@ class WordPress_GitHub_Sync_Post {
     }
   }
 
+  /**
+   * Builds the proper content API endpoint for a given post
+   *
+   * Returns String the relative API call path
+   */
   function api_endpoint() {
     global $wpghs;
     $url = $wpghs->api_base() . "/repos/";
@@ -83,6 +125,11 @@ class WordPress_GitHub_Sync_Post {
     return $url;
   }
 
+  /**
+   * Calls the content API to get the post's contents and metadata
+   *
+   * Returns Object the response from the API
+   */
   function remote_contents() {
     global $wpghs;
     $response = wp_remote_get( $this->api_endpoint(), array(
@@ -96,6 +143,12 @@ class WordPress_GitHub_Sync_Post {
     return $data;
   }
 
+  /**
+   * The post's sha
+   * Cached as post meta, or will make a live call if need be
+   *
+   * Returns String the sha1 hash
+   */
   function sha() {
     if ($sha = get_post_meta( $this->id, "_sha", true)) {
       return $sha;
@@ -110,6 +163,9 @@ class WordPress_GitHub_Sync_Post {
     }
   }
 
+  /**
+   * Push the post to GitHub
+   */
   function push() {
     global $wpghs;
 
@@ -137,11 +193,15 @@ class WordPress_GitHub_Sync_Post {
     }
   }
 
+  /**
+   * Pull the post from GitHub
+   */
   function pull() {
     global $wpghs;
     $data = $this->remote_contents();
     $content = base64_decode($data->content);
 
+    // Break out meta, if present
     preg_match( "/(^---(.*)---)$?(.*)/m", $content, $matches );
     $body = array_pop( $matches );
 
@@ -160,6 +220,9 @@ class WordPress_GitHub_Sync_Post {
     add_action( 'save_post', array( &$wpghs, 'push_post' ) );
   }
 
+  /**
+   * Delete a post from GitHub
+   */
   function delete() {
     $args = array(
       "method"  => "DELETE",
@@ -176,6 +239,11 @@ class WordPress_GitHub_Sync_Post {
     wp_remote_request( $this->api_endpoint(), $args );
   }
 
+  /**
+   * The post's metadata
+   *
+   * Returns Array the post's metadata
+   */
   function meta() {
 
     $meta = array(
@@ -200,6 +268,11 @@ class WordPress_GitHub_Sync_Post {
 
   }
 
+  /**
+   * The post's YAML frontmatter
+   *
+   * Returns String the YAML frontmatter, ready to be written to the file
+   */
   function front_matter() {
     return spyc_dump( $this->meta(), false, 0 ) . "---\n";
   }

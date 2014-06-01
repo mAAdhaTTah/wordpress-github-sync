@@ -1,15 +1,28 @@
 <?php
+/**
+ * Administrative UI views and callbacks
+ */
 class WordPress_GitHub_Sync_Admin {
+
+  /**
+   * Hook into GitHub API
+   */
   function __construct() {
     add_action( 'admin_menu', array( &$this, 'add_admin_menu' ) );
     add_action( 'admin_init', array( &$this, 'register_settings' ) );
     add_action( 'current_screen', array( &$this, 'callback' ) );
   }
 
+  /**
+   * Callback to render the settings page view
+   */
   function settings_page() {
     include dirname(dirname( __FILE__ )) . '/views/options.php';
   }
 
+  /**
+   * Callback to register the plugin's options
+   */
   function register_settings() {
     add_settings_section( "general", "General Settings", array(&$this, "section_callback"), WordPress_GitHub_Sync::$text_domain );
 
@@ -46,16 +59,28 @@ class WordPress_GitHub_Sync_Admin {
     );
   }
 
+  /**
+   * Callback to render an individual options field
+   */
   function field_callback($args) {
     include dirname(dirname( __FILE__ )) . '/views/setting-field.php';
   }
 
+  /**
+   * Empty section callback
+   */
   function section_callback() { }
 
+  /**
+   * Add options menu to admin navbar
+   */
   function add_admin_menu() {
     add_options_page( __('WordPress <--> GitHub Sync', WordPress_GitHub_Sync::$text_domain), __('GitHub Sync', WordPress_GitHub_Sync::$text_domain), 'manage_options', WordPress_GitHub_Sync::$text_domain, array( &$this, 'settings_page' ) );
   }
 
+  /**
+   * Admin callback to trigger import/export because WordPress admin routing lol
+   */
   function callback() {
     global $wpghs;
 

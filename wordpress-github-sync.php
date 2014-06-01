@@ -37,6 +37,9 @@ class WordPress_GitHub_Sync {
     static $text_domain = "wordpress-github-sync";
     static $version = "0.0.1";
 
+    /**
+     * Called at load time, hooks into WP core
+     */
     function __construct() {
       self::$instance = &$this;
 
@@ -57,22 +60,39 @@ class WordPress_GitHub_Sync {
   		load_plugin_textdomain( self::$text_domain, false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' );
   	}
 
+    /**
+     * Returns the repository to sync with
+     */
     function repository() {
       return get_option( "wpghs_repository" );
     }
 
+    /**
+     * Returns the user's oauth token
+     */
     function oauth_token() {
       return get_option( "wpghs_oauth_token" );
     }
 
+    /**
+     * Returns the GitHub host to sync with (for GitHub Enterprise support)
+     */
     function api_base() {
       return get_option( "wpghs_host" );
     }
 
+    /**
+     * Returns the Webhook secret
+     */
     function secret() {
       return get_option( "wpghs_secret" );
     }
 
+    /**
+     * Callback triggered on post save, used to initiate an outbound sync
+     *
+     * $post_id - (int) the post to sync
+     */
     function save_post_callback($post_id) {
 
       if ( wp_is_post_revision( $post_id ) )
@@ -93,6 +113,11 @@ class WordPress_GitHub_Sync {
 
     }
 
+    /**
+     * Callback triggered on post delete, used to initiate an outbound sync
+     *
+     * $post_id - (int) the post to delete
+     */
     function delete_post_callback( $post_id ) {
 
       $post = get_post($post_id);
@@ -106,6 +131,10 @@ class WordPress_GitHub_Sync {
 
     }
 
+    /**
+     * Webhook callback as trigered from GitHub push
+     * Reads the payload and syncs posts as necessary
+     */
     function pull_posts() {
       $raw_data = file_get_contents('php://input');
       $headers = $this->headers();
@@ -145,6 +174,10 @@ class WordPress_GitHub_Sync {
       }
     }
 
+    /**
+     * Cross-server header support
+     * Returns an array of the request's headers
+     */
     function headers() {
       if (function_exists('getallheaders'))
         return getallheaders();
@@ -160,6 +193,9 @@ class WordPress_GitHub_Sync {
       return $headers;
     }
 
+    /**
+     * Bulk push all posts to GitHub
+     */
     function export() {
       global $wpdb;
       $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
