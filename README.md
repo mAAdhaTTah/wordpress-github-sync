@@ -12,6 +12,14 @@
 
 3. Allows non-technical writers to draft and edit a Jekyll site in WordPress's best-of-breed editing interface
 
+## WordPress GitHub sync might be able to do some other cool things:
+
+* Allow teams to collaboratively write and edit posts using GitHub (e.g., pull requests, issues, comments)
+
+* Allow you to sync the content of two different WordPress installations via GitHub
+
+* Allow you to stage and preview content before "deploying" to your production server
+
 ## How it works
 
 The sync action is based on two hooks:
