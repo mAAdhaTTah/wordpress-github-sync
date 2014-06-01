@@ -18,3 +18,6 @@ The sync action is based on two hooks:
 
 2. A sync of all changed files trigged by GitHub's `push` webhook (outbound API call)
 
+## Setup
+
+1. [Create a personal oauth token](https://github.com/settings/tokens/new) with the `public_repo` scope (you can also create a bot account for this, if you'd prefer)
