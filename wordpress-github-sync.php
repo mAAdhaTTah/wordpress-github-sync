@@ -37,7 +37,7 @@ class WordPressGitHubSync {
       self::$instance = &$this;
 		  add_action( 'init', array( &$this, 'l10n' ) );
       add_action( 'save_post', array( &$this, 'push_post' ) );
-      add_action('wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
+      add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
 
       if (is_admin()) {
         add_action( 'admin_menu', array( &$this, 'add_admin_menu' ) );
@@ -97,18 +97,23 @@ class WordPressGitHubSync {
       return $url;
     }
 
+    function get_remote_post_contents($post_id) {
+      $response = wp_remote_get( $this->api_endpoint($post_id), array(
+        "headers" => array(
+          "Authorization" => "token " . $this->oauth_token()
+          )
+        )
+      );
+      $body = wp_remote_retrieve_body($response);
+      $data = json_decode($body);
+      return $data;
+    }
+
     function sha($post_id) {
       if ($sha = get_post_meta( $post_id, "_sha", true)) {
         return $sha;
       } else {
-        $response = wp_remote_get( $this->api_endpoint($post_id), array(
-          "headers" => array(
-            "Authorization" => "token " . $this->oauth_token()
-            )
-          )
-        );
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body);
+        $data = $this->get_remote_post_contents($post_id);
         if ($data && isset($data->sha)) {
           return $data->sha;
         } else {
@@ -192,8 +197,42 @@ class WordPressGitHubSync {
 
     function section_callback() { }
 
+    function title($path) {
+      preg_match("/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.html/", $path, $matches);
+      return $matches[4];
+    }
+
     function pull_posts() {
-      file_put_contents(dirname( __FILE__ ) . '/log.txt', $_REQUEST );
+      $data = json_decode(file_get_contents('php://input'));
+
+      $nwo = $data->repository->owner->name . "/" . $data->repository->name;
+      if ( $nwo != $this->repository() )
+        wp_die( $nwo . " is an invalid repository" );
+
+      $modified = [];
+      foreach ($data->commits as $commit) {
+        $modified = array_merge( $modified, $commit->modified );
+      }
+
+      foreach (array_unique($modified) as $path) {
+        global $wpdb;
+        $title = $this->title($path);
+        $post_id = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '$title'");
+        $this->pull_post($post_id);
+      }
+
+    }
+
+    function pull_post($post_id) {
+      $post = get_post($post_id);
+      $data = $this->get_remote_post_contents($post_id);
+      remove_action( 'save_post', array( &$this, 'push_post' ) );
+      wp_update_post( array(
+          "ID"           => $post_id,
+          "post_content" => base64_decode($data->content)
+        )
+      );
+      add_action( 'save_post', array( &$this, 'push_post' ) );
     }
 
 }
