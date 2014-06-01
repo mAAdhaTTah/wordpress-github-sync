@@ -102,6 +102,7 @@ class WordPress_GitHub_Sync_Post {
     } else {
       $data = $this->remote_contents();
       if ($data && isset($data->sha)) {
+        add_post_meta( $this->id, '_sha', $data->sha, true ) || update_post_meta( $this->id, '_sha', $data->sha );
         return $data->sha;
       } else {
         return "";
