@@ -61,7 +61,7 @@ class WordPress_GitHub_Sync_Post {
       $path = $path . get_the_time("Y-m-d-", $this->id);
       $path = $path . $this->name() . ".html";
     } elseif ($this->type() == "page") {
-      $path = $this->name() . ".html";
+      $path = get_page_uri( $this->id ) . ".html";
     }
     return $path;
   }
