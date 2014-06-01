@@ -1,8 +1,6 @@
 <?php
 class WordPress_GitHub_Sync_Admin {
-  function __construct( &$parent ) {
-    $this->parent = &$parent;
-
+  function __construct() {
     add_action( 'admin_menu', array( &$this, 'add_admin_menu' ) );
     add_action( 'admin_init', array( &$this, 'register_settings' ) );
   }
