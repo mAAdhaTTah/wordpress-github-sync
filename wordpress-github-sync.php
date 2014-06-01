@@ -158,6 +158,15 @@ class WordPress_GitHub_Sync {
       }
       return $headers;
     }
+
+    function export() {
+      global $wpdb;
+      $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
+      foreach ($posts as $post_id) {
+        $post = new WordPress_GitHub_Sync_Post($post_id);
+        $post->push();
+      }
+    }
 }
 
 $wpghs = new WordPress_GitHub_Sync;

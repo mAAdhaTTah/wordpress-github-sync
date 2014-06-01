@@ -3,6 +3,7 @@ class WordPress_GitHub_Sync_Admin {
   function __construct() {
     add_action( 'admin_menu', array( &$this, 'add_admin_menu' ) );
     add_action( 'admin_init', array( &$this, 'register_settings' ) );
+    add_action( 'current_screen', array( &$this, 'callback' ) );
   }
 
   function settings_page() {
@@ -53,5 +54,22 @@ class WordPress_GitHub_Sync_Admin {
 
   function add_admin_menu() {
     add_options_page( __('WordPress <--> GitHub Sync', WordPress_GitHub_Sync::$text_domain), __('GitHub Sync', WordPress_GitHub_Sync::$text_domain), 'manage_options', WordPress_GitHub_Sync::$text_domain, array( &$this, 'settings_page' ) );
+  }
+
+  function callback() {
+    global $wpghs;
+
+    if ( !current_user_can( 'manage_options' ) )
+      return;
+
+    if ( get_current_screen()->id != "settings_page_" . WordPress_GitHub_Sync::$text_domain)
+      return;
+
+    if ( !isset($_GET['action'] ) )
+      return;
+
+    if ($_GET['action'] == "export")
+      $wpghs->export();
+
   }
 }
