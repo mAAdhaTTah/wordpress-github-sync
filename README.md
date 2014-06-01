@@ -2,7 +2,7 @@
 
 *A WordPress plugin to sync content with a GitHub repository (or Jekyll site)*
 
-**:warning: Still a work in progress, but [we'd love your help](https://github.com/post-forking/post-forking/issues) :warning:**
+**:warning: Still a work in progress, but [we'd love your help](https://github.com/benbalter/wordpress-github-sync/issues) :warning:**
 
 ## WordPress GitHub Sync does three things:
 
