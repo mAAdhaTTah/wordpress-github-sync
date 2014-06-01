@@ -27,7 +27,9 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-class WordPressGitHubSync {
+require_once dirname( __FILE__ ) . '/lib/admin.php';
+
+class WordPress_GitHub_Sync {
 
     static $instance;
     static $text_domain = "wordpress-github-sync";
@@ -35,13 +37,13 @@ class WordPressGitHubSync {
 
     function __construct() {
       self::$instance = &$this;
+
 		  add_action( 'init', array( &$this, 'l10n' ) );
       add_action( 'save_post', array( &$this, 'push_post' ) );
       add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
 
       if (is_admin()) {
-        add_action( 'admin_menu', array( &$this, 'add_admin_menu' ) );
-        add_action( 'admin_init', array( &$this, 'register_settings' ) );
+        $this->admin = new WordPress_GitHub_Sync_Admin($this);
       }
     }
 
@@ -51,10 +53,6 @@ class WordPressGitHubSync {
   	function l10n() {
   		load_plugin_textdomain( self::$text_domain, false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' );
   	}
-
-    function add_admin_menu() {
-      add_options_page( 'WordPress <--> GitHub Sync', 'GitHub Sync', 'manage_options', self::$text_domain, array( &$this, 'settings_page' ) );
-    }
 
     function repository() {
       return get_option( "wpghs_repository" );
@@ -161,41 +159,7 @@ class WordPressGitHubSync {
       }
     }
 
-    function settings_page() {
-      include dirname( __FILE__ ) . '/views/options.php';
-    }
 
-    function register_settings() {
-      add_settings_section( "general", "General Settings", array(&$this, "section_callback"), self::$text_domain );
-
-      register_setting( self::$text_domain, "wpghs_host" );
-      add_settings_field( "wpghs_host", "GitHub hostname", array(&$this, "field_callback"), self::$text_domain, "general", array(
-          "default"   => "https://api.github.com",
-          "name"      => "wpghs_host",
-          "help_text" => "The GitHub host to use. Can be changed to support a GitHub Enterprise installation."
-        )
-      );
-      register_setting( self::$text_domain, "wpghs_repository" );
-      add_settings_field( "wpghs_repository", "Repository", array(&$this, "field_callback"), self::$text_domain, "general", array(
-          "default"   => "",
-          "name"      => "wpghs_repository",
-          "help_text" => "The GitHub repository to commit to, with owner, e.g., <code>benbalter/benbalter.github.com</code>."
-        )
-      );
-      register_setting( self::$text_domain, "wpghs_oauth_token" );
-      add_settings_field( "wpghs_oauth_token", "Oauth Token", array(&$this, "field_callback"), self::$text_domain, "general", array(
-          "default"   => "",
-          "name"      => "wpghs_oauth_token",
-          "help_text" => "A <a href='https://github.com/settings/tokens/new'>personal oauth token</a> with <code>public_repo</code> scope."
-        )
-      );
-    }
-
-    function field_callback($args) {
-      include dirname( __FILE__ ) . '/views/setting-field.php';
-    }
-
-    function section_callback() { }
 
     function parts_from_path($path) {
       preg_match("/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.html/", $path, $matches);
@@ -274,4 +238,4 @@ class WordPressGitHubSync {
 
 }
 
-$wpghs = new WordPressGitHubSync;
+$wpghs = new WordPress_GitHub_Sync;
