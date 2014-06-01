@@ -67,6 +67,10 @@ class WordPress_GitHub_Sync {
       return get_option( "wpghs_host" );
     }
 
+    function secret() {
+      return get_option( "wpghs_secret" );
+    }
+
     function save_post_callback($post_id) {
 
       if ( wp_is_post_revision( $post_id ) )
@@ -88,11 +92,19 @@ class WordPress_GitHub_Sync {
     }
 
     function pull_posts() {
-      $data = json_decode(file_get_contents('php://input'));
+      $raw_data = file_get_contents('php://input');
+      $headers = $this->headers();
+
+      // validate secret
+      $hash = hash_hmac( "sha1", $raw_data, $this->secret() );
+      if ( $headers["X-Hub-Signature"] != "sha1=" . $hash )
+        wp_die( __("Failed to validate secret.", WordPress_GitHub_Sync::$text_domain) );
+
+      $data = json_decode($raw_data);
 
       $nwo = $data->repository->owner->name . "/" . $data->repository->name;
       if ( $nwo != $this->repository() )
-        wp_die( $nwo . " is an invalid repository" );
+        wp_die( $nwo . __(" is an invalid repository", WordPress_GitHub_Sync::$text_domain) );
 
       $modified = [];
       $added = [];
@@ -116,6 +128,21 @@ class WordPress_GitHub_Sync {
         $post = new WordPress_GitHub_Sync_Post($path);
         wp_delete_post($post->id);
       }
+    }
+
+    function headers() {
+      if (function_exists('getallheaders'))
+        return getallheaders();
+
+      // Nginx and pre 5.4 workaround
+      // http://www.php.net/manual/en/function.getallheaders.php
+      $headers = [];
+      foreach ($_SERVER as $name => $value) {
+       if (substr($name, 0, 5) == 'HTTP_') {
+         $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+       }
+      }
+      return $headers;
     }
 }
 

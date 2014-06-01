@@ -19,6 +19,7 @@ class WordPress_GitHub_Sync_Admin {
         "help_text" => __("The GitHub host to use. Can be changed to support a GitHub Enterprise installation.", WordPress_GitHub_Sync::$text_domain)
       )
     );
+
     register_setting( WordPress_GitHub_Sync::$text_domain, "wpghs_repository" );
     add_settings_field( "wpghs_repository", __("Repository",WordPress_GitHub_Sync::$text_domain), array(&$this, "field_callback"), WordPress_GitHub_Sync::$text_domain, "general", array(
         "default"   => "",
@@ -26,11 +27,20 @@ class WordPress_GitHub_Sync_Admin {
         "help_text" => __("The GitHub repository to commit to, with owner, e.g., <code>benbalter/benbalter.github.com</code>.", WordPress_GitHub_Sync::$text_domain)
       )
     );
+
     register_setting( WordPress_GitHub_Sync::$text_domain, "wpghs_oauth_token" );
     add_settings_field( "wpghs_oauth_token", __("Oauth Token", WordPress_GitHub_Sync::$text_domain), array(&$this, "field_callback"), WordPress_GitHub_Sync::$text_domain, "general", array(
         "default"   => "",
         "name"      => "wpghs_oauth_token",
         "help_text" => __("A <a href='https://github.com/settings/tokens/new'>personal oauth token</a> with <code>public_repo</code> scope.", WordPress_GitHub_Sync::$text_domain)
+      )
+    );
+
+    register_setting( WordPress_GitHub_Sync::$text_domain, "wpghs_secret" );
+    add_settings_field( "wpghs_secret", __("Webhook Secret", WordPress_GitHub_Sync::$text_domain), array(&$this, "field_callback"), WordPress_GitHub_Sync::$text_domain, "general", array(
+        "default"   => "",
+        "name"      => "wpghs_secret",
+        "help_text" => __("The webhook's secret phrase.", WordPress_GitHub_Sync::$text_domain)
       )
     );
   }
