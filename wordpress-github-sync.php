@@ -37,6 +37,8 @@ class WordPressGitHubSync {
       self::$instance = &$this;
 		  add_action( 'init', array( &$this, 'l10n' ) );
       add_action( 'save_post', array( &$this, 'push_post' ) );
+      add_action('wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
+
       if (is_admin()) {
         add_action( 'admin_menu', array( &$this, 'add_admin_menu' ) );
         add_action( 'admin_init', array( &$this, 'register_settings' ) );
@@ -189,6 +191,10 @@ class WordPressGitHubSync {
     }
 
     function section_callback() { }
+
+    function pull_posts() {
+      file_put_contents(dirname( __FILE__ ) . '/log.txt', $_REQUEST );
+    }
 
 }
 

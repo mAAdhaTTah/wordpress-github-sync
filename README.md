@@ -20,4 +20,6 @@ The sync action is based on two hooks:
 
 ## Setup
 
-1. [Create a personal oauth token](https://github.com/settings/tokens/new) with the `public_repo` scope (you can also create a bot account for this, if you'd prefer)
+1. Install the plugin and activate it via WordPress's plugin settings page
+2. [Create a personal oauth token](https://github.com/settings/tokens/new) with the `public_repo` scope (you can also create a bot account for this, if you'd prefer)
+3. Configure your GitHub host, repository, and OAuth Token on the WordPress <--> GitHub sync settings page within WordPress's administrative interface
