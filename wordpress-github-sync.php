@@ -197,9 +197,26 @@ class WordPressGitHubSync {
 
     function section_callback() { }
 
-    function title($path) {
+    function parts_from_path($path) {
       preg_match("/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.html/", $path, $matches);
+      return $matches;
+
+    }
+
+    function title_from_path($path) {
+      $matches = $this->parts_from_path($path);
       return $matches[4];
+    }
+
+    function date_from_path($path) {
+      $matches = $this->parts_from_path($path);
+      return $matches[1] . "-" . $matches[2] . "-" . $matches[3] . "00:00:00";
+    }
+
+    function id_from_path($path) {
+      global $wpdb;
+      $title = $this->title_from_path($path);
+      return $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '$title'");
     }
 
     function pull_posts() {
@@ -210,14 +227,34 @@ class WordPressGitHubSync {
         wp_die( $nwo . " is an invalid repository" );
 
       $modified = [];
+      $added = [];
+      $removed = [];
+
       foreach ($data->commits as $commit) {
         $modified = array_merge( $modified, $commit->modified );
+        $added    = array_merge( $added,    $commit->added    );
+        $removed  = array_merge( $removed,  $commit->removed  );
       }
 
+      // Modified
       foreach (array_unique($modified) as $path) {
-        global $wpdb;
-        $title = $this->title($path);
-        $post_id = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '$title'");
+        $post_id = $this->id_from_path($path);
+        $this->pull_post($post_id);
+      }
+
+      // Removed
+      foreach (array_unique($removed) as $path) {
+        $post_id = $this->id_from_path($path);
+        wp_delete_post($post_id);
+      }
+
+      // Added
+      foreach (array_unique($added) as $path) {
+        $post_id = wp_insert_post( array(
+            'post_name' => $this->title_from_path($path),
+            'post_date' => $this->date_from_path($path)
+          )
+        );
         $this->pull_post($post_id);
       }
 
@@ -233,6 +270,11 @@ class WordPressGitHubSync {
         )
       );
       add_action( 'save_post', array( &$this, 'push_post' ) );
+    }
+
+    function create_post($path) {
+
+
     }
 
 }
