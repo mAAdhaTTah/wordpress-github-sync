@@ -155,7 +155,7 @@ class WordPress_GitHub_Sync {
         $sha = $data->content->sha;
         add_post_meta( $post_id, '_sha', $sha, true ) || update_post_meta( $post_id, '_sha', $sha );
       } else {
-        wp_die( "WordPress <--> GitHub sync error: " . $data->message );
+        wp_die( __("WordPress <--> GitHub sync error: ", WordPress_GitHub_Sync::$text_domain) . $data->message );
       }
     }
 
