@@ -2,6 +2,8 @@
 
 *A WordPress plugin to sync content with a GitHub repository (or Jekyll site)*
 
+**:warning: Still a work in progress, but [we'd love your help](https://github.com/post-forking/post-forking/issues) :warning:**
+
 ## WordPress GitHub Sync does three things:
 
 1. Allows content publishers to version their content in GitHub, exposing "who made what change when" to readers
