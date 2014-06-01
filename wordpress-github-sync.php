@@ -29,6 +29,7 @@
 
 require_once dirname( __FILE__ ) . '/lib/admin.php';
 require_once dirname( __FILE__ ) . '/lib/post.php';
+require_once dirname( __FILE__ ) . '/lib/spyc/spyc.php';
 
 class WordPress_GitHub_Sync {
 

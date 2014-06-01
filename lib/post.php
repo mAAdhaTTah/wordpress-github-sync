@@ -120,7 +120,7 @@ class WordPress_GitHub_Sync_Post {
         ),
       "body"    => json_encode( array(
           "message" => "Syncing " . $this->github_path() . " from WordPress",
-          "content" => base64_encode($this->post->post_content),
+          "content" => base64_encode($this->front_matter() . $this->post->post_content),
           "author"  => $this->last_modified_author(),
           "sha"     => $this->sha()
         ) )
@@ -140,11 +140,22 @@ class WordPress_GitHub_Sync_Post {
   function pull() {
     global $wpghs;
     $data = $this->remote_contents();
+    $content = base64_decode($data->content);
+
+    preg_match( "/(^---(.*)---)$?(.*)/m", $content, $matches );
+    $body = array_pop( $matches );
+
+    if ( count($matches) == 2) {
+      $meta = spyc_load($matches[1]);
+    } else {
+      $meta = [];
+    }
+
     remove_action( 'save_post', array( &$wpghs, 'push_post' ) );
-    wp_update_post( array(
+    wp_update_post( array_merge( $meta, array(
         "ID"           => $this->id,
-        "post_content" => base64_decode($data->content)
-      )
+        "post_content" => $body
+      ))
     );
     add_action( 'save_post', array( &$wpghs, 'push_post' ) );
   }
@@ -163,5 +174,33 @@ class WordPress_GitHub_Sync_Post {
     );
 
     wp_remote_request( $this->api_endpoint(), $args );
+  }
+
+  function meta() {
+
+    $meta = array(
+      'post_title'   => get_the_title( $this->post ),
+      'author'       => get_userdata( $this->post->post_author )->display_name,
+      'post_excerpt' => $this->post->post_excerpt,
+      'layout'       => get_post_type( $this->post ),
+      'permalink'    => str_replace( home_url(), '', get_permalink( $this->post ) )
+    );
+
+    //convert traditional post_meta values, hide hidden values
+    foreach ( get_post_custom( $this->id ) as $key => $value ) {
+
+      if ( substr( $key, 0, 1 ) == '_' )
+        continue;
+
+      $meta[ $key ] = $value;
+
+    }
+
+    return $meta;
+
+  }
+
+  function front_matter() {
+    return spyc_dump( $this->meta(), false, 0 ) . "---\n";
   }
 }
