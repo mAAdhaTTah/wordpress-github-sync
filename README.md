@@ -1,4 +1,4 @@
-# Wordpress GitHub Sync
+# WordPress GitHub Sync
 
 *A WordPress plugin to sync content with a GitHub repository (or Jekyll site)*
 
