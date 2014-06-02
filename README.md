@@ -41,6 +41,12 @@ The sync action is based on two hooks:
 3. Configure your GitHub host, repository, secret,  and OAuth Token on the WordPress <--> GitHub sync settings page within WordPress's administrative interface
 4. Create a WebHook within you repository with the provided callback URL and callback secret
 
+## Contributing
+
+Found a bug? Want to take a stab at [one of the open issues](https://github.com/benbalter/wordpress-github-sync/issues)? We'd love your help!
+
+See [the contributing documentation](CONTRIBUTING.md) for details. 
+
 ## Prior Art
 
 * [WordPress Post Forking](https://github.com/post-forking/post-forking)
