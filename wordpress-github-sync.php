@@ -150,9 +150,7 @@ class WordPress_GitHub_Sync {
       if ( $nwo != $this->repository() )
         wp_die( $nwo . __(" is an invalid repository", WordPress_GitHub_Sync::$text_domain) );
 
-      $modified = [];
-      $added = [];
-      $removed = [];
+      $modified = $added = $removed = array();
 
       foreach ($data->commits as $commit) {
         $modified = array_merge( $modified, $commit->modified );
@@ -184,7 +182,7 @@ class WordPress_GitHub_Sync {
 
       // Nginx and pre 5.4 workaround
       // http://www.php.net/manual/en/function.getallheaders.php
-      $headers = [];
+      $headers = array();
       foreach ($_SERVER as $name => $value) {
        if (substr($name, 0, 5) == 'HTTP_') {
          $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
