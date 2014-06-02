@@ -45,9 +45,10 @@ The sync action is based on two hooks:
 
 Found a bug? Want to take a stab at [one of the open issues](https://github.com/benbalter/wordpress-github-sync/issues)? We'd love your help!
 
-See [the contributing documentation](CONTRIBUTING.md) for details. 
+See [the contributing documentation](CONTRIBUTING.md) for details.
 
 ## Prior Art
 
 * [WordPress Post Forking](https://github.com/post-forking/post-forking)
 * [WordPress to Jekyll exporter](https://github.com/benbalter/wordpress-to-jekyll-exporter)
+* [Writing in public, syncing with GitHub](https://konklone.com/post/writing-in-public-syncing-with-github)
