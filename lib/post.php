@@ -208,7 +208,7 @@ class WordPress_GitHub_Sync_Post {
     if ( count($matches) == 2) {
       $meta = spyc_load($matches[1]);
     } else {
-      $meta = [];
+      $meta = array();
     }
 
     remove_action( 'save_post', array( &$wpghs, 'push_post' ) );
