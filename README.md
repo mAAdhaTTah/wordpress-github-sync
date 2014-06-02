@@ -1,4 +1,4 @@
-# WordPress GitHub Sync
+# WordPress <--> GitHub Sync
 
 *A WordPress plugin to sync content with a GitHub repository (or Jekyll site)*
 
@@ -6,9 +6,9 @@ Ever wish you could collaboratively author content for you WordPress site (or ex
 
 Looking to tinker with Jekyll, but wish you could use WordPress's best-of-breed web editing interface instead of Atom? (gasp!)
 
-Well, now you can! Introducing [WordPress GitHub Sync](https://github.com/benbalter/wordpress-github-sync)! :sparkles:
+Well, now you can! Introducing [WordPress <--> GitHub Sync](https://github.com/benbalter/wordpress-github-sync)! :sparkles:
 
-## WordPress GitHub Sync does three things:
+## WordPress <--> GitHub Sync does three things:
 
 1. Allows content publishers to version their content in GitHub, exposing "who made what change when" to readers
 
@@ -16,7 +16,7 @@ Well, now you can! Introducing [WordPress GitHub Sync](https://github.com/benbal
 
 3. Allows non-technical writers to draft and edit a Jekyll site in WordPress's best-of-breed editing interface
 
-## WordPress GitHub sync might be able to do some other cool things:
+## WordPress <--> GitHub sync might be able to do some other cool things:
 
 * Allow teams to collaboratively write and edit posts using GitHub (e.g., pull requests, issues, comments)
 
