@@ -34,7 +34,7 @@ The sync action is based on two hooks:
 
 ## Setup
 
-**:warning: Still a work in progress, but [we'd love your help](https://github.com/benbalter/wordpress-github-sync/issues) making it better. :warning:**
+**:warning: Still a work in progress, but [we'd love your help](CONTRIBUTING.md) making it better. :warning:**
 
 1. Install the plugin and activate it via WordPress's plugin settings page
 2. [Create a personal oauth token](https://github.com/settings/tokens/new) with the `public_repo` scope (you can also create a bot account for this, if you'd prefer)
