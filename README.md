@@ -2,7 +2,7 @@
 
 *A WordPress plugin to sync content with a GitHub repository (or Jekyll site)*
 
-Ever wish you could collaboratively author content for you WordPress site (or expose change history publicly and accept pull requests from your readers)?
+Ever wish you could collaboratively author content for your WordPress site (or expose change history publicly and accept pull requests from your readers)?
 
 Looking to tinker with Jekyll, but wish you could use WordPress's best-of-breed web editing interface instead of Atom? (gasp!)
 
@@ -36,10 +36,18 @@ The sync action is based on two hooks:
 
 **:warning: Still a work in progress, but [we'd love your help](CONTRIBUTING.md) making it better. :warning:**
 
-1. Install the plugin and activate it via WordPress's plugin settings page
-2. [Create a personal oauth token](https://github.com/settings/tokens/new) with the `public_repo` scope (you can also create a bot account for this, if you'd prefer)
+1. Install the plugin and activate it via WordPress's plugin settings page.
+  - Over SSH:
+    1. `cd wp-content/plugins`
+    2. `git clone https://github.com/benbalter/wordpress-github-sync.git`
+    3. Activate the plugin in Wordpress' Dashboard > Plugins > Installed Plugins
+  - Over FTP:
+    1. Download [the latest master ZIP](https://github.com/benbalter/wordpress-github-sync/archive/master.zip)
+    2. Unzip `master.zip` and upload it to `wp-content/plugins/wordpress-github-sync/`
+    3. Activate the plugin in Wordpress' Dashboard > Plugins > Installed Plugins
+2. [Create a personal oauth token](https://github.com/settings/tokens/new) with the `public_repo` scope. If you'd prefer not to use your account, you can create another GitHub account for this. 
 3. Configure your GitHub host, repository, secret,  and OAuth Token on the WordPress <--> GitHub sync settings page within WordPress's administrative interface
-4. Create a WebHook within you repository with the provided callback URL and callback secret
+4. Create a WebHook within your repository with the provided callback URL and callback secret, using `application/json` as the content type. 
 
 ## Contributing
 
