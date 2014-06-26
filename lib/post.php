@@ -274,6 +274,6 @@ class WordPress_GitHub_Sync_Post {
    * Returns String the YAML frontmatter, ready to be written to the file
    */
   function front_matter() {
-    return spyc_dump( $this->meta(), false, 0 ) . "---\n";
+    return "---\n" . spyc_dump( $this->meta(), false, 0 ) . "---\n";
   }
 }
