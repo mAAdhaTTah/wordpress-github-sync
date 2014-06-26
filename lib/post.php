@@ -169,6 +169,9 @@ class WordPress_GitHub_Sync_Post {
   function push() {
     global $wpghs;
 
+    if ($wpghs->push_lock)
+      return false;
+
     $args = array(
       "method"  => "PUT",
       "headers" => array(
@@ -198,6 +201,7 @@ class WordPress_GitHub_Sync_Post {
    */
   function pull() {
     global $wpghs;
+
     $data = $this->remote_contents();
     $content = base64_decode($data->content);
 
@@ -211,19 +215,22 @@ class WordPress_GitHub_Sync_Post {
       $meta = array();
     }
 
-    remove_action( 'save_post', array( &$wpghs, 'push_post' ) );
     wp_update_post( array_merge( $meta, array(
         "ID"           => $this->id,
         "post_content" => $body
       ))
     );
-    add_action( 'save_post', array( &$wpghs, 'push_post' ) );
   }
 
   /**
    * Delete a post from GitHub
    */
   function delete() {
+    global $wpghs;
+
+    if ($wpghs->push_lock)
+      return false;
+
     $args = array(
       "method"  => "DELETE",
       "headers" => array(

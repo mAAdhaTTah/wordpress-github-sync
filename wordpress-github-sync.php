@@ -36,6 +36,7 @@ class WordPress_GitHub_Sync {
     static $instance;
     static $text_domain = "wordpress-github-sync";
     static $version = "0.0.1";
+    public $push_lock = false;
 
     /**
      * Called at load time, hooks into WP core
@@ -136,6 +137,10 @@ class WordPress_GitHub_Sync {
      * Reads the payload and syncs posts as necessary
      */
     function pull_posts() {
+
+      # Prevent pushes on update
+      $this->push_lock = true;
+
       $raw_data = file_get_contents('php://input');
       $headers = $this->headers();
 
