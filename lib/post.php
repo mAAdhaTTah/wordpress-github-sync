@@ -206,11 +206,11 @@ class WordPress_GitHub_Sync_Post {
     $content = base64_decode($data->content);
 
     // Break out meta, if present
-    preg_match( "/(^---(.*)---)$?(.*)/m", $content, $matches );
+    preg_match( "/(^---(.*)---$)?(.*)/ms", $content, $matches );
     $body = array_pop( $matches );
 
-    if ( count($matches) == 2) {
-      $meta = spyc_load($matches[1]);
+    if ( count($matches) == 3) {
+      $meta = spyc_load($matches[2]);
     } else {
       $meta = array();
     }
