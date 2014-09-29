@@ -106,6 +106,7 @@ class WordPress_GitHub_Sync_Post {
   function last_modified_author() {
     if ( $last_id = get_post_meta( $this->id, '_edit_last', true) ) {
       $user = get_userdata($last_id);
+      if (!$user) return array();
       return array( "name" => $user->display_name, "email" => $user->user_email );
     } else {
       return array();
