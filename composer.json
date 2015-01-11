@@ -1,6 +1,7 @@
 {
 	"name": "benbalter/wordpress-github-sync",
 	"description": "A WordPress plugin to sync content with a GitHub repository (or Jekyll site)",
+	"type": "wordpress-plugin",
 	"minimum-stability": "stable",
 	"license": "GPL",
 	"authors": [
@@ -10,7 +11,8 @@
 		}
 	],
 	"require": {
-        "php": ">=5.3.1",
-        "mustangostang/spyc": "*"
-    }
+		"php": ">=5.3.1",
+		"mustangostang/spyc": "*",
+		"composer/installers": "~1.0"
+	}
 }
