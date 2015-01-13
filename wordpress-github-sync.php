@@ -48,6 +48,7 @@ class WordPress_GitHub_Sync {
       add_action( 'save_post', array( &$this, 'save_post_callback' ) );
       add_action( 'delete_post', array( &$this, 'delete_post_callback' ) );
       add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
+      add_action( 'wpghs_export', array( &$this, 'export_posts' ));
 
       if (is_admin()) {
         $this->admin = new WordPress_GitHub_Sync_Admin;
@@ -197,12 +198,33 @@ class WordPress_GitHub_Sync {
     }
 
     /**
-     * Bulk push all posts to GitHub
+     * Get posts to export, set and kick off cronjob
      */
-    function export() {
+    function start_export() {
       global $wpdb;
       $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
+
+      update_option( '_wpghs_ids_to_export', $posts );
+      wp_schedule_single_event(time(), 'wpghs_export');
+      spawn_cron();
+
+      update_option( 'wpghs_export_started', 'started' );?>
+      <div class="updated">
+          <p><?php _e( 'Export to GitHub started.', WordPress_GitHub_Sync::$text_domain ); ?></p>
+      </div>
+      <?php
+    }
+
+    /**
+     * Export posts
+     *
+     * Runs as cronjob
+     */
+    function export_posts() {
+      $posts = get_option( '_wpghs_ids_to_export' );
+
       foreach ($posts as $post_id) {
+
         $post = new WordPress_GitHub_Sync_Post($post_id);
         $post->push();
       }

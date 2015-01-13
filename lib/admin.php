@@ -94,7 +94,7 @@ class WordPress_GitHub_Sync_Admin {
       return;
 
     if ($_GET['action'] == "export")
-      $wpghs->export();
+      $wpghs->start_export();
 
   }
 }
