@@ -10,9 +10,11 @@
 			"email": "ben@balter.com"
 		}
 	],
+	"autoload": {
+		"classmap": ["lib/"]
+	},
 	"require": {
 		"php": ">=5.3.1",
-		"mustangostang/spyc": "*",
-		"composer/installers": "~1.0"
+		"mustangostang/spyc": "0.5.1"
 	}
 }
