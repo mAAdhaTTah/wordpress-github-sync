@@ -27,9 +27,7 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-require_once dirname( __FILE__ ) . '/lib/admin.php';
-require_once dirname( __FILE__ ) . '/lib/post.php';
-require_once dirname( __FILE__ ) . '/lib/spyc/spyc.php';
+require_once dirname( __FILE__ ) . '/vendor/autoload.php';
 
 class WordPress_GitHub_Sync {
 
