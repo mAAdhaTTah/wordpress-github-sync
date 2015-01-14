@@ -49,6 +49,7 @@ class WordPress_GitHub_Sync {
       add_action( 'delete_post', array( &$this, 'delete_post_callback' ) );
       add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
       add_action( 'wpghs_export', array( &$this, 'export_posts' ));
+      add_action( 'init', array( &$this, 'continue_export' ) );
 
       if (is_admin()) {
         $this->admin = new WordPress_GitHub_Sync_Admin;
@@ -204,11 +205,8 @@ class WordPress_GitHub_Sync {
       global $wpdb;
       $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
 
-      update_option( '_wpghs_ids_to_export', $posts );
-      wp_schedule_single_event(time(), 'wpghs_export');
-      spawn_cron();
-
-      update_option( 'wpghs_export_started', 'started' );?>
+      wp_schedule_single_event(time(), 'wpghs_export', array($posts));
+      spawn_cron(); ?>
       <div class="updated">
           <p><?php _e( 'Export to GitHub started.', WordPress_GitHub_Sync::$text_domain ); ?></p>
       </div>
@@ -220,14 +218,51 @@ class WordPress_GitHub_Sync {
      *
      * Runs as cronjob
      */
-    function export_posts() {
-      $posts = get_option( '_wpghs_ids_to_export' );
+    function export_posts($posts) {
+      $i = 0;
 
-      foreach ($posts as $post_id) {
+      while(!empty($posts) && $i < 50) {
+        $post_id = array_shift($posts);
 
         $post = new WordPress_GitHub_Sync_Post($post_id);
         $post->push();
+
+        $i++;
       }
+
+      if (!empty($posts)) {
+        wp_remote_post( add_query_arg( 'github', 'sync', site_url( 'index.php' ) ), array(
+          'body' => array(
+            'posts' => $posts
+          ),
+          'blocking' => false,
+        ) );
+      }
+
+      die();
+    }
+
+    /**
+     * Receives the remaining posts
+     *
+     * Kicks off exporting the next batch
+     */
+    function continue_export() {
+      if ( ! isset( $_GET['github'] ) || 'sync' !== $_GET['github'] ) {
+        return;
+      }
+
+      if ( !current_user_can( 'manage_options' ) ) {
+        return;
+      }
+
+      if ( !array_key_exists('posts', $_POST) || !is_array($_POST['posts']) ) {
+        return;
+      }
+
+      $posts = $_POST['posts'];
+
+      $this->export_posts($posts);
     }
 }
 
