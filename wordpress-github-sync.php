@@ -224,6 +224,7 @@ class WordPress_GitHub_Sync {
 
         $post = new WordPress_GitHub_Sync_Post($post_id);
         $post->push();
+        usleep(500000);
 
         $i++;
       }
