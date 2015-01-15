@@ -30,7 +30,7 @@ class WordPress_GitHub_Sync_Post {
    * @todo - PAGE SUPPORT
    */
   function parts_from_path() {
-    preg_match("/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.html/", $this->path, $matches);
+    preg_match("/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/", $this->path, $matches);
     return $matches;
   }
 
@@ -83,6 +83,21 @@ class WordPress_GitHub_Sync_Post {
   }
 
   /**
+  * Returns the post_content
+  *
+  * Markdownify's the content if applicable
+  */
+  function content() {
+    $content = $this->post->post_content;
+  
+    if ( function_exists( 'wpmarkdown_html_to_markdown' ) ) {
+      $content = wpmarkdown_html_to_markdown( $content );
+    }
+  
+    return apply_filters( 'wpghs_content', $content );
+  }
+
+  /**
    * Calculates the proper GitHub path for a given post
    *
    * Returns (string) the path relative to repo root
@@ -91,9 +106,9 @@ class WordPress_GitHub_Sync_Post {
     if ($this->type() == "post") {
       $path = "_posts/";
       $path = $path . get_the_time("Y-m-d-", $this->id);
-      $path = $path . $this->name() . ".html";
+      $path = $path . $this->name() . ".md";
     } elseif ($this->type() == "page") {
-      $path = get_page_uri( $this->id ) . ".html";
+      $path = get_page_uri( $this->id ) . ".md";
     }
     return $path;
   }
@@ -174,13 +189,14 @@ class WordPress_GitHub_Sync_Post {
       return false;
 
     $args = array(
+
       "method"  => "PUT",
       "headers" => array(
           "Authorization" => "token " . $wpghs->oauth_token()
         ),
       "body"    => json_encode( array(
-          "message" => "Syncing " . $this->github_path() . " from WordPress",
-          "content" => base64_encode($this->front_matter() . $this->post->post_content),
+          "message" => "Syncing " . $this->github_path() . " from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
+          "content" => base64_encode( $this->front_matter() . trim( $this->content() ) ),
           "author"  => $this->last_modified_author(),
           "sha"     => $this->sha()
         ) )
@@ -208,17 +224,23 @@ class WordPress_GitHub_Sync_Post {
 
     // Break out meta, if present
     preg_match( "/(^---(.*)---$)?(.*)/ms", $content, $matches );
+
     $body = array_pop( $matches );
 
-    if ( count($matches) == 3) {
+    if (count($matches) == 3) {
       $meta = spyc_load($matches[2]);
+      if ($meta['permalink']) $meta['permalink'] = str_replace(home_url(), '', get_permalink($meta['permalink']));
     } else {
       $meta = array();
     }
 
+    if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
+      $body = wpmarkdown_markdown_to_html( $body );
+    }
+
     wp_update_post( array_merge( $meta, array(
         "ID"           => $this->id,
-        "post_content" => $body
+        "post_content" => trim( $body )
       ))
     );
   }
@@ -238,7 +260,7 @@ class WordPress_GitHub_Sync_Post {
           "Authorization" => "token " . $wpghs->oauth_token()
         ),
       "body"    => json_encode( array(
-          "message" => "Deleting " . $this->github_path() . " via WordPress",
+          "message" => "Deleting " . $this->github_path() . " via WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
           "author"  => $this->last_modified_author(),
           "sha"     => $this->sha()
         ) )
@@ -255,11 +277,12 @@ class WordPress_GitHub_Sync_Post {
   function meta() {
 
     $meta = array(
-      'post_title'   => get_the_title( $this->post ),
-      'author'       => get_userdata( $this->post->post_author )->display_name,
-      'post_excerpt' => $this->post->post_excerpt,
-      'layout'       => get_post_type( $this->post ),
-      'permalink'    => str_replace( home_url(), '', get_permalink( $this->post ) )
+      'post_title'    => get_the_title( $this->post ),
+      'author'        => get_userdata( $this->post->post_author )->display_name,
+      'post_date'     => $this->post->post_date,
+      'post_excerpt'  => $this->post->post_excerpt,
+      'layout'        => get_post_type( $this->post ),
+      'permalink'     => get_permalink( $this->post )
     );
 
     //convert traditional post_meta values, hide hidden values
