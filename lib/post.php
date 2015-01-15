@@ -83,6 +83,21 @@ class WordPress_GitHub_Sync_Post {
   }
 
   /**
+   * Returns the post_content
+   *
+   * Markdownify's the content if applicable
+   */
+  function content() {
+    $content = $this->post->post_content;
+
+    if ( function_exists( 'wpmarkdown_html_to_markdown' ) ) {
+      $content = wpmarkdown_html_to_markdown( $content );
+    }
+
+    return apply_filters( 'wpghs_content', $content );
+  }
+
+  /**
    * Calculates the proper GitHub path for a given post
    *
    * Returns (string) the path relative to repo root
@@ -180,7 +195,7 @@ class WordPress_GitHub_Sync_Post {
         ),
       "body"    => json_encode( array(
           "message" => "Syncing " . $this->github_path() . " from WordPress",
-          "content" => base64_encode($this->front_matter() . $this->post->post_content),
+          "content" => base64_encode($this->front_matter() . $this->content()),
           "author"  => $this->last_modified_author(),
           "sha"     => $this->sha()
         ) )
@@ -214,6 +229,10 @@ class WordPress_GitHub_Sync_Post {
       $meta = spyc_load($matches[2]);
     } else {
       $meta = array();
+    }
+
+    if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
+      $body = wpmarkdown_markdown_to_html( $body );
     }
 
     wp_update_post( array_merge( $meta, array(
