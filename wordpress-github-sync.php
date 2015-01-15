@@ -229,9 +229,12 @@ class WordPress_GitHub_Sync {
       }
 
       if (!empty($posts)) {
+        $nonce = wp_hash( time() );
+        update_option( '_wpghs_export_nonce', $nonce );
         wp_remote_post( add_query_arg( 'github', 'sync', site_url( 'index.php' ) ), array(
           'body' => array(
-            'posts' => $posts
+            'posts' => $posts,
+            'nonce' => $nonce,
           ),
           'blocking' => false,
         ) );
@@ -250,9 +253,11 @@ class WordPress_GitHub_Sync {
         return;
       }
 
-      if ( !current_user_can( 'manage_options' ) ) {
+      if ( !array_key_exists('nonce', $_POST) || "" === get_option( '_wpghs_export_nonce') || get_option( '_wpghs_export_nonce') !== $_POST['nonce'] ) {
         return;
       }
+
+      delete_option( '_wpghs_export_nonce' );
 
       if ( !array_key_exists('posts', $_POST) || !is_array($_POST['posts']) ) {
         return;
