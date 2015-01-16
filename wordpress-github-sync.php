@@ -210,6 +210,7 @@ class WordPress_GitHub_Sync {
       }
 
       wp_schedule_single_event(time(), 'wpghs_export', array($posts));
+      $this->log( __("Starting export to GitHub", WordPress_GitHub_Sync::$text_domain ) );
       spawn_cron();
       update_option( '_wpghs_export_started', 'yes' );
     }
@@ -224,6 +225,7 @@ class WordPress_GitHub_Sync {
 
       while(!empty($posts) && $i < 50) {
         $post_id = array_shift($posts);
+        $this->log( __("Exporting Post ID: ", WordPress_GitHub_Sync::$text_domain ) . $post_id );
 
         $post = new WordPress_GitHub_Sync_Post($post_id);
         $result = $post->push();
@@ -231,6 +233,9 @@ class WordPress_GitHub_Sync {
         if ( is_wp_error( $result ) ) {
           update_option( '_wpghs_posts_to_export', $posts );
           update_option( '_wpghs_export_error', $result->get_error_message() );
+
+          $this->log( __("Error exporting to GitHub. Error:", WordPress_GitHub_Sync::$text_domain ) );
+          $this->log( $result->get_error_message() );
 
           die();
         }
@@ -254,6 +259,7 @@ class WordPress_GitHub_Sync {
         ) );
       } else {
         update_option( '_wpghs_export_complete', 'yes' );
+        $this->log( __('Export to GitHub completed successfully.', WordPress_GitHub_Sync::$text_domain ) );
       }
 
       die();
@@ -282,6 +288,20 @@ class WordPress_GitHub_Sync {
       $posts = $_POST['posts'];
 
       $this->export_posts($posts);
+    }
+
+    /**
+     * Write to debug.log if WP_DEBUG is enabled
+     * @source http://www.stumiller.me/sending-output-to-the-wordpress-debug-log/
+     */
+    function log($log) {
+      if ( true === WP_DEBUG ) {
+        if ( is_array( $log ) || is_object( $log ) ) {
+          error_log( print_r( $log, true ) );
+        } else {
+          error_log( $log );
+        }
+      }
     }
 }
 
