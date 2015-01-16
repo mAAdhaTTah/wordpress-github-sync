@@ -96,8 +96,11 @@ class WordPress_GitHub_Sync {
      */
     function save_post_callback($post_id) {
 
-      if ( wp_is_post_revision( $post_id ) )
+      if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) )
         return;
+
+      if ( ! $this->oauth_token() || ! $this->repository() )
+        return
 
       $post = get_post($post_id);
 
@@ -120,6 +123,9 @@ class WordPress_GitHub_Sync {
      * $post_id - (int) the post to delete
      */
     function delete_post_callback( $post_id ) {
+
+      if ( ! $this->oauth_token() || ! $this->repository() )
+        return
 
       $post = get_post($post_id);
 
@@ -201,14 +207,18 @@ class WordPress_GitHub_Sync {
      */
     function start_export() {
       global $wpdb;
-      $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
+      $posts = get_option( '_wpghs_posts_to_export'  );
+
+      if ( ! $posts ) {
+        $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
+      } else {
+        delete_option( '_wpghs_posts_to_export'  );
+      }
 
       wp_schedule_single_event(time(), 'wpghs_export', array($posts));
-      spawn_cron(); ?>
-      <div class="updated">
-          <p><?php _e( 'Export to GitHub started.', WordPress_GitHub_Sync::$text_domain ); ?></p>
-      </div>
-      <?php
+      $this->log( __("Starting export to GitHub", WordPress_GitHub_Sync::$text_domain ) );
+      spawn_cron();
+      update_option( '_wpghs_export_started', 'yes' );
     }
 
     /**
@@ -221,9 +231,21 @@ class WordPress_GitHub_Sync {
 
       while(!empty($posts) && $i < 50) {
         $post_id = array_shift($posts);
+        $this->log( __("Exporting Post ID: ", WordPress_GitHub_Sync::$text_domain ) . $post_id );
 
         $post = new WordPress_GitHub_Sync_Post($post_id);
-        $post->push();
+        $result = $post->push();
+
+        if ( is_wp_error( $result ) ) {
+          update_option( '_wpghs_posts_to_export', $posts );
+          update_option( '_wpghs_export_error', $result->get_error_message() );
+
+          $this->log( __("Error exporting to GitHub. Error:", WordPress_GitHub_Sync::$text_domain ) );
+          $this->log( $result->get_error_message() );
+
+          die();
+        }
+
         usleep(500000);
 
         $i++;
@@ -232,6 +254,8 @@ class WordPress_GitHub_Sync {
       if (!empty($posts)) {
         $nonce = wp_hash( time() );
         update_option( '_wpghs_export_nonce', $nonce );
+
+        // Request page that will continue export
         wp_remote_post( add_query_arg( 'github', 'sync', site_url( 'index.php' ) ), array(
           'body' => array(
             'posts' => $posts,
@@ -239,6 +263,9 @@ class WordPress_GitHub_Sync {
           ),
           'blocking' => false,
         ) );
+      } else {
+        update_option( '_wpghs_export_complete', 'yes' );
+        $this->log( __('Export to GitHub completed successfully.', WordPress_GitHub_Sync::$text_domain ) );
       }
 
       die();
@@ -267,6 +294,20 @@ class WordPress_GitHub_Sync {
       $posts = $_POST['posts'];
 
       $this->export_posts($posts);
+    }
+
+    /**
+     * Write to debug.log if WP_DEBUG is enabled
+     * @source http://www.stumiller.me/sending-output-to-the-wordpress-debug-log/
+     */
+    function log($log) {
+      if ( true === WP_DEBUG ) {
+        if ( is_array( $log ) || is_object( $log ) ) {
+          error_log( print_r( $log, true ) );
+        } else {
+          error_log( $log );
+        }
+      }
     }
 }
 

@@ -67,9 +67,34 @@ class WordPress_GitHub_Sync_Admin {
   }
 
   /**
-   * Empty section callback
+   * Displays settings messages from background processes
    */
-  function section_callback() { }
+  function section_callback() {
+    if ( get_current_screen()->id != "settings_page_" . WordPress_GitHub_Sync::$text_domain)
+      return;
+
+    if ('yes' === get_option( '_wpghs_export_started' )) { ?>
+      <div class="updated">
+        <p><?php _e( 'Export to GitHub started.', WordPress_GitHub_Sync::$text_domain ); ?></p>
+      </div><?php
+      delete_option( '_wpghs_export_started' );
+    }
+
+    if ( $message = get_option( '_wpghs_export_error'  ) ) { ?>
+      <div class="error">
+        <p><?php _e( 'Export to GitHub failed with error:', WordPress_GitHub_Sync::$text_domain ); ?> <?php echo esc_html( $message ) ;?></p>
+      </div><?php
+      delete_option( '_wpghs_export_error' );
+    }
+
+    if ( 'yes' === get_option( '_wpghs_export_complete'  ) ) { ?>
+      <div class="updated">
+        <p><?php _e( 'Export to GitHub completed successfully.', WordPress_GitHub_Sync::$text_domain ); ?></p>
+      </div><?php
+      delete_option( '_wpghs_export_complete' );
+    }
+
+  }
 
   /**
    * Add options menu to admin navbar

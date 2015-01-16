@@ -56,8 +56,14 @@ class WordPress_GitHub_Sync_Post {
    */
   function id_from_path() {
     global $wpdb;
-    $title = $this->title_from_path();
-    $id = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '$title'");
+
+    $id = $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wpghs_github_path' AND meta_value = '$this->path'");
+
+    if (!$id) {
+      $title = $this->title_from_path();
+      $id = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '$title'");
+    }
+
     if (!$id) {
       $id = wp_insert_post( array(
           'post_name' => $this->title_from_path(),
@@ -65,6 +71,7 @@ class WordPress_GitHub_Sync_Post {
         )
       );
     }
+
     return $id;
   }
 
@@ -83,17 +90,23 @@ class WordPress_GitHub_Sync_Post {
   }
 
   /**
-   * Calculates the proper GitHub path for a given post
+   * Retrieves or calculates the proper GitHub path for a given post
    *
    * Returns (string) the path relative to repo root
    */
   function github_path() {
-    if ($this->type() == "post") {
-      $path = "_posts/";
-      $path = $path . get_the_time("Y-m-d-", $this->id);
-      $path = $path . $this->name() . ".html";
-    } elseif ($this->type() == "page") {
-      $path = get_page_uri( $this->id ) . ".html";
+    $path = get_post_meta( $this->id, '_wpghs_github_path', true );
+
+    if ( ! $path ) {
+      if ($this->type() == "post") {
+        $path = "_posts/";
+        $path = $path . get_the_time("Y-m-d-", $this->id);
+        $path = $path . $this->name() . ".html";
+      } elseif ($this->type() == "page") {
+        $path = get_page_uri( $this->id ) . ".html";
+      }
+
+      update_post_meta( $this->id, '_wpghs_github_path', $path );
     }
     return $path;
   }
@@ -189,12 +202,22 @@ class WordPress_GitHub_Sync_Post {
     $response = wp_remote_request( $this->api_endpoint(), $args );
     $body = wp_remote_retrieve_body($response);
     $data = json_decode($body);
+
     if ($data && isset($data->content) && !isset($data->errors)) {
       $sha = $data->content->sha;
       add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
     } else {
-      wp_die( __("WordPress <--> GitHub sync error: ", WordPress_GitHub_Sync::$text_domain) . $data->message );
+      // save a message and quit
+      if ( isset($data->message) ) {
+        $error = new WP_Error( 'wpghs_error_message', $data->message );
+      } elseif( empty($data) ) {
+        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
+      }
+
+      return $error;
     }
+
+    return true;
   }
 
   /**
@@ -282,6 +305,6 @@ class WordPress_GitHub_Sync_Post {
    * Returns String the YAML frontmatter, ready to be written to the file
    */
   function front_matter() {
-    return "---\n" . spyc_dump( $this->meta(), false, 0 ) . "---\n";
+    return Spyc::YAMLDump($this->meta(), false, false, true) . "---\n";
   }
 }
