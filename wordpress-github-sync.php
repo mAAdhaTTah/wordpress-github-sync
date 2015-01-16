@@ -204,11 +204,8 @@ class WordPress_GitHub_Sync {
       $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
 
       wp_schedule_single_event(time(), 'wpghs_export', array($posts));
-      spawn_cron(); ?>
-      <div class="updated">
-          <p><?php _e( 'Export to GitHub started.', WordPress_GitHub_Sync::$text_domain ); ?></p>
-      </div>
-      <?php
+      spawn_cron();
+      update_option( '_wpghs_export_started', 'yes' );
     }
 
     /**
