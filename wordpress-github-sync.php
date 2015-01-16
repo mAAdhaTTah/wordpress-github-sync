@@ -96,7 +96,7 @@ class WordPress_GitHub_Sync {
      */
     function save_post_callback($post_id) {
 
-      if ( wp_is_post_revision( $post_id ) )
+      if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) )
         return;
 
       $post = get_post($post_id);
