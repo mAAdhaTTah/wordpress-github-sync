@@ -2,6 +2,8 @@
 
 *A WordPress plugin to sync content with a GitHub repository (or Jekyll site)*
 
+[![Build Status](https://travis-ci.org/benbalter/wordpress-github-sync.svg)](https://travis-ci.org/benbalter/wordpress-github-sync)
+
 Ever wish you could collaboratively author content for your WordPress site (or expose change history publicly and accept pull requests from your readers)?
 
 Looking to tinker with Jekyll, but wish you could use WordPress's best-of-breed web editing interface instead of Atom? (gasp!)
