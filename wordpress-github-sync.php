@@ -99,6 +99,9 @@ class WordPress_GitHub_Sync {
       if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) )
         return;
 
+      if ( ! $this->oauth_token() || ! $this->repository() )
+        return
+
       $post = get_post($post_id);
 
       // Right now CPTs are not supported
@@ -120,6 +123,9 @@ class WordPress_GitHub_Sync {
      * $post_id - (int) the post to delete
      */
     function delete_post_callback( $post_id ) {
+
+      if ( ! $this->oauth_token() || ! $this->repository() )
+        return
 
       $post = get_post($post_id);
 
