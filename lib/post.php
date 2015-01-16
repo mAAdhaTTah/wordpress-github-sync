@@ -193,7 +193,14 @@ class WordPress_GitHub_Sync_Post {
       $sha = $data->content->sha;
       add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
     } else {
-      wp_die( __("WordPress <--> GitHub sync error: ", WordPress_GitHub_Sync::$text_domain) . $data->message );
+      // save a message and quit
+      if ( isset($data->message) ) {
+        update_option( '_wpghs_export_error', $data->message );
+      } elseif( empty($data) ) {
+        update_option( '_wpghs_export_error', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
+      }
+
+      die();
     }
   }
 

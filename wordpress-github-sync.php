@@ -229,6 +229,8 @@ class WordPress_GitHub_Sync {
       if (!empty($posts)) {
         $nonce = wp_hash( time() );
         update_option( '_wpghs_export_nonce', $nonce );
+
+        // Request page that will continue export
         wp_remote_post( add_query_arg( 'github', 'sync', site_url( 'index.php' ) ), array(
           'body' => array(
             'posts' => $posts,
@@ -236,6 +238,8 @@ class WordPress_GitHub_Sync {
           ),
           'blocking' => false,
         ) );
+      } else {
+        update_option( '_wpghs_export_complete', 'yes' );
       }
 
       die();
