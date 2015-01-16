@@ -56,8 +56,14 @@ class WordPress_GitHub_Sync_Post {
    */
   function id_from_path() {
     global $wpdb;
-    $title = $this->title_from_path();
-    $id = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '$title'");
+
+    $id = $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wpghs_github_path' AND meta_value = '$this->path'");
+
+    if (!$id) {
+      $title = $this->title_from_path();
+      $id = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '$title'");
+    }
+
     if (!$id) {
       $id = wp_insert_post( array(
           'post_name' => $this->title_from_path(),
@@ -65,6 +71,7 @@ class WordPress_GitHub_Sync_Post {
         )
       );
     }
+
     return $id;
   }
 
@@ -83,17 +90,23 @@ class WordPress_GitHub_Sync_Post {
   }
 
   /**
-   * Calculates the proper GitHub path for a given post
+   * Retrieves or calculates the proper GitHub path for a given post
    *
    * Returns (string) the path relative to repo root
    */
   function github_path() {
-    if ($this->type() == "post") {
-      $path = "_posts/";
-      $path = $path . get_the_time("Y-m-d-", $this->id);
-      $path = $path . $this->name() . ".html";
-    } elseif ($this->type() == "page") {
-      $path = get_page_uri( $this->id ) . ".html";
+    $path = get_post_meta( $this->id, '_wpghs_github_path', true );
+
+    if ( ! $path ) {
+      if ($this->type() == "post") {
+        $path = "_posts/";
+        $path = $path . get_the_time("Y-m-d-", $this->id);
+        $path = $path . $this->name() . ".html";
+      } elseif ($this->type() == "page") {
+        $path = get_page_uri( $this->id ) . ".html";
+      }
+
+      update_post_meta( $this->id, '_wpghs_github_path', $path );
     }
     return $path;
   }
