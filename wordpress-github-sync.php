@@ -201,7 +201,13 @@ class WordPress_GitHub_Sync {
      */
     function start_export() {
       global $wpdb;
-      $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
+      $posts = get_option( '_wpghs_posts_to_export'  );
+
+      if ( ! $posts ) {
+        $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
+      } else {
+        delete_option( '_wpghs_posts_to_export'  );
+      }
 
       wp_schedule_single_event(time(), 'wpghs_export', array($posts));
       spawn_cron();
@@ -220,7 +226,15 @@ class WordPress_GitHub_Sync {
         $post_id = array_shift($posts);
 
         $post = new WordPress_GitHub_Sync_Post($post_id);
-        $post->push();
+        $result = $post->push();
+
+        if ( is_wp_error( $result ) ) {
+          update_option( '_wpghs_posts_to_export', $posts );
+          update_option( '_wpghs_export_error', $result->get_error_message() );
+
+          die();
+        }
+
         usleep(500000);
 
         $i++;

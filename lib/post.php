@@ -189,19 +189,22 @@ class WordPress_GitHub_Sync_Post {
     $response = wp_remote_request( $this->api_endpoint(), $args );
     $body = wp_remote_retrieve_body($response);
     $data = json_decode($body);
+
     if ($data && isset($data->content) && !isset($data->errors)) {
       $sha = $data->content->sha;
       add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
     } else {
       // save a message and quit
       if ( isset($data->message) ) {
-        update_option( '_wpghs_export_error', $data->message );
+        $error = new WP_Error( 'wpghs_error_message', $data->message );
       } elseif( empty($data) ) {
-        update_option( '_wpghs_export_error', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
+        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
       }
 
-      die();
+      return $error;
     }
+
+    return true;
   }
 
   /**
