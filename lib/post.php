@@ -101,9 +101,9 @@ class WordPress_GitHub_Sync_Post {
       if ($this->type() == "post") {
         $path = "_posts/";
         $path = $path . get_the_time("Y-m-d-", $this->id);
-        $path = $path . $this->name() . ".html";
+        $path = $path . $this->name() . ".md";
       } elseif ($this->type() == "page") {
-        $path = get_page_uri( $this->id ) . ".html";
+        $path = get_page_uri( $this->id ) . ".md";
       }
 
       update_post_meta( $this->id, '_wpghs_github_path', $path );
