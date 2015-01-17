@@ -30,7 +30,7 @@ class WordPress_GitHub_Sync_Post {
    * @todo - PAGE SUPPORT
    */
   function parts_from_path() {
-    preg_match("/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.html/", $this->path, $matches);
+    preg_match("/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/", $this->path, $matches);
     return $matches;
   }
 
@@ -187,12 +187,13 @@ class WordPress_GitHub_Sync_Post {
       return false;
 
     $args = array(
+
       "method"  => "PUT",
       "headers" => array(
           "Authorization" => "token " . $wpghs->oauth_token()
         ),
       "body"    => json_encode( array(
-          "message" => "Syncing " . $this->github_path() . " from WordPress",
+          "message" => "Syncing " . $this->github_path() . " from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
           "content" => base64_encode($this->front_matter() . $this->post->post_content),
           "author"  => $this->last_modified_author(),
           "sha"     => $this->sha()
@@ -231,10 +232,12 @@ class WordPress_GitHub_Sync_Post {
 
     // Break out meta, if present
     preg_match( "/(^---(.*)---$)?(.*)/ms", $content, $matches );
+
     $body = array_pop( $matches );
 
-    if ( count($matches) == 3) {
+    if (count($matches) == 3) {
       $meta = spyc_load($matches[2]);
+      if ($meta['permalink']) $meta['permalink'] = str_replace(home_url(), '', get_permalink($meta['permalink']));
     } else {
       $meta = array();
     }
@@ -261,7 +264,7 @@ class WordPress_GitHub_Sync_Post {
           "Authorization" => "token " . $wpghs->oauth_token()
         ),
       "body"    => json_encode( array(
-          "message" => "Deleting " . $this->github_path() . " via WordPress",
+          "message" => "Deleting " . $this->github_path() . " via WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
           "author"  => $this->last_modified_author(),
           "sha"     => $this->sha()
         ) )
