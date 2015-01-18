@@ -103,14 +103,13 @@ class WordPress_GitHub_Sync {
       if ( ! $this->oauth_token() || ! $this->repository() )
         return;
 
-      $post = get_post($post_id);
-
       // Right now CPTs are not supported
-      if ($post->post_type != "page" && $post->post_type != "post")
+      if (get_post_type($post_id) != "page" && get_post_type($post_id) != "post") {
         return;
+      }
 
       // Not yet published
-      if ($post->post_status != "publish")
+      if (get_post_status( $post_id ) != "publish")
         return;
 
       $post = new WordPress_GitHub_Sync_Post($post_id);
@@ -207,6 +206,7 @@ class WordPress_GitHub_Sync {
      * Get posts to export, set and kick off cronjob
      */
     function start_export() {
+      update_option( '_wpghs_export_user_id', get_current_user_id() );
       $this->controller->start();
     }
 

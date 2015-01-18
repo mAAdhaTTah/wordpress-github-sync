@@ -113,17 +113,40 @@ class WordPress_GitHub_Sync_Post {
     $path = get_post_meta( $this->id, '_wpghs_github_path', true );
 
     if ( ! $path ) {
-      if ($this->type() == "post") {
-        $path = "_posts/";
-        $path = $path . get_the_time("Y-m-d-", $this->id);
-        $path = $path . $this->name() . ".md";
-      } elseif ($this->type() == "page") {
-        $path = get_page_uri( $this->id ) . ".md";
-      }
+      $path = $this->github_folder() . $this->github_filename();
 
       update_post_meta( $this->id, '_wpghs_github_path', $path );
     }
+
     return $path;
+  }
+
+  /**
+   * Get GitHub folder based on post
+   */
+  function github_folder() {
+    $folder = "";
+
+    if ($this->type() == "post") {
+      $folder = "_posts/";
+    }
+
+    return $folder;
+  }
+
+  /**
+   * Build GitHub filename based on post
+   */
+  function github_filename() {
+    $filename = "";
+
+    if ($this->type() == "post") {
+      $filename = get_the_time("Y-m-d-", $this->id) . $this->name() . ".md";
+    } elseif ($this->type() == "page") {
+      $filename = get_page_uri( $this->id ) . ".md";
+    }
+
+    return $filename;
   }
 
   /**
@@ -142,11 +165,23 @@ class WordPress_GitHub_Sync_Post {
   }
 
   /**
+   * Builds the proper blob API endpoint for a given post
+   *
+   * Returns String the relative API call path
+   */
+  function blob_endpoint() {
+    global $wpghs;
+    $url = $wpghs->api_base() . "/repos/";
+    $url = $url . $wpghs->repository() . "/git/blobs";
+    return $url;
+  }
+
+  /**
    * Builds the proper content API endpoint for a given post
    *
    * Returns String the relative API call path
    */
-  function api_endpoint() {
+  function content_endpoint() {
     global $wpghs;
     $url = $wpghs->api_base() . "/repos/";
     $url = $url . $wpghs->repository() . "/contents/";
@@ -161,7 +196,7 @@ class WordPress_GitHub_Sync_Post {
    */
   function remote_contents() {
     global $wpghs;
-    $response = wp_remote_get( $this->api_endpoint(), array(
+    $response = wp_remote_get( $this->content_endpoint(), array(
       "headers" => array(
         "Authorization" => "token " . $wpghs->oauth_token()
         )
@@ -202,7 +237,6 @@ class WordPress_GitHub_Sync_Post {
       return false;
 
     $args = array(
-
       "method"  => "PUT",
       "headers" => array(
           "Authorization" => "token " . $wpghs->oauth_token()
@@ -215,12 +249,53 @@ class WordPress_GitHub_Sync_Post {
         ) )
     );
 
-    $response = wp_remote_request( $this->api_endpoint(), $args );
+    $response = wp_remote_request( $this->content_endpoint(), $args );
     $body = wp_remote_retrieve_body($response);
     $data = json_decode($body);
 
     if ($data && isset($data->content) && !isset($data->errors)) {
       $sha = $data->content->sha;
+      add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
+    } else {
+      // save a message and quit
+      if ( isset($data->message) ) {
+        $error = new WP_Error( 'wpghs_error_message', $data->message );
+      } elseif( empty($data) ) {
+        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
+      }
+
+      return $error;
+    }
+
+    return true;
+  }
+
+  /**
+   * Push the post to GitHub
+   */
+  function push_blob() {
+    global $wpghs;
+
+    if ($wpghs->push_lock)
+      return false;
+
+    $args = array(
+      "method"  => "POST",
+      "headers" => array(
+          "Authorization" => "token " . $wpghs->oauth_token()
+        ),
+      "body"    => json_encode( array(
+          "content"  => base64_encode($this->front_matter() . $this->content()),
+          "encoding" => "base64",
+        ) )
+    );
+
+    $response = wp_remote_request( $this->blob_endpoint(), $args );
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body);
+
+    if ($data && isset($data->sha) && !isset($data->errors)) {
+      $sha = $data->sha;
       add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
     } else {
       // save a message and quit
@@ -289,7 +364,7 @@ class WordPress_GitHub_Sync_Post {
         ) )
     );
 
-    wp_remote_request( $this->api_endpoint(), $args );
+    wp_remote_request( $this->content_endpoint(), $args );
   }
 
   /**
