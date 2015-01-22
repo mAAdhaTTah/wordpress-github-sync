@@ -12,9 +12,9 @@ class WordPress_GitHub_Sync_Controller {
   function __construct() {}
 
   /**
-   * Sets up and begins the export process
+   * Sets up and begins the background export process
    */
-  function start() {
+  function cron_start() {
     wp_schedule_single_event(time(), 'wpghs_export');
     WordPress_GitHub_Sync::write_log( __( "Starting export to GitHub", WordPress_GitHub_Sync::$text_domain ) );
     spawn_cron();
@@ -22,29 +22,29 @@ class WordPress_GitHub_Sync_Controller {
   }
 
   /**
+   * Sets up and begins the CLI export process
+   */
+  function cli_start() {
+    $this->get_data();
+
+    while(!empty($this->posts)) {
+      $this->export_post();
+    }
+
+    $this->finalize();
+  }
+
+  /**
    * Export posts
    *
    * Runs as cronjob
    */
-  function process() {
+  function cron_process() {
     $i = 0;
     $this->get_data();
 
     while(!empty($this->posts) && $i < 50) {
-      $post_id = array_shift($this->posts);
-      WordPress_GitHub_Sync::write_log( __("Exporting Post ID: ", WordPress_GitHub_Sync::$text_domain ) . $post_id );
-
-      $post = new WordPress_GitHub_Sync_Post($post_id);
-      $result = $post->push_blob();
-
-      if ( is_wp_error( $result ) ) {
-        array_unshift($this->posts, $post_id);
-        $this->error($result);
-        die();
-      }
-
-      usleep(500000);
-      $this->blobs[] = $post_id;
+      $this->export_post();
 
       $i++;
     }
@@ -56,6 +56,27 @@ class WordPress_GitHub_Sync_Controller {
     }
 
     die();
+  }
+
+  /**
+   * Takes the next post off the top of the list
+   * and exports it to a blob on GitHub
+   */
+  function export_post() {
+    $post_id = array_shift($this->posts);
+    WordPress_GitHub_Sync::write_log( __("Exporting Post ID: ", WordPress_GitHub_Sync::$text_domain ) . $post_id );
+
+    $post = new WordPress_GitHub_Sync_Post($post_id);
+    $result = $post->push_blob();
+
+    if ( is_wp_error( $result ) ) {
+      array_unshift($this->posts, $post_id);
+      $this->error($result);
+      die();
+    }
+
+    usleep(500000);
+    $this->blobs[] = $post_id;
   }
 
   /**
@@ -362,7 +383,7 @@ class WordPress_GitHub_Sync_Controller {
     update_option( '_wpghs_export_complete', 'yes' );
     delete_option( '_wpghs_posts_to_export' );
     delete_option( '_wpghs_exported_blobs' );
-    WordPress_GitHub_Sync::write_log( __('Export to GitHub completed successfully.', WordPress_GitHub_Sync::$text_domain ) );
+    WordPress_GitHub_Sync::write_log( __('Export to GitHub completed successfully.', WordPress_GitHub_Sync::$text_domain ), 'success' );
   }
 
   /**
@@ -370,7 +391,7 @@ class WordPress_GitHub_Sync_Controller {
    */
   function error($result) {
     update_option( '_wpghs_export_error', $result->get_error_message() );
-    WordPress_GitHub_Sync::write_log( __("Error exporting to GitHub. Error: ", WordPress_GitHub_Sync::$text_domain ) . $result->get_error_message() );
+    WordPress_GitHub_Sync::write_log( __("Error exporting to GitHub. Error: ", WordPress_GitHub_Sync::$text_domain ) . $result->get_error_message(), 'error' );
 
     $this->save_data();
   }

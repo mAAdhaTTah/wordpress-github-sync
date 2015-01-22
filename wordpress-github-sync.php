@@ -53,6 +53,10 @@ class WordPress_GitHub_Sync {
       add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
       add_action( 'init', array( &$this, 'continue_export' ) );
       add_action( 'wpghs_export', array( &$this->controller, 'process' ) );
+
+      if ( defined('WP_CLI') && WP_CLI ) {
+        WP_CLI::add_command( 'wpghs', 'WordPress_GitHub_Sync_CLI' );
+      }
     }
 
     /**
@@ -207,7 +211,7 @@ class WordPress_GitHub_Sync {
      */
     function start_export() {
       update_option( '_wpghs_export_user_id', get_current_user_id() );
-      $this->controller->start();
+      $this->controller->cron_start();
     }
 
     /**
@@ -226,15 +230,22 @@ class WordPress_GitHub_Sync {
 
       delete_option( '_wpghs_export_nonce' );
 
-      $this->controller->process();
+      $this->controller->cron_process();
     }
 
     /**
-     * Write to debug.log if WP_DEBUG is enabled
+     * Print to WP_CLI if in CLI environment or
+     * write to debug.log if WP_DEBUG is enabled
      * @source http://www.stumiller.me/sending-output-to-the-wordpress-debug-log/
      */
-    static function write_log($msg) {
-      if ( true === WP_DEBUG ) {
+    static function write_log($msg, $write = 'line') {
+      if ( defined('WP_CLI') && WP_CLI ) {
+        if ( is_array( $msg ) || is_object( $msg ) ) {
+          WP_CLI::print_value( $msg );
+        } else {
+          WP_CLI::$write( $msg );
+        }
+      } elseif ( true === WP_DEBUG ) {
         if ( is_array( $msg ) || is_object( $msg ) ) {
           error_log( print_r( $msg, true ) );
         } else {
