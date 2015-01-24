@@ -16,4 +16,8 @@ before_script:
     - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
     - composer install
 
-script: phpunit
+after_script:
+    - wget https://scrutinizer-ci.com/ocular.phar
+    - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
+
+script: phpunit --coverage-clover=coverage.clover

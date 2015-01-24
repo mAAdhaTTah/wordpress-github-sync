@@ -11,4 +11,9 @@
 			<directory prefix="test-" suffix=".php">./tests/</directory>
 		</testsuite>
 	</testsuites>
+	<filter>
+		<blacklist>
+			<directory>/tmp/wordpress*</directory>
+		</blacklist>
+	</filter>
 </phpunit>

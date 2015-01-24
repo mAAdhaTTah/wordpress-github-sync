@@ -1,0 +1,13 @@
+tools:
+    php_sim: true
+    php_pdepend: true
+    php_analyzer: true
+    php_code_sniffer:
+        config:
+            standard: WordPress
+    external_code_coverage:
+        timeout: 1200
+        runs: 1
+filter:
+    excluded_paths:
+        - 'test/*'
