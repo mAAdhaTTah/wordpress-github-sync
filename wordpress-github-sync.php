@@ -51,7 +51,6 @@ class WordPress_GitHub_Sync {
       add_action( 'save_post', array( &$this, 'save_post_callback' ) );
       add_action( 'delete_post', array( &$this, 'delete_post_callback' ) );
       add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
-      add_action( 'init', array( &$this, 'continue_export' ) );
       add_action( 'wpghs_export', array( &$this->controller, 'process' ) );
 
       if ( defined('WP_CLI') && WP_CLI ) {
@@ -64,27 +63,6 @@ class WordPress_GitHub_Sync {
       */
     function l10n() {
       load_plugin_textdomain( self::$text_domain, false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' );
-    }
-
-    /**
-     * Returns the repository to sync with
-     */
-    function repository() {
-      return get_option( "wpghs_repository" );
-    }
-
-    /**
-     * Returns the user's oauth token
-     */
-    function oauth_token() {
-      return get_option( "wpghs_oauth_token" );
-    }
-
-    /**
-     * Returns the GitHub host to sync with (for GitHub Enterprise support)
-     */
-    function api_base() {
-      return get_option( "wpghs_host" );
     }
 
     /**
@@ -104,9 +82,6 @@ class WordPress_GitHub_Sync {
       if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) )
         return;
 
-      if ( ! $this->oauth_token() || ! $this->repository() )
-        return;
-
       // Right now CPTs are not supported
       if (get_post_type($post_id) != "page" && get_post_type($post_id) != "post") {
         return;
@@ -117,7 +92,7 @@ class WordPress_GitHub_Sync {
         return;
 
       $post = new WordPress_GitHub_Sync_Post($post_id);
-      $post->push();
+      $this->controller->api->push($post);
 
     }
 
@@ -128,9 +103,6 @@ class WordPress_GitHub_Sync {
      */
     function delete_post_callback( $post_id ) {
 
-      if ( ! $this->oauth_token() || ! $this->repository() )
-        return;
-
       $post = get_post($post_id);
 
       // Right now CPTs are not supported
@@ -138,7 +110,7 @@ class WordPress_GitHub_Sync {
         return;
 
       $post = new WordPress_GitHub_Sync_Post($post_id);
-      $post->delete();
+      $this->controller->api->delete($post);
 
     }
 
@@ -177,7 +149,7 @@ class WordPress_GitHub_Sync {
       $to_pull = array_merge($modified, $added);
       foreach (array_unique($to_pull) as $path) {
         $post = new WordPress_GitHub_Sync_Post($path);
-        $post->pull();
+        $this->controller->api->pull($post);
       }
 
       // Removed
@@ -212,25 +184,6 @@ class WordPress_GitHub_Sync {
     function start_export() {
       update_option( '_wpghs_export_user_id', get_current_user_id() );
       $this->controller->cron_start();
-    }
-
-    /**
-     * Receives the remaining posts
-     *
-     * Kicks off exporting the next batch
-     */
-    function continue_export() {
-      if ( ! isset( $_GET['github'] ) || 'sync' !== $_GET['github'] ) {
-        return;
-      }
-
-      if ( !array_key_exists('nonce', $_POST) || "" === get_option( '_wpghs_export_nonce') || get_option( '_wpghs_export_nonce') !== $_POST['nonce'] ) {
-        return;
-      }
-
-      delete_option( '_wpghs_export_nonce' );
-
-      $this->controller->cron_process();
     }
 
     /**

@@ -14,6 +14,8 @@ class WordPress_GitHub_Sync_Post {
    */
   function __construct( $id_or_path ) {
 
+    $this->api = new WordPress_GitHub_Sync_Api;
+
     if (is_numeric($id_or_path)) {
       $this->id = $id_or_path;
     } else {
@@ -90,11 +92,27 @@ class WordPress_GitHub_Sync_Post {
   }
 
   /**
+   * Combines the 2 content parts for GitHub
+   */
+  function github_content() {
+    return $this->front_matter() . $this->post_content();
+  }
+
+  /**
+   * The post's YAML frontmatter
+   *
+   * Returns String the YAML frontmatter, ready to be written to the file
+   */
+  function front_matter() {
+    return Spyc::YAMLDump($this->meta(), false, false, true) . "---\n";
+  }
+
+  /**
    * Returns the post_content
    *
    * Markdownify's the content if applicable
    */
-  function content() {
+  function post_content() {
     $content = $this->post->post_content;
 
     if ( function_exists( 'wpmarkdown_html_to_markdown' ) ) {
@@ -110,15 +128,7 @@ class WordPress_GitHub_Sync_Post {
    * Returns (string) the path relative to repo root
    */
   function github_path() {
-    $path = get_post_meta( $this->id, '_wpghs_github_path', true );
-
-    if ( ! $path ) {
-      $path = $this->github_folder() . $this->github_filename();
-
-      update_post_meta( $this->id, '_wpghs_github_path', $path );
-    }
-
-    return $path;
+    return $this->github_folder() . $this->github_filename();
   }
 
   /**
@@ -165,206 +175,38 @@ class WordPress_GitHub_Sync_Post {
   }
 
   /**
-   * Builds the proper blob API endpoint for a given post
-   *
-   * Returns String the relative API call path
-   */
-  function blob_endpoint() {
-    global $wpghs;
-    $url = $wpghs->api_base() . "/repos/";
-    $url = $url . $wpghs->repository() . "/git/blobs";
-    return $url;
-  }
-
-  /**
-   * Builds the proper content API endpoint for a given post
-   *
-   * Returns String the relative API call path
-   */
-  function content_endpoint() {
-    global $wpghs;
-    $url = $wpghs->api_base() . "/repos/";
-    $url = $url . $wpghs->repository() . "/contents/";
-    $url = $url . $this->github_path();
-    return $url;
-  }
-
-  /**
-   * Calls the content API to get the post's contents and metadata
-   *
-   * Returns Object the response from the API
-   */
-  function remote_contents() {
-    global $wpghs;
-    $response = wp_remote_get( $this->content_endpoint(), array(
-      "headers" => array(
-        "Authorization" => "token " . $wpghs->oauth_token()
-        )
-      )
-    );
-    $body = wp_remote_retrieve_body($response);
-    $data = json_decode($body);
-    return $data;
-  }
-
-  /**
    * The post's sha
    * Cached as post meta, or will make a live call if need be
    *
    * Returns String the sha1 hash
    */
   function sha() {
-    if ($sha = get_post_meta( $this->id, "_sha", true)) {
-      return $sha;
-    } else {
-      $data = $this->remote_contents();
+    $sha = get_post_meta( $this->id, "_sha", true);
+
+    // If we've done a full export and we have no sha
+    // then we should try a live check to see if it exists
+    if ( ! $sha && 'yes' === get_option( '_wpghs_fully_exported' ) ) {
+      $data = $this->api->remote_contents($this);
+
       if ($data && isset($data->sha)) {
         add_post_meta( $this->id, '_sha', $data->sha, true ) || update_post_meta( $this->id, '_sha', $data->sha );
-        return $data->sha;
-      } else {
-        return "";
+        $sha = $data->sha;
       }
     }
+
+    // if the sha still doesn't exist, then it's empty
+    if ( ! $sha ) {
+      $sha = "";
+    }
+
+    return $sha;
   }
 
   /**
-   * Push the post to GitHub
+   * Save the sha to post
    */
-  function push() {
-    global $wpghs;
-
-    if ($wpghs->push_lock)
-      return false;
-
-    $args = array(
-      "method"  => "PUT",
-      "headers" => array(
-          "Authorization" => "token " . $wpghs->oauth_token()
-        ),
-      "body"    => json_encode( array(
-          "message" => "Syncing " . $this->github_path() . " from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
-          "content" => base64_encode($this->front_matter() . $this->content()),
-          "author"  => $this->last_modified_author(),
-          "sha"     => $this->sha()
-        ) )
-    );
-
-    $response = wp_remote_request( $this->content_endpoint(), $args );
-    $body = wp_remote_retrieve_body($response);
-    $data = json_decode($body);
-
-    if ($data && isset($data->content) && !isset($data->errors)) {
-      $sha = $data->content->sha;
-      add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
-    } else {
-      // save a message and quit
-      if ( isset($data->message) ) {
-        $error = new WP_Error( 'wpghs_error_message', $data->message );
-      } elseif( empty($data) ) {
-        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
-      }
-
-      return $error;
-    }
-
-    return true;
-  }
-
-  /**
-   * Push the post to GitHub
-   */
-  function push_blob() {
-    global $wpghs;
-
-    if ($wpghs->push_lock)
-      return false;
-
-    $args = array(
-      "method"  => "POST",
-      "headers" => array(
-          "Authorization" => "token " . $wpghs->oauth_token()
-        ),
-      "body"    => json_encode( array(
-          "content"  => base64_encode($this->front_matter() . $this->content()),
-          "encoding" => "base64",
-        ) )
-    );
-
-    $response = wp_remote_request( $this->blob_endpoint(), $args );
-    $body = wp_remote_retrieve_body($response);
-    $data = json_decode($body);
-
-    if ($data && isset($data->sha) && !isset($data->errors)) {
-      $sha = $data->sha;
-      add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
-    } else {
-      // save a message and quit
-      if ( isset($data->message) ) {
-        $error = new WP_Error( 'wpghs_error_message', $data->message );
-      } elseif( empty($data) ) {
-        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
-      }
-
-      return $error;
-    }
-
-    return true;
-  }
-
-  /**
-   * Pull the post from GitHub
-   */
-  function pull() {
-    global $wpghs;
-
-    $data = $this->remote_contents();
-    $content = base64_decode($data->content);
-
-    // Break out meta, if present
-    preg_match( "/(^---(.*?)---$)?(.*)/ms", $content, $matches );
-
-    $body = array_pop( $matches );
-
-    if (count($matches) == 3) {
-      $meta = spyc_load($matches[2]);
-      if ($meta['permalink']) $meta['permalink'] = str_replace(home_url(), '', get_permalink($meta['permalink']));
-    } else {
-      $meta = array();
-    }
-
-    if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
-      $body = wpmarkdown_markdown_to_html( $body );
-    }
-
-    wp_update_post( array_merge( $meta, array(
-        "ID"           => $this->id,
-        "post_content" => $body
-      ))
-    );
-  }
-
-  /**
-   * Delete a post from GitHub
-   */
-  function delete() {
-    global $wpghs;
-
-    if ($wpghs->push_lock)
-      return false;
-
-    $args = array(
-      "method"  => "DELETE",
-      "headers" => array(
-          "Authorization" => "token " . $wpghs->oauth_token()
-        ),
-      "body"    => json_encode( array(
-          "message" => "Deleting " . $this->github_path() . " via WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
-          "author"  => $this->last_modified_author(),
-          "sha"     => $this->sha()
-        ) )
-    );
-
-    wp_remote_request( $this->content_endpoint(), $args );
+  function set_sha($sha) {
+    add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
   }
 
   /**
@@ -395,14 +237,5 @@ class WordPress_GitHub_Sync_Post {
 
     return $meta;
 
-  }
-
-  /**
-   * The post's YAML frontmatter
-   *
-   * Returns String the YAML frontmatter, ready to be written to the file
-   */
-  function front_matter() {
-    return Spyc::YAMLDump($this->meta(), false, false, true) . "---\n";
   }
 }

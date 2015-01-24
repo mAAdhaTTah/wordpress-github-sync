@@ -35,7 +35,12 @@ class WordPress_GitHub_Sync_CLI {
 
     if ( $post_id === 'all' ) {
       update_option( '_wpghs_export_user_id', $user_id );
-      $this->controller->cli_start();
+      $this->controller->process();
+    } elseif ( is_numeric($post_id) ) {
+      $post = new WordPress_GitHub_Sync_Post($post_id);
+      $this->controller->api->push($post);
+    } else {
+      WP_CLI::error( __("Invalid Post ID", WordPress_GitHub_Sync::$text_domain) );
     }
   }
 }
