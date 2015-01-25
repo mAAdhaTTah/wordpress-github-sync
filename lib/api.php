@@ -21,12 +21,6 @@ class WordPress_GitHub_Sync_Api {
    * Create the tree by a set of blob ids
    */
   function create_tree($tree) {
-    global $wpghs;
-
-    if (! $this->oauth_token() || ! $this->repository() || $wpghs->push_lock) {
-      return false;
-    }
-
     $body = array( 'tree' => $tree );
     $data = $this->call("POST", $this->tree_endpoint(), $body);
 
@@ -50,15 +44,9 @@ class WordPress_GitHub_Sync_Api {
    *
    * $sha - string   shasum for the tree for this commit
    */
-  function create_commit($sha) {
-    global $wpghs;
-
-    if (! $this->oauth_token() || ! $this->repository() || $wpghs->push_lock) {
-      return false;
-    }
-
+  function create_commit($sha, $msg) {
     $body = array(
-      "message" => "Full export from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
+      "message" => $msg,
       "author"  => $this->export_user(),
       "tree"    => $sha,
       "parents" => array( $this->last_commit_sha() ),
@@ -67,7 +55,7 @@ class WordPress_GitHub_Sync_Api {
     $data = $this->call("POST", $this->commit_endpoint(), $body);
 
     if ($data && isset($data->sha) && !isset($data->errors)) {
-      return $data->sha;
+      return $data;
     } else {
       // save a message and quit
       if ( isset($data->message) ) {
@@ -86,12 +74,6 @@ class WordPress_GitHub_Sync_Api {
    * $sha - string   shasum for the commit for the master branch
    */
   function set_ref($sha) {
-    global $wpghs;
-
-    if (! $this->oauth_token() || ! $this->repository() || $wpghs->push_lock) {
-      return false;
-    }
-
     $body = array(
       'sha' => $sha,
     );
@@ -100,7 +82,7 @@ class WordPress_GitHub_Sync_Api {
 
     if ($data && isset($data->object) && !isset($data->errors)) {
       update_option( '_wpghs_last_commit_sha', $data->object->sha );
-      return $data->object->sha;
+      return $data;
     } else {
       // save a message and quit
       if ( isset($data->message) ) {
@@ -111,42 +93,6 @@ class WordPress_GitHub_Sync_Api {
 
       return $error;
     }
-  }
-
-  /**
-   * Push the post to GitHub
-   */
-  function push($post) {
-    global $wpghs;
-
-    if (! $this->oauth_token() || ! $this->repository() || $wpghs->push_lock) {
-      return false;
-    }
-
-    $body = array(
-      "message" => "Syncing " . $post->github_path() . " from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
-      "content" => base64_encode($post->github_content()),
-      "author"  => $post->last_modified_author(),
-      "sha"     => $post->sha()
-    );
-
-    $data = $this->call("PUT", $this->content_endpoint() . $post->github_path(), $body );
-
-    if ($data && isset($data->content) && !isset($data->errors)) {
-      $sha = $data->content->sha;
-      add_post_meta( $post->id, '_sha', $sha, true ) || update_post_meta( $post->id, '_sha', $sha );
-    } else {
-      // save a message and quit
-      if ( isset($data->message) ) {
-        $error = new WP_Error( 'wpghs_error_message', $data->message );
-      } elseif( empty($data) ) {
-        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
-      }
-
-      return $error;
-    }
-
-    return true;
   }
 
   /**
@@ -180,37 +126,21 @@ class WordPress_GitHub_Sync_Api {
   }
 
   /**
-   * Delete a post from GitHub
-   */
-  function delete($post) {
-    global $wpghs;
-
-    if (! $this->oauth_token() || ! $this->repository() || $wpghs->push_lock) {
-      return false;
-    }
-
-    $body = array(
-      "message" => "Deleting " . $post->github_path() . " via WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
-      "author"  => $post->last_modified_author(),
-      "sha"     => $post->sha()
-    );
-
-    $this->call("DELETE", $this->content_endpoint() . $post->github_path(), $body);
-  }
-
-  /**
    * Retrieves the recursive tree for the master branch
    */
   function last_tree_recursive() {
-    global $wpghs;
-
-    if (! $this->oauth_token() || ! $this->repository() || $wpghs->push_lock) {
-      return false;
-    }
-
     $data = $this->call("GET", $this->tree_endpoint() . "/" . $this->last_tree_sha() . "?recursive=1");
 
-    return $data->tree;
+    foreach ($data->tree as $index => $thing) {
+      // We need to remove the trees because
+      // the recursive tree includes both
+      // the subtrees as well the subtrees' blobs
+      if ( $thing->type === "tree" ) {
+        unset($data->tree[ $index ]);
+      }
+    }
+
+    return array_values($data->tree);
   }
 
   /**
@@ -219,16 +149,10 @@ class WordPress_GitHub_Sync_Api {
    * Makes a live call if not saved
    */
   function last_tree_sha() {
-    global $wpghs;
-
     $sha = get_option( "_wpghs_last_tree_sha" );
 
     if ( !empty($sha) ) {
       return $sha;
-    }
-
-    if (! $this->oauth_token() || ! $this->repository() || $wpghs->push_lock) {
-      return false;
     }
 
     $data = $this->call("GET", $this->commit_endpoint() . "/" . $this->last_commit_sha() );
@@ -254,16 +178,10 @@ class WordPress_GitHub_Sync_Api {
    * Will make a live call if not found
    */
   function last_commit_sha() {
-    global $wpghs;
-
     $sha = get_option( "_wpghs_last_commit_sha" );
 
     if ( !empty($sha) ) {
       return $sha;
-    }
-
-    if (! $this->oauth_token() || ! $this->repository() || $wpghs->push_lock) {
-      return false;
     }
 
     $data = $this->call("GET", $this->reference_endpoint());
@@ -279,12 +197,6 @@ class WordPress_GitHub_Sync_Api {
    * Returns Object the response from the API
    */
   function remote_contents($post) {
-    global $wpghs;
-
-    if (! $this->oauth_token() || ! $this->repository() || $wpghs->push_lock) {
-      return false;
-    }
-
     return $this->call("GET", $this->content_endpoint() . $post->github_path());
   }
 
@@ -312,12 +224,13 @@ class WordPress_GitHub_Sync_Api {
 
   /**
    * Get the data for the current user
-   *
-   * @todo check if object, set some defaults if not
    */
   function export_user() {
-    $user_id = get_option( '_wpghs_export_user_id' );
-    delete_option( '_wpghs_export_user_id' );
+    if ( $user_id = get_option( '_wpghs_export_user_id' ) ) {
+      delete_option( '_wpghs_export_user_id' );
+    } else {
+      $user_id = get_current_user_id();
+    }
 
     $user = get_userdata($user_id);
 

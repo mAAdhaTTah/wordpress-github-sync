@@ -51,7 +51,7 @@ class WordPress_GitHub_Sync {
       add_action( 'save_post', array( &$this, 'save_post_callback' ) );
       add_action( 'delete_post', array( &$this, 'delete_post_callback' ) );
       add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
-      add_action( 'wpghs_export', array( &$this->controller, 'process' ) );
+      add_action( 'wpghs_export', array( &$this->controller, 'export_all' ) );
 
       if ( defined('WP_CLI') && WP_CLI ) {
         WP_CLI::add_command( 'wpghs', 'WordPress_GitHub_Sync_CLI' );
@@ -91,8 +91,7 @@ class WordPress_GitHub_Sync {
       if (get_post_status( $post_id ) != "publish")
         return;
 
-      $post = new WordPress_GitHub_Sync_Post($post_id);
-      $this->controller->api->push($post);
+      $this->controller->export_post($post_id);
 
     }
 
@@ -109,8 +108,7 @@ class WordPress_GitHub_Sync {
       if ($post->post_type != "page" && $post->post_type != "post")
         return;
 
-      $post = new WordPress_GitHub_Sync_Post($post_id);
-      $this->controller->api->delete($post);
+      $this->controller->delete_post($post_id);
 
     }
 
@@ -183,7 +181,12 @@ class WordPress_GitHub_Sync {
      */
     function start_export() {
       update_option( '_wpghs_export_user_id', get_current_user_id() );
-      $this->controller->cron_start();
+      update_option( '_wpghs_export_started', 'yes' );
+
+      WordPress_GitHub_Sync::write_log( __( "Starting full export to GitHub.", WordPress_GitHub_Sync::$text_domain ) );
+
+      wp_schedule_single_event(time(), 'wpghs_export');
+      spawn_cron();
     }
 
     /**

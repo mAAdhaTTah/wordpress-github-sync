@@ -1,6 +1,6 @@
 <?php
 /**
- * The controller object which manages
+ * Controller object manages tree retrieval, manipulation and publishing
  */
 class WordPress_GitHub_Sync_Controller {
 
@@ -11,32 +11,70 @@ class WordPress_GitHub_Sync_Controller {
    */
   function __construct() {
     $this->api = new WordPress_GitHub_Sync_Api;
+    $this->changed = false;
     $this->posts = array();
     $this->tree = array();
   }
 
   /**
-   * Sets up and begins the background export process
+   * Export all the posts in the database to GitHub
    */
-  function cron_start() {
-    wp_schedule_single_event(time(), 'wpghs_export');
-    WordPress_GitHub_Sync::write_log( __( "Starting export to GitHub.", WordPress_GitHub_Sync::$text_domain ) );
-    spawn_cron();
-    update_option( '_wpghs_export_started', 'yes' );
+  function export_all() {
+    global $wpdb;
+
+    if ( $this->locked() ) {
+      return;
+    }
+
+    $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
+    $this->msg = "Full export from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")";
+
+    $this->get_tree();
+
+    WordPress_GitHub_Sync::write_log( __("Building the tree.", WordPress_GitHub_Sync::$text_domain ) );
+    foreach ($posts as $post_id) {
+      $post = new WordPress_GitHub_Sync_Post($post_id);
+      $this->post_to_tree($post);
+    }
+
+    $this->finalize();
   }
 
   /**
-   * Sets up and begins the CLI export process
+   * Exports a single post to GitHub by ID
    */
-  function process() {
-    $this->get_posts();
+  function export_post($post_id) {
+    if ( $this->locked() ) {
+      return;
+    }
+
+    $post = new WordPress_GitHub_Sync_Post($post_id);
+    $this->msg = "Syncing " . $post->github_path() . " from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")";
+
     $this->get_tree();
-    $this->changed = false;
 
     WordPress_GitHub_Sync::write_log( __("Building the tree.", WordPress_GitHub_Sync::$text_domain ) );
-    foreach ($this->posts as $post_id) {
-      $this->export_post($post_id);
+    $this->post_to_tree($post);
+
+    $this->finalize();
+  }
+
+  /**
+   * Removes the post from the tree
+   */
+  function delete_post($post_id) {
+    if ( $this->locked() ) {
+      return;
     }
+
+    $post = new WordPress_GitHub_Sync_Post($post_id);
+    $this->msg = "Deleting " . $post->github_path() . " via WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")";
+
+    $this->get_tree();
+
+    WordPress_GitHub_Sync::write_log( __("Building the tree.", WordPress_GitHub_Sync::$text_domain ) );
+
+    $this->post_to_tree($post, true);
 
     $this->finalize();
   }
@@ -45,9 +83,8 @@ class WordPress_GitHub_Sync_Controller {
    * Takes the next post off the top of the list
    * and exports it to the new GitHub tree
    */
-  function export_post($post_id) {
+  function post_to_tree($post, $remove = false) {
     $match = false;
-    $post = new WordPress_GitHub_Sync_Post($post_id);
 
     foreach ($this->tree as $index => $blob) {
       if ( !isset($blob->sha)) {
@@ -55,9 +92,15 @@ class WordPress_GitHub_Sync_Controller {
       }
 
       if ( $blob->sha === $post->sha() ) {
+        unset($this->tree[ $index ]);
         $match = true;
 
-        $this->tree[ $index ] = $this->new_blob($post, $blob);
+        if ( ! $remove ) {
+          $this->tree[] = $this->new_blob($post, $blob);
+        } else {
+          $this->changed = true;
+        }
+
         break;
       }
     }
@@ -75,35 +118,36 @@ class WordPress_GitHub_Sync_Controller {
   function finalize() {
     if ( ! $this->changed ) {
       $this->no_change();
-      die();
+      return;
     }
 
     WordPress_GitHub_Sync::write_log(__( 'Creating the tree.', WordPress_GitHub_Sync::$text_domain ));
-    $tree = $this->api->create_tree($this->tree);
+    $tree = $this->api->create_tree(array_values($this->tree));
 
     if ( is_wp_error( $tree ) ) {
       $this->error($tree);
-      die();
+      return;
     }
 
     $rtree = $this->api->last_tree_recursive();
 
+    WordPress_GitHub_Sync::write_log(__( 'Saving the shas.', WordPress_GitHub_Sync::$text_domain ));
     $this->save_post_shas($rtree);
 
     WordPress_GitHub_Sync::write_log(__( 'Creating the commit.', WordPress_GitHub_Sync::$text_domain ));
-    $commit_sha = $this->api->create_commit($tree->sha);
+    $commit = $this->api->create_commit($tree->sha, $this->msg);
 
-    if ( is_wp_error( $commit_sha ) ) {
-      $this->error($commit_sha);
-      die();
+    if ( is_wp_error( $commit ) ) {
+      $this->error($commit);
+      return;
     }
 
     WordPress_GitHub_Sync::write_log(__( 'Setting the master branch to our new commit.', WordPress_GitHub_Sync::$text_domain ));
-    $ref_sha = $this->api->set_ref($commit_sha);
+    $ref = $this->api->set_ref($commit->sha);
 
-    if ( is_wp_error( $ref_sha ) ) {
-      $this->error($ref_sha);
-      die();
+    if ( is_wp_error( $ref ) ) {
+      $this->error($ref);
+      return;
     }
 
     $this->success();
@@ -182,11 +226,23 @@ class WordPress_GitHub_Sync_Controller {
   }
 
   /**
+   * Check if we're clear to call the api
+   */
+  function locked() {
+    global $wpghs;
+
+    if (! $this->api->oauth_token() || ! $this->api->repository() || $wpghs->push_lock) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * Writes out the results of an unchanged export
    */
   function no_change() {
     update_option( '_wpghs_export_complete', 'yes' );
-    delete_option( '_wpghs_posts_to_export' );
     WordPress_GitHub_Sync::write_log( __('There were no changes, so no additional commit was added.', WordPress_GitHub_Sync::$text_domain ), 'warning' );
   }
 
@@ -196,7 +252,6 @@ class WordPress_GitHub_Sync_Controller {
   function success() {
     update_option( '_wpghs_export_complete', 'yes' );
     update_option( '_wpghs_fully_exported', 'yes' );
-    delete_option( '_wpghs_posts_to_export' );
     WordPress_GitHub_Sync::write_log( __('Export to GitHub completed successfully.', WordPress_GitHub_Sync::$text_domain ), 'success' );
   }
 
@@ -206,28 +261,6 @@ class WordPress_GitHub_Sync_Controller {
   function error($result) {
     update_option( '_wpghs_export_error', $result->get_error_message() );
     WordPress_GitHub_Sync::write_log( __("Error exporting to GitHub. Error: ", WordPress_GitHub_Sync::$text_domain ) . $result->get_error_message(), 'error' );
-
-    $this->save_data();
-  }
-
-  /**
-   * Retrieves all the posts to export
-   * unless we've already set that info
-   */
-  function get_posts() {
-    global $wpdb;
-
-    if ( ! empty($this->posts) ) {
-      return;
-    }
-
-    $posts = get_option( '_wpghs_posts_to_export' );
-
-    if ( ! $posts ) {
-      $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
-    }
-
-    $this->posts = $posts;
   }
 
   /**
@@ -240,12 +273,5 @@ class WordPress_GitHub_Sync_Controller {
     }
 
     $this->tree = $this->api->last_tree_recursive();
-  }
-
-  /**
-   * Save the object's data to the database
-   */
-  function save_data() {
-    update_option( '_wpghs_posts_to_export', $this->posts );
   }
 }

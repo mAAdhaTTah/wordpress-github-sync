@@ -33,14 +33,20 @@ class WordPress_GitHub_Sync_CLI {
   function export( $args, $assoc_args ) {
     list( $post_id, $user_id ) = $args;
 
+    if ( !is_numeric($user_id) ) {
+      WP_CLI::error( __("Invalid user ID", WordPress_GitHub_Sync::$text_domain) );
+    }
+
+    update_option( '_wpghs_export_user_id', (int) $user_id );
+
     if ( $post_id === 'all' ) {
-      update_option( '_wpghs_export_user_id', $user_id );
-      $this->controller->process();
+      WP_CLI::line( __( 'Starting full export to GitHub.', WordPress_GitHub_Sync::$text_domain ) );
+      $this->controller->export_all();
     } elseif ( is_numeric($post_id) ) {
-      $post = new WordPress_GitHub_Sync_Post($post_id);
-      $this->controller->api->push($post);
+      WP_CLI::line( __( 'Exporting post ID to GitHub: ', WordPress_GitHub_Sync::$text_domain ). $post_id );
+      $this->controller->export_post((int) $post_id);
     } else {
-      WP_CLI::error( __("Invalid Post ID", WordPress_GitHub_Sync::$text_domain) );
+      WP_CLI::error( __("Invalid post ID", WordPress_GitHub_Sync::$text_domain) );
     }
   }
 }
