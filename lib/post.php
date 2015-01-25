@@ -217,6 +217,7 @@ class WordPress_GitHub_Sync_Post {
   function meta() {
 
     $meta = array(
+      'ID'           => $this->post->ID,
       'post_title'   => get_the_title( $this->post ),
       'author'       => get_userdata( $this->post->post_author )->display_name,
       'post_date'    => $this->post->post_date,

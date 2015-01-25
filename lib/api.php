@@ -12,9 +12,34 @@ class WordPress_GitHub_Sync_Api {
       return false;
     }
 
-    $blob = $this->call("GET", $this->blob_endpoint() . "/" . $sha);
+    return $this->call("GET", $this->blob_endpoint() . "/" . $sha);
+  }
 
-    return $blob;
+  function get_commit($sha) {
+    if (! $this->oauth_token() || ! $this->repository()) {
+      return false;
+    }
+
+    return $this->call("GET", $this->commit_endpoint() . "/" . $sha);
+  }
+
+  function get_tree_recursive($sha) {
+    if (! $this->oauth_token() || ! $this->repository()) {
+      return false;
+    }
+
+    $data = $this->call("GET", $this->tree_endpoint() . "/" . $sha . "?recursive=1");
+
+    foreach ($data->tree as $index => $thing) {
+      // We need to remove the trees because
+      // the recursive tree includes both
+      // the subtrees as well the subtrees' blobs
+      if ( $thing->type === "tree" ) {
+        unset($data->tree[ $index ]);
+      }
+    }
+
+    return array_values($data->tree);
   }
 
   /**
@@ -96,51 +121,10 @@ class WordPress_GitHub_Sync_Api {
   }
 
   /**
-   * Pull the post from GitHub
-   */
-  function pull($post) {
-    $data = $this->remote_contents($post);
-    $content = base64_decode($data->content);
-
-    // Break out meta, if present
-    preg_match( "/(^---(.*)---$)?(.*)/ms", $content, $matches );
-
-    $body = array_pop( $matches );
-
-    if (count($matches) == 3) {
-      $meta = spyc_load($matches[2]);
-      if ($meta['permalink']) $meta['permalink'] = str_replace(home_url(), '', get_permalink($meta['permalink']));
-    } else {
-      $meta = array();
-    }
-
-    if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
-      $body = wpmarkdown_markdown_to_html( $body );
-    }
-
-    wp_update_post( array_merge( $meta, array(
-        "ID"           => $post->id,
-        "post_content" => $body
-      ))
-    );
-  }
-
-  /**
    * Retrieves the recursive tree for the master branch
    */
   function last_tree_recursive() {
-    $data = $this->call("GET", $this->tree_endpoint() . "/" . $this->last_tree_sha() . "?recursive=1");
-
-    foreach ($data->tree as $index => $thing) {
-      // We need to remove the trees because
-      // the recursive tree includes both
-      // the subtrees as well the subtrees' blobs
-      if ( $thing->type === "tree" ) {
-        unset($data->tree[ $index ]);
-      }
-    }
-
-    return array_values($data->tree);
+    return $this->get_tree_recursive($this->last_tree_sha());
   }
 
   /**

@@ -114,10 +114,8 @@ class WordPress_GitHub_Sync {
 
     /**
      * Webhook callback as trigered from GitHub push
-     * Reads the payload and syncs posts as necessary
      */
     function pull_posts() {
-
       # Prevent pushes on update
       $this->push_lock = true;
 
@@ -126,35 +124,13 @@ class WordPress_GitHub_Sync {
 
       // validate secret
       $hash = hash_hmac( "sha1", $raw_data, $this->secret() );
-      if ( $headers["X-Hub-Signature"] != "sha1=" . $hash )
-        wp_die( __("Failed to validate secret.", WordPress_GitHub_Sync::$text_domain) );
-
-      $data = json_decode($raw_data);
-
-      $nwo = $data->repository->owner->name . "/" . $data->repository->name;
-      if ( $nwo != $this->repository() )
-        wp_die( $nwo . __(" is an invalid repository", WordPress_GitHub_Sync::$text_domain) );
-
-      $modified = $added = $removed = array();
-
-      foreach ($data->commits as $commit) {
-        $modified = array_merge( $modified, $commit->modified );
-        $added    = array_merge( $added,    $commit->added    );
-        $removed  = array_merge( $removed,  $commit->removed  );
+      if ( $headers["X-Hub-Signature"] != "sha1=" . $hash ) {
+        self::write_log( __("Failed to validate secret.", WordPress_GitHub_Sync::$text_domain) );
+        die();
       }
 
-      // Added or Modified (pull)
-      $to_pull = array_merge($modified, $added);
-      foreach (array_unique($to_pull) as $path) {
-        $post = new WordPress_GitHub_Sync_Post($path);
-        $this->controller->api->pull($post);
-      }
-
-      // Removed
-      foreach (array_unique($removed) as $path) {
-        $post = new WordPress_GitHub_Sync_Post($path);
-        wp_delete_post($post->id);
-      }
+      $this->controller->pull(json_decode($raw_data));
+      die();
     }
 
     /**

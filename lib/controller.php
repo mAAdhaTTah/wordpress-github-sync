@@ -17,6 +17,94 @@ class WordPress_GitHub_Sync_Controller {
   }
 
   /**
+   * Reads the Webhook payload and syncs posts as necessary
+   */
+  function pull($payload) {
+    if ( strtolower($payload->repository->full_name) !== strtolower($this->api->repository()) ) {
+      WordPress_GitHub_Sync::write_log( $nwo . __(" is an invalid repository.", WordPress_GitHub_Sync::$text_domain) );
+      return;
+    }
+
+    $refs = explode('/', $payload->ref);
+    $branch = array_pop( $refs );
+
+    if ( 'master' === $branch ) {
+      WordPress_GitHub_Sync::write_log( __("Not on the master branch.", WordPress_GitHub_Sync::$text_domain) );
+      return;
+    }
+
+    $this->import_head_commit($payload->head_commit);
+
+    // Deleting posts from a payload is the only place
+    // we need to search posts by path; another way?
+    $removed = array();
+    foreach ($payload->commits as $commit) {
+      $removed  = array_merge( $removed,  $commit->removed  );
+    }
+    foreach (array_unique($removed) as $path) {
+      $post = new WordPress_GitHub_Sync_Post($path);
+      wp_delete_post($post->id);
+    }
+  }
+
+  /**
+   * Updates all posts that need updating from the head commit
+   */
+  function import_head_commit($head_commit) {
+    if ( "wpghs" === substr( $head_commit->message, -5 ) ) {
+      WordPress_GitHub_Sync::write_log( __("Already synced this commit.", WordPress_GitHub_Sync::$text_domain) );
+      return;
+    }
+
+    $commit = $this->api->get_commit($head_commit->id);
+
+    $tree = $this->api->get_tree_recursive($commit->tree->sha);
+
+    foreach ($tree as $blob) {
+      // Skip the repo's readme
+      if ( 'readme' === strtolower(substr($blob->path, 0, 6)) ) {
+        continue;
+      }
+
+      // If the blob sha already matches a post, then move on
+      $id = $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'");
+       if ( $id ) {
+        continue;
+       }
+
+      $blob = $this->api->get_blob($blob->sha);
+      $content = base64_decode($blob->content);
+
+      // If it doesn't have YAML frontmatter, then move on
+      if ( '---' !== substr($content, 0, 3) ) {
+        continue;
+      }
+
+      // Break out meta, if present
+      preg_match( "/(^---(.*?)---$)?(.*)/ms", $content, $matches );
+
+      $body = array_pop( $matches );
+
+      if (count($matches) == 3) {
+        $meta = spyc_load($matches[2]);
+        if ($meta['permalink']) $meta['permalink'] = str_replace(home_url(), '', get_permalink($meta['permalink']));
+      } else {
+        $meta = array();
+      }
+
+      if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
+        $body = wpmarkdown_markdown_to_html( $body );
+      }
+
+      // Can we really just mash everything together here?
+      wp_update_post( array_merge( $meta, array(
+        "post_content" => $body,
+        "_sha"         => $blob->sha,
+      ) ) );
+    }
+  }
+
+  /**
    * Export all the posts in the database to GitHub
    */
   function export_all() {
@@ -27,7 +115,7 @@ class WordPress_GitHub_Sync_Controller {
     }
 
     $posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
-    $this->msg = "Full export from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")";
+    $this->msg = "Full export from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ") - wpghs";
 
     $this->get_tree();
 
@@ -49,7 +137,7 @@ class WordPress_GitHub_Sync_Controller {
     }
 
     $post = new WordPress_GitHub_Sync_Post($post_id);
-    $this->msg = "Syncing " . $post->github_path() . " from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")";
+    $this->msg = "Syncing " . $post->github_path() . " from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ") - wpghs";
 
     $this->get_tree();
 
@@ -68,7 +156,7 @@ class WordPress_GitHub_Sync_Controller {
     }
 
     $post = new WordPress_GitHub_Sync_Post($post_id);
-    $this->msg = "Deleting " . $post->github_path() . " via WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")";
+    $this->msg = "Deleting " . $post->github_path() . " via WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ") - wpghs";
 
     $this->get_tree();
 
