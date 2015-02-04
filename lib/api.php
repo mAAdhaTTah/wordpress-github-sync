@@ -15,14 +15,9 @@ class WordPress_GitHub_Sync_Api {
     return $this->call("GET", $this->blob_endpoint() . "/" . $sha);
   }
 
-  function get_commit($sha) {
-    if (! $this->oauth_token() || ! $this->repository()) {
-      return false;
-    }
-
-    return $this->call("GET", $this->commit_endpoint() . "/" . $sha);
-  }
-
+  /**
+   * Retrieves a tree by sha recursively from the GitHub API
+   */
   function get_tree_recursive($sha) {
     if (! $this->oauth_token() || ! $this->repository()) {
       return false;
@@ -40,6 +35,28 @@ class WordPress_GitHub_Sync_Api {
     }
 
     return array_values($data->tree);
+  }
+
+  /**
+   * Retrieves a commit by sha from the GitHub API
+   */
+  function get_commit($sha) {
+    if (! $this->oauth_token() || ! $this->repository()) {
+      return false;
+    }
+
+    return $this->call("GET", $this->commit_endpoint() . "/" . $sha);
+  }
+
+  /**
+   * Retrieves the current master branch
+   */
+  function get_ref_master() {
+    if (! $this->oauth_token() || ! $this->repository()) {
+      return false;
+    }
+
+    return $this->call("GET", $this->reference_endpoint());
   }
 
   /**
@@ -139,7 +156,7 @@ class WordPress_GitHub_Sync_Api {
       return $sha;
     }
 
-    $data = $this->call("GET", $this->commit_endpoint() . "/" . $this->last_commit_sha() );
+    $data = $this->last_commit();
 
     if ($data && isset($data->tree) && !isset($data->errors)) {
       update_option( "_wpghs_last_tree_sha", $data->tree->sha );
@@ -157,6 +174,13 @@ class WordPress_GitHub_Sync_Api {
   }
 
   /**
+   * Retrieve the last commit in the repository
+   */
+  function last_commit() {
+    return $this->get_commit( $this->last_commit_sha() );
+  }
+
+  /**
    * Retrieve the sha for the latest commit
    *
    * Will make a live call if not found
@@ -168,7 +192,7 @@ class WordPress_GitHub_Sync_Api {
       return $sha;
     }
 
-    $data = $this->call("GET", $this->reference_endpoint());
+    $data = $this->get_ref_master();
     $sha = $data->object->sha;
 
     update_option( "_wpghs_last_commit_sha", $sha );
@@ -250,7 +274,7 @@ class WordPress_GitHub_Sync_Api {
   }
 
   /**
-   * Api to update the master branch's reference
+   * API endpoint for the master branch reference
    */
   function reference_endpoint() {
     $url = $this->api_base() . "/repos/";

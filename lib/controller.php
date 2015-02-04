@@ -33,7 +33,13 @@ class WordPress_GitHub_Sync_Controller {
       return;
     }
 
-    $this->import_head_commit($payload->head_commit);
+    if ( "wpghs" === substr( $payload->head_commit->message, -5 ) ) {
+      WordPress_GitHub_Sync::write_log( __("Already synced this commit.", WordPress_GitHub_Sync::$text_domain) );
+      return;
+    }
+
+    $commit = $this->api->get_commit($payload->head_commit->id);
+    $this->import_tree($commit->tree->sha);
 
     // Deleting posts from a payload is the only place
     // we need to search posts by path; another way?
@@ -45,62 +51,91 @@ class WordPress_GitHub_Sync_Controller {
       $post = new WordPress_GitHub_Sync_Post($path);
       wp_delete_post($post->id);
     }
+
+    WordPress_GitHub_Sync::write_log( __("Payload processed", WordPress_GitHub_Sync::$text_domain) );
   }
 
   /**
-   * Updates all posts that need updating from the head commit
+   * Imports posts from a given tree sha
    */
-  function import_head_commit($head_commit) {
-    if ( "wpghs" === substr( $head_commit->message, -5 ) ) {
+  function import_tree($sha) {
+    $tree = $this->api->get_tree_recursive($sha);
+
+    foreach ($tree as $blob) {
+      $this->import_blob( $blob );
+    }
+
+    WordPress_GitHub_Sync::write_log( __("Imported tree ", WordPress_GitHub_Sync::$text_domain) . $sha );
+  }
+
+  /**
+   * Imports posts from the current master branch
+   */
+  function import_master() {
+    $commit = $this->api->last_commit();
+
+    if ( "wpghs" === substr( $commit->message, -5 ) ) {
       WordPress_GitHub_Sync::write_log( __("Already synced this commit.", WordPress_GitHub_Sync::$text_domain) );
       return;
     }
 
-    $commit = $this->api->get_commit($head_commit->id);
+    $this->import_tree( $commit->tree->sha );
+  }
 
-    $tree = $this->api->get_tree_recursive($commit->tree->sha);
+  /**
+   * Imports a single blob content into matching post
+   */
+  function import_blob($blob) {
+    global $wpdb;
 
-    foreach ($tree as $blob) {
-      // Skip the repo's readme
-      if ( 'readme' === strtolower(substr($blob->path, 0, 6)) ) {
-        continue;
-      }
+    // Skip the repo's readme
+    if ( 'readme' === strtolower(substr($blob->path, 0, 6)) ) {
+      WordPress_GitHub_Sync::write_log( __("Skipping README", WordPress_GitHub_Sync::$text_domain) );
+      return;
+    }
 
-      // If the blob sha already matches a post, then move on
-      $id = $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'");
-       if ( $id ) {
-        continue;
-       }
+    // If the blob sha already matches a post, then move on
+    $id = $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'");
+    if ( $id ) {
+      WordPress_GitHub_Sync::write_log( __("Already synced blob ", WordPress_GitHub_Sync::$text_domain) . $blob->path );
+      return;
+    }
 
-      $blob = $this->api->get_blob($blob->sha);
-      $content = base64_decode($blob->content);
+    $blob = $this->api->get_blob($blob->sha);
+    $content = base64_decode($blob->content);
 
-      // If it doesn't have YAML frontmatter, then move on
-      if ( '---' !== substr($content, 0, 3) ) {
-        continue;
-      }
+    // If it doesn't have YAML frontmatter, then move on
+    if ( '---' !== substr($content, 0, 3) ) {
+      WordPress_GitHub_Sync::write_log( __("No front matter on blob ", WordPress_GitHub_Sync::$text_domain) . $blob->sha );
+      return;
+    }
 
       // Break out meta, if present
       preg_match( "/(^---(.*?)---$)?(.*)/ms", $content, $matches );
 
-      $body = array_pop( $matches );
+    $body = array_pop( $matches );
 
-      if (count($matches) == 3) {
-        $meta = spyc_load($matches[2]);
-        if ($meta['permalink']) $meta['permalink'] = str_replace(home_url(), '', get_permalink($meta['permalink']));
-      } else {
-        $meta = array();
-      }
+    if (count($matches) == 3) {
+      $meta = spyc_load($matches[2]);
+      if ($meta['permalink']) $meta['permalink'] = str_replace(home_url(), '', get_permalink($meta['permalink']));
+    } else {
+      $meta = array();
+    }
 
-      if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
-        $body = wpmarkdown_markdown_to_html( $body );
-      }
+    if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
+      $body = wpmarkdown_markdown_to_html( $body );
+    }
 
-      // Can we really just mash everything together here?
-      wp_update_post( array_merge( $meta, array(
-        "post_content" => $body,
-        "_sha"         => $blob->sha,
-      ) ) );
+    // Can we really just mash everything together here?
+    $args = array_merge( $meta, array(
+      "post_content" => $body,
+      "_sha"         => $blob->sha,
+    ) );
+
+    if ( !isset($args['ID']) ) {
+      wp_insert_post( $args );
+    } else {
+      wp_update_post( $args );
     }
   }
 

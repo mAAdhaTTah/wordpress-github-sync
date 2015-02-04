@@ -121,5 +121,7 @@ class WordPress_GitHub_Sync_Admin {
     if ($_GET['action'] == "export")
       $wpghs->start_export();
 
+    if ($_GET['action'] == "import")
+      $wpghs->start_import();
   }
 }

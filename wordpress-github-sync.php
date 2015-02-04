@@ -52,6 +52,7 @@ class WordPress_GitHub_Sync {
       add_action( 'delete_post', array( &$this, 'delete_post_callback' ) );
       add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ));
       add_action( 'wpghs_export', array( &$this->controller, 'export_all' ) );
+      add_action( 'wpghs_import', array( &$this->controller, 'import_master' ) );
 
       if ( defined('WP_CLI') && WP_CLI ) {
         WP_CLI::add_command( 'wpghs', 'WordPress_GitHub_Sync_CLI' );
@@ -153,7 +154,7 @@ class WordPress_GitHub_Sync {
     }
 
     /**
-     * Get posts to export, set and kick off cronjob
+     * Sets and kicks off the export cronjob
      */
     function start_export() {
       update_option( '_wpghs_export_user_id', get_current_user_id() );
@@ -162,6 +163,18 @@ class WordPress_GitHub_Sync {
       WordPress_GitHub_Sync::write_log( __( "Starting full export to GitHub.", WordPress_GitHub_Sync::$text_domain ) );
 
       wp_schedule_single_event(time(), 'wpghs_export');
+      spawn_cron();
+    }
+
+    /**
+     * Sets and kicks off the import cronjob
+     */
+    function start_import() {
+      update_option( '_wpghs_import_started', 'yes' );
+
+      WordPress_GitHub_Sync::write_log( __( "Starting import from GitHub.", WordPress_GitHub_Sync::$text_domain ) );
+
+      wp_schedule_single_event(time(), 'wpghs_import');
       spawn_cron();
     }
 

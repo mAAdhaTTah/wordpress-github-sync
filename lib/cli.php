@@ -49,4 +49,33 @@ class WordPress_GitHub_Sync_CLI {
       WP_CLI::error( __("Invalid post ID", WordPress_GitHub_Sync::$text_domain) );
     }
   }
+
+  /**
+   * Imports the post in your GitHub repo
+   * into your WordPress blog
+   *
+   * ## OPTIONS
+   *
+   * <user_id>
+   * : The user ID you'd like to save the commit as
+   *
+   * ## EXAMPLES
+   *
+   *     wp wpghs import 1
+   *
+   * @synopsis <user_id>
+   */
+  function import( $args, $assoc_args ) {
+    list( $user_id ) = $args;
+
+    if ( !is_numeric($user_id) ) {
+      WP_CLI::error( __("Invalid user ID", WordPress_GitHub_Sync::$text_domain) );
+    }
+
+    update_option( '_wpghs_export_user_id', (int) $user_id );
+
+    WP_CLI::line( __( 'Starting import from GitHub.', WordPress_GitHub_Sync::$text_domain ) );
+
+    $this->controller->import_master();
+  }
 }
