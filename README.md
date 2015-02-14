@@ -40,15 +40,12 @@ The sync action is based on two hooks:
 
 ### Installing the WordPress plugin
 
-1. Install the plugin and activate it via WordPress's plugin settings page.
-  - Over SSH:
-    1. `cd wp-content/plugins`
-    2. `git clone https://github.com/benbalter/wordpress-github-sync.git`
-    3. Activate the plugin in Wordpress' Dashboard > Plugins > Installed Plugins
-  - Over FTP:
-    1. Download [the latest master ZIP](https://github.com/benbalter/wordpress-github-sync/archive/master.zip)
-    2. Unzip `master.zip` and upload it to `wp-content/plugins/wordpress-github-sync/`
-    3. Activate the plugin in Wordpress' Dashboard > Plugins > Installed Plugins
+Install the plugin and activate it via WordPress's plugin settings page.
+
+  1. `cd wp-content/plugins`
+  2. `git clone https://github.com/benbalter/wordpress-github-sync.git`
+  3. `cd wordpress-github-sync && composer install`
+  4. Activate the plugin in Wordpress' Dashboard > Plugins > Installed Plugins
 
 ### Configuring the plugin
 
