@@ -246,7 +246,7 @@ class WordPress_GitHub_Sync_Post {
     $content = base64_decode($data->content);
 
     // Break out meta, if present
-    preg_match( "/(^---(.*)---$)?(.*)/ms", $content, $matches );
+    preg_match( "/(^---(.*?)---$)?(.*)/ms", $content, $matches );
 
     $body = array_pop( $matches );
 

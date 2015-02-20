@@ -100,7 +100,7 @@ class WordPress_GitHub_Sync {
         return;
 
       if ( ! $this->oauth_token() || ! $this->repository() )
-        return
+        return;
 
       $post = get_post($post_id);
 
@@ -125,7 +125,7 @@ class WordPress_GitHub_Sync {
     function delete_post_callback( $post_id ) {
 
       if ( ! $this->oauth_token() || ! $this->repository() )
-        return
+        return;
 
       $post = get_post($post_id);
 
