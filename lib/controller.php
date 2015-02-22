@@ -21,10 +21,11 @@ class WordPress_GitHub_Sync_Controller {
    */
   function pull($payload) {
     if ( strtolower($payload->repository->full_name) !== strtolower($this->api->repository()) ) {
-      WordPress_GitHub_Sync::write_log( $nwo . __(" is an invalid repository.", WordPress_GitHub_Sync::$text_domain) );
+      WordPress_GitHub_Sync::write_log( strtolower($payload->repository->full_name) . __(" is an invalid repository.", WordPress_GitHub_Sync::$text_domain) );
       return;
     }
 
+    // the last term in the ref is the branch name
     $refs = explode('/', $payload->ref);
     $branch = array_pop( $refs );
 
@@ -33,12 +34,19 @@ class WordPress_GitHub_Sync_Controller {
       return;
     }
 
+    // We add wpghs to commits we push out, so we shouldn't pull them in again
     if ( "wpghs" === substr( $payload->head_commit->message, -5 ) ) {
       WordPress_GitHub_Sync::write_log( __("Already synced this commit.", WordPress_GitHub_Sync::$text_domain) );
       return;
     }
 
     $commit = $this->api->get_commit($payload->head_commit->id);
+
+    if ( is_wp_error( $commit ) ) {
+      WordPress_GitHub_Sync::write_log( __("Failed getting commit with error: ", WordPress_GitHub_Sync::$text_domain) . $commit->get_error_message() );
+      return;
+    }
+
     $this->import_tree($commit->tree->sha);
 
     // Deleting posts from a payload is the only place
@@ -56,23 +64,15 @@ class WordPress_GitHub_Sync_Controller {
   }
 
   /**
-   * Imports posts from a given tree sha
-   */
-  function import_tree($sha) {
-    $tree = $this->api->get_tree_recursive($sha);
-
-    foreach ($tree as $blob) {
-      $this->import_blob( $blob );
-    }
-
-    WordPress_GitHub_Sync::write_log( __("Imported tree ", WordPress_GitHub_Sync::$text_domain) . $sha );
-  }
-
-  /**
    * Imports posts from the current master branch
    */
   function import_master() {
     $commit = $this->api->last_commit();
+
+    if ( is_wp_error( $commit ) ) {
+      WordPress_GitHub_Sync::write_log( __("Failed getting last commit with error: ", WordPress_GitHub_Sync::$text_domain) . $commit->get_error_message() );
+      return;
+    }
 
     if ( "wpghs" === substr( $commit->message, -5 ) ) {
       WordPress_GitHub_Sync::write_log( __("Already synced this commit.", WordPress_GitHub_Sync::$text_domain) );
@@ -80,6 +80,24 @@ class WordPress_GitHub_Sync_Controller {
     }
 
     $this->import_tree( $commit->tree->sha );
+  }
+
+  /**
+   * Imports posts from a given tree sha
+   */
+  function import_tree($sha) {
+    $tree = $this->api->get_tree_recursive($sha);
+
+    if ( is_wp_error( $tree ) ) {
+      WordPress_GitHub_Sync::write_log( __("Failed getting recursive tree with error: ", WordPress_GitHub_Sync::$text_domain) . $commit->get_error_message() );
+      return;
+    }
+
+    foreach ($tree as $blob) {
+      $this->import_blob( $blob );
+    }
+
+    WordPress_GitHub_Sync::write_log( __("Imported tree ", WordPress_GitHub_Sync::$text_domain) . $sha );
   }
 
   /**
@@ -102,6 +120,12 @@ class WordPress_GitHub_Sync_Controller {
     }
 
     $blob = $this->api->get_blob($blob->sha);
+
+    if ( is_wp_error( $blob ) ) {
+      WordPress_GitHub_Sync::write_log( __("Failed getting blob with error: ", WordPress_GitHub_Sync::$text_domain) . $commit->get_error_message() );
+      return;
+    }
+
     $content = base64_decode($blob->content);
 
     // If it doesn't have YAML frontmatter, then move on
@@ -110,8 +134,8 @@ class WordPress_GitHub_Sync_Controller {
       return;
     }
 
-      // Break out meta, if present
-      preg_match( "/(^---(.*?)---$)?(.*)/ms", $content, $matches );
+    // Break out meta, if present
+    preg_match( "/(^---(.*?)---$)?(.*)/ms", $content, $matches );
 
     $body = array_pop( $matches );
 
@@ -395,6 +419,13 @@ class WordPress_GitHub_Sync_Controller {
       return;
     }
 
-    $this->tree = $this->api->last_tree_recursive();
+    $tree = $this->api->last_tree_recursive();
+
+    if ( is_wp_error( $tree ) ) {
+      WordPress_GitHub_Sync::write_log( __("Failed getting tree with error: ", WordPress_GitHub_Sync::$text_domain) . $tree->get_error_message() );
+      return;
+    }
+
+    $this->tree = $tree;
   }
 }

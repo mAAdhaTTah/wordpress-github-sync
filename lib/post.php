@@ -188,7 +188,7 @@ class WordPress_GitHub_Sync_Post {
     if ( ! $sha && 'yes' === get_option( '_wpghs_fully_exported' ) ) {
       $data = $this->api->remote_contents($this);
 
-      if ($data && isset($data->sha)) {
+      if ( ! is_wp_error( $data ) ) {
         add_post_meta( $this->id, '_sha', $data->sha, true ) || update_post_meta( $this->id, '_sha', $data->sha );
         $sha = $data->sha;
       }

@@ -64,21 +64,8 @@ class WordPress_GitHub_Sync_Api {
    */
   function create_tree($tree) {
     $body = array( 'tree' => $tree );
-    $data = $this->call("POST", $this->tree_endpoint(), $body);
 
-    if ($data && isset($data->sha) && !isset($data->errors)) {
-      update_option( '_wpghs_last_tree_sha', $data->sha );
-      return $data;
-    } else {
-      // save a message and quit
-      if ( isset($data->message) ) {
-        $error = new WP_Error( 'wpghs_error_message', $data->message );
-      } elseif( empty($data) ) {
-        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
-      }
-
-      return $error;
-    }
+    return $this->call("POST", $this->tree_endpoint(), $body);
   }
 
   /**
@@ -87,27 +74,20 @@ class WordPress_GitHub_Sync_Api {
    * $sha - string   shasum for the tree for this commit
    */
   function create_commit($sha, $msg) {
+    $parent_sha = $this->last_commit_sha();
+
+    if ( is_wp_error( $parent_sha ) ) {
+      return $parent_sha;
+    }
+
     $body = array(
       "message" => $msg,
       "author"  => $this->export_user(),
       "tree"    => $sha,
-      "parents" => array( $this->last_commit_sha() ),
+      "parents" => array( $parent_sha ),
     );
 
-    $data = $this->call("POST", $this->commit_endpoint(), $body);
-
-    if ($data && isset($data->sha) && !isset($data->errors)) {
-      return $data;
-    } else {
-      // save a message and quit
-      if ( isset($data->message) ) {
-        $error = new WP_Error( 'wpghs_error_message', $data->message );
-      } elseif( empty($data) ) {
-        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
-      }
-
-      return $error;
-    }
+    return $this->call("POST", $this->commit_endpoint(), $body);
   }
 
   /**
@@ -120,83 +100,59 @@ class WordPress_GitHub_Sync_Api {
       'sha' => $sha,
     );
 
-    $data = $this->call("POST", $this->reference_endpoint(), $body);
-
-    if ($data && isset($data->object) && !isset($data->errors)) {
-      update_option( '_wpghs_last_commit_sha', $data->object->sha );
-      return $data;
-    } else {
-      // save a message and quit
-      if ( isset($data->message) ) {
-        $error = new WP_Error( 'wpghs_error_message', $data->message );
-      } elseif( empty($data) ) {
-        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
-      }
-
-      return $error;
-    }
+    return $this->call("POST", $this->reference_endpoint(), $body);
   }
 
   /**
    * Retrieves the recursive tree for the master branch
    */
   function last_tree_recursive() {
-    return $this->get_tree_recursive($this->last_tree_sha());
+    $sha = $this->last_tree_sha();
+
+    if ( is_wp_error( $sha ) ) {
+      return $sha;
+    }
+
+    return $this->get_tree_recursive( $sha );
   }
 
   /**
    * Retrieves the sha for the last tree
-   *
-   * Makes a live call if not saved
    */
   function last_tree_sha() {
-    $sha = get_option( "_wpghs_last_tree_sha" );
-
-    if ( !empty($sha) ) {
-      return $sha;
-    }
-
     $data = $this->last_commit();
 
-    if ($data && isset($data->tree) && !isset($data->errors)) {
-      update_option( "_wpghs_last_tree_sha", $data->tree->sha );
-      return $data->tree->sha;
-    } else {
-      // save a message and quit
-      if ( isset($data->message) ) {
-        $error = new WP_Error( 'wpghs_error_message', $data->message );
-      } elseif( empty($data) ) {
-        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
-      }
-
-      return $error;
+    if ( is_wp_error( $data ) ) {
+      return $data;
     }
+
+    return $data->tree->sha;
   }
 
   /**
    * Retrieve the last commit in the repository
    */
   function last_commit() {
-    return $this->get_commit( $this->last_commit_sha() );
+    $sha = $this->last_commit_sha();
+
+    if ( is_wp_error( $sha ) ) {
+      return $data;
+    }
+
+    return $this->get_commit( $sha );
   }
 
   /**
    * Retrieve the sha for the latest commit
-   *
-   * Will make a live call if not found
    */
   function last_commit_sha() {
-    $sha = get_option( "_wpghs_last_commit_sha" );
+    $data = $this->get_ref_master();
 
-    if ( !empty($sha) ) {
-      return $sha;
+    if ( is_wp_error( $data ) ) {
+      return $data;
     }
 
-    $data = $this->get_ref_master();
-    $sha = $data->object->sha;
-
-    update_option( "_wpghs_last_commit_sha", $sha );
-    return $sha;
+    return $data->object->sha;
   }
 
   /**
@@ -210,8 +166,6 @@ class WordPress_GitHub_Sync_Api {
 
   /**
    * Generic GitHub API interface and response handler
-   *
-   * @todo Error handle the data response
    */
   function call($method, $endpoint, $body = array()) {
     $args = array(
@@ -223,11 +177,14 @@ class WordPress_GitHub_Sync_Api {
     );
 
     $response = wp_remote_request( $endpoint, $args );
+    $status = wp_remote_retrieve_header( $response, 'status' );
+    $body = json_decode(wp_remote_retrieve_body( $response ) );
 
-    $body = wp_remote_retrieve_body($response);
-    $data = json_decode($body);
+    if ( "2" !== substr($status, 0, 1) && "3" !== substr($status, 0, 1)  ) {
+      return new WP_Error( $status, $body->message );
+    }
 
-    return $data;
+    return $body;
   }
 
   /**
