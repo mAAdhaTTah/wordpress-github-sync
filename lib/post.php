@@ -99,6 +99,11 @@ class WordPress_GitHub_Sync_Post {
 
     if ( function_exists( 'wpmarkdown_html_to_markdown' ) ) {
       $content = wpmarkdown_html_to_markdown( $content );
+    } else if(class_exists("WPCom_Markdown")) {
+      $wpcomMd = WPCom_Markdown::get_instance();
+      if($wpcomMd->is_markdown($this->post->ID)) {
+        $content = $this->post->post_content_filtered;
+      }
     }
 
     return apply_filters( 'wpghs_content', $content );
@@ -261,11 +266,18 @@ class WordPress_GitHub_Sync_Post {
       $body = wpmarkdown_markdown_to_html( $body );
     }
 
-    wp_update_post( array_merge( $meta, array(
+    $data = array_merge( $meta, array(
         "ID"           => $this->id,
         "post_content" => $body
-      ))
-    );
+      ));
+    if(class_exists("WPCom_Markdown")) {
+      $wpcomMd = WPCom_Markdown::get_instance();
+      $data = $wpcomMd -> wp_insert_post_data($data, array(
+        "ID"           => $this->id
+      ));
+
+    } 
+    wp_update_post( $data);  
   }
 
   /**
