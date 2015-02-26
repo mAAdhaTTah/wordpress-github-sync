@@ -96,11 +96,15 @@ class WordPress_GitHub_Sync {
      */
     function save_post_callback($post_id) {
 
-      if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) )
+      if ( wp_is_post_autosave( $post_id ) )
         return;
 
       if ( ! $this->oauth_token() || ! $this->repository() )
         return;
+
+      // If this is a revision, get real post ID
+      if ( $parent_id = wp_is_post_revision( $post_id ) ) 
+                $post_id = $parent_id;
 
       $post = get_post($post_id);
 
