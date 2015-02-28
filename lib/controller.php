@@ -276,11 +276,6 @@ class WordPress_GitHub_Sync_Controller {
       return;
     }
 
-    $rtree = $this->api->last_tree_recursive();
-
-    WordPress_GitHub_Sync::write_log(__( 'Saving the shas.', WordPress_GitHub_Sync::$text_domain ));
-    $this->save_post_shas($rtree);
-
     WordPress_GitHub_Sync::write_log(__( 'Creating the commit.', WordPress_GitHub_Sync::$text_domain ));
     $commit = $this->api->create_commit($tree->sha, $this->msg);
 
@@ -296,6 +291,11 @@ class WordPress_GitHub_Sync_Controller {
       $this->error($ref);
       return;
     }
+
+    $rtree = $this->api->last_tree_recursive();
+
+    WordPress_GitHub_Sync::write_log(__( 'Saving the shas.', WordPress_GitHub_Sync::$text_domain ));
+    $this->save_post_shas($rtree);
 
     $this->success();
   }

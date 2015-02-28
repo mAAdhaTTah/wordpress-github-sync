@@ -136,7 +136,7 @@ class WordPress_GitHub_Sync_Api {
     $sha = $this->last_commit_sha();
 
     if ( is_wp_error( $sha ) ) {
-      return $data;
+      return $sha;
     }
 
     return $this->get_commit( $sha );
