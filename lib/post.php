@@ -273,7 +273,8 @@ class WordPress_GitHub_Sync_Post {
     if(class_exists("WPCom_Markdown")) {
       $wpcomMd = WPCom_Markdown::get_instance();
       $data = $wpcomMd -> wp_insert_post_data($data, array(
-        "ID"           => $this->id
+        "ID"           => $this->id,
+        "post_type"    => $data['post_type']
       ));
 
     } 
