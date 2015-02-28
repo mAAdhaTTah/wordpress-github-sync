@@ -38,7 +38,7 @@ class WordPress_GitHub_Sync_Admin {
     add_settings_field( "wpghs_repository", __("Repository",WordPress_GitHub_Sync::$text_domain), array(&$this, "field_callback"), WordPress_GitHub_Sync::$text_domain, "general", array(
         "default"   => "",
         "name"      => "wpghs_repository",
-        "help_text" => __("The GitHub repository to commit to, with owner (<code>[OWNER]/[REPOSITORY]</code>), e.g., <code>benbalter/benbalter.github.com</code>.", WordPress_GitHub_Sync::$text_domain)
+        "help_text" => __("The GitHub repository to commit to, with owner (<code>[OWNER]/[REPOSITORY]</code>), e.g., <code>benbalter/benbalter.github.com</code>. The repository should contain an initial commit.", WordPress_GitHub_Sync::$text_domain)
       )
     );
 
