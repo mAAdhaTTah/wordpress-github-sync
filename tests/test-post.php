@@ -2,11 +2,11 @@
 
 class WordPress_GitHub_Sync_Post_Test extends WP_UnitTestCase {
 
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 	}
 
-	function test_something() {
+	public function test_something() {
 		$this->markTestIncomplete();
 	}
 }
