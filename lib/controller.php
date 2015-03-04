@@ -185,14 +185,6 @@ class WordPress_GitHub_Sync_Controller {
 			'_sha'         => $blob->sha,
 		) );
 
-		if(class_exists("WPCom_Markdown")) {
-			$wpcomMd = WPCom_Markdown::get_instance();
-			$args = $wpcomMd -> wp_insert_post_data($args, array(
-				"ID"           => $this->id,
-				"post_type"    => $args['post_type']
-			));
-		}
-
 		if ( ! isset($args['ID']) ) {
 			wp_insert_post( $args );
 		} else {
