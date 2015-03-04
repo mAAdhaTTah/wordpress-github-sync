@@ -140,6 +140,11 @@ class WordPress_GitHub_Sync_Post {
 
 		if ( function_exists( 'wpmarkdown_html_to_markdown' ) ) {
 			$content = wpmarkdown_html_to_markdown( $content );
+	    } else if(class_exists("WPCom_Markdown")) {
+      		$wpcomMd = WPCom_Markdown::get_instance();
+      		if($wpcomMd->is_markdown($this->post->ID)) {
+		    	$content = $this->post->post_content_filtered;
+	      	}
 		}
 
 		return apply_filters( 'wpghs_content', $content );
