@@ -56,7 +56,7 @@ class WordPress_GitHub_Sync_Controller {
 		$refs = explode( '/', $payload->ref );
 		$branch = array_pop( $refs );
 
-		if ( 'master' === $branch ) {
+		if ( 'master' !== $branch ) {
 			WordPress_GitHub_Sync::write_log( __( 'Not on the master branch.', WordPress_GitHub_Sync::$text_domain ) );
 			return;
 		}
