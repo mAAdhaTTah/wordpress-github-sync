@@ -231,7 +231,6 @@ class WordPress_GitHub_Sync_Post {
 	* @return string
 	*/
 	 public function get_directory_from_path($path) {
-
 		$directory = explode('/',$path);
 		$directory = count($directory) > 0 ? $directory[0] : '';
 
