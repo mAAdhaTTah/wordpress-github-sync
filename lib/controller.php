@@ -224,6 +224,7 @@ class WordPress_GitHub_Sync_Controller {
 			return;
 		}
 
+		$this->posts[] = $post_id;
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
 		$this->msg = 'Syncing ' . $post->github_path() . ' from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ') - wpghs';
 
@@ -243,6 +244,7 @@ class WordPress_GitHub_Sync_Controller {
 			return;
 		}
 
+		$this->posts[] = $post_id;
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
 		$this->msg = 'Deleting ' . $post->github_path() . ' via WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ') - wpghs';
 
