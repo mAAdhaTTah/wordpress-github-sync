@@ -140,12 +140,14 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		// If the blob sha already matches a post, then move on
+		// @TODO: check if we moved this post from one directory to another, so that we need to update the post type.
 		$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'" );
 		if ( $id ) {
 			WordPress_GitHub_Sync::write_log( __( 'Already synced blob ', WordPress_GitHub_Sync::$text_domain ) . $blob->path );
 			return;
 		}
 
+		$path = $blob->path;
 		$blob = $this->api->get_blob( $blob->sha );
 
 		if ( is_wp_error( $blob ) ) {
@@ -179,17 +181,28 @@ class WordPress_GitHub_Sync_Controller {
 			$body = wpmarkdown_markdown_to_html( $body );
 		}
 
+		$post = new WordPress_GitHub_Sync_Post( $args['ID'] );
+
 		// Can we really just mash everything together here?
+		$post_type = $post->get_type_from_path($path);
+		$post_name = $post->get_name_from_path($path);
 		$args = array_merge( $meta, array(
-			'post_content' => $body,
-			'_sha'         => $blob->sha,
+			'post_type'    => $post_type,
+			'post_name'    => $post_name,
+			'post_content' => $body
 		) );
 
-		if ( ! isset($args['ID']) ) {
-			wp_insert_post( $args );
-		} else {
-			wp_update_post( $args );
+		if ( $post->is_post_type_blacklisted($post_type) ) {
+			return;
 		}
+
+		if ( ! isset($args['ID']) ) {
+			$post_id = wp_insert_post( $args );
+		} else {
+			$post_id = wp_update_post( $args );
+		}
+
+		$post->set_sha($blob->sha, $post_id);
 	}
 
 	/**
@@ -202,7 +215,9 @@ class WordPress_GitHub_Sync_Controller {
 			return;
 		}
 
-		$posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
+		$post = new WordPress_GitHub_Sync_Post(0);
+		$blacklisted_post_types = $post->get_blacklisted_values();
+		$posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type NOT IN ( $blacklisted_post_types )" );
 		$this->msg = 'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ') - wpghs';
 
 		$this->get_tree();
@@ -264,6 +279,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		foreach ( $this->tree as $index => $blob ) {
 			if ( ! isset( $blob->sha ) ) {
+
 				continue;
 			}
 
