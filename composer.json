@@ -16,5 +16,9 @@
 	"require": {
 		"php": ">=5.3.1",
 		"mustangostang/spyc": "0.5.1"
+	},
+	"require-dev": {
+		"jdgrimes/wp-http-testcase": "1.2.1",
+		"mockery/mockery": "0.9.3"
 	}
 }

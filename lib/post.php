@@ -3,331 +3,271 @@
  * The post object which represents both the GitHub and WordPress post
  */
 class WordPress_GitHub_Sync_Post {
-  public $id = 0;
 
-  /**
-   * Instantiates a new Post object
-   *
-   * $id_or_path - (int|string) either a postID (WordPress) or a path to a file (GitHub)
-   *
-   * Returns the Post object, duh
-   */
-  function __construct( $id_or_path ) {
+	/**
+	 * Api object
+	 * @var WordPress_GitHub_Sync_Api
+	 */
+	public $api;
 
-    if (is_numeric($id_or_path)) {
-      $this->id = $id_or_path;
-    } else {
-      $this->path = $id_or_path;
-      $this->id = $this->id_from_path();
-    }
+	/**
+	 * Post ID
+	 * @var integer
+	 */
+	public $id = 0;
 
-    $this->post = get_post($this->id);
-  }
+	/**
+	 * Path to the file
+	 * @var string
+	 */
+	public $path;
 
-  /**
-   * Parse the various parts of a filename from a path
-   *
-   * @todo - PAGE SUPPORT
-   */
-  function parts_from_path() {
-    preg_match("/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/", $this->path, $matches);
-    return $matches;
-  }
+	/**
+	 * Post object
+	 * @var WP_Post
+	 */
+	public $post;
 
-  /**
-   * Extract's the post's title from its path
-   */
-  function title_from_path() {
-    $matches = $this->parts_from_path();
-    return $matches[4];
-  }
+	/**
+	 * Instantiates a new Post object
+	 *
+	 * $id_or_path - (int|string) either a postID (WordPress) or a path to a file (GitHub)
+	 *
+	 * Returns the Post object, duh
+	 */
+	public function __construct( $id_or_path ) {
 
-  /**
-   * Extract's the post's date from its path
-   */
-  function date_from_path() {
-    $matches = $this->parts_from_path();
-    return $matches[1] . "-" . $matches[2] . "-" . $matches[3] . "00:00:00";
-  }
+		$this->api = new WordPress_GitHub_Sync_Api;
 
-  /**
-   * Determines the post's WordPress ID from its GitHub path
-   * Creates the WordPress post if it does not exist
-   */
-  function id_from_path() {
-    global $wpdb;
+		if ( is_numeric( $id_or_path ) ) {
+			$this->id = $id_or_path;
+		} else {
+			$this->path = $id_or_path;
+			$this->id = $this->id_from_path();
+		}
 
-    $id = $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wpghs_github_path' AND meta_value = '$this->path'");
+		$this->post = get_post( $this->id );
+	}
 
-    if (!$id) {
-      $title = $this->title_from_path();
-      $id = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '$title'");
-    }
+	/**
+	 * Parse the various parts of a filename from a path
+	 *
+	 * @todo - PAGE SUPPORT
+	 */
+	public function parts_from_path() {
+		preg_match( '/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $this->path, $matches );
+		return $matches;
+	}
 
-    if (!$id) {
-      $id = wp_insert_post( array(
-          'post_name' => $this->title_from_path(),
-          'post_date' => $this->date_from_path()
-        )
-      );
-    }
+	/**
+	 * Extract's the post's title from its path
+	 */
+	public function title_from_path() {
+		$matches = $this->parts_from_path();
+		return $matches[4];
+	}
 
-    return $id;
-  }
+	/**
+	 * Extract's the post's date from its path
+	 */
+	public function date_from_path() {
+		$matches = $this->parts_from_path();
+		return $matches[1] . '-' . $matches[2] . '-' . $matches[3] . '00:00:00';
+	}
 
-  /**
-   * Returns the post type
-   */
-  function type() {
-    return $this->post->post_type;
-  }
+	/**
+	 * Determines the post's WordPress ID from its GitHub path
+	 * Creates the WordPress post if it does not exist
+	 */
+	public function id_from_path() {
+		global $wpdb;
 
-  /**
-   * Returns the post name
-   */
-  function name() {
-    return $this->post->post_name;
-  }
+		$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wpghs_github_path' AND meta_value = '$this->path'" );
 
-  /**
-   * Returns the post_content
-   *
-   * Markdownify's the content if applicable
-   */
-  function content() {
-    $content = $this->post->post_content;
+		if ( ! $id ) {
+			$title = $this->title_from_path();
+			$id = $wpdb->get_var( "SELECT ID FROM $wpdb->posts WHERE post_name = '$title'" );
+		}
 
-    if ( function_exists( 'wpmarkdown_html_to_markdown' ) ) {
-      $content = wpmarkdown_html_to_markdown( $content );
-    }
+		if ( ! $id ) {
+			$id = wp_insert_post( array(
+					'post_name' => $this->title_from_path(),
+					'post_date' => $this->date_from_path()
+				)
+			);
+		}
 
-    return apply_filters( 'wpghs_content', $content );
-  }
+		return $id;
+	}
 
-  /**
-   * Retrieves or calculates the proper GitHub path for a given post
-   *
-   * Returns (string) the path relative to repo root
-   */
-  function github_path() {
-    $path = get_post_meta( $this->id, '_wpghs_github_path', true );
+	/**
+	 * Returns the post type
+	 */
+	public function type() {
+		return $this->post->post_type;
+	}
 
-    if ( ! $path ) {
-      if ($this->type() == "post") {
-        $path = "_posts/";
-        $path = $path . get_the_time("Y-m-d-", $this->id);
-        $path = $path . $this->name() . ".md";
-      } elseif ($this->type() == "page") {
-        $path = get_page_uri( $this->id ) . ".md";
-      }
+	/**
+	 * Returns the post name
+	 */
+	public function name() {
+		return $this->post->post_name;
+	}
 
-      update_post_meta( $this->id, '_wpghs_github_path', $path );
-    }
-    return $path;
-  }
+	/**
+	 * Combines the 2 content parts for GitHub
+	 */
+	public function github_content() {
+		return $this->front_matter() . $this->post_content();
+	}
 
-  /**
-   * Determines the last author to modify the post
-   *
-   * Returns Array an array containing the author name and email
-   */
-  function last_modified_author() {
-    if ( $last_id = get_post_meta( $this->id, '_edit_last', true) ) {
-      $user = get_userdata($last_id);
-      if (!$user) return array();
-      return array( "name" => $user->display_name, "email" => $user->user_email );
-    } else {
-      return array();
-    }
-  }
+	/**
+	 * The post's YAML frontmatter
+	 *
+	 * Returns String the YAML frontmatter, ready to be written to the file
+	 */
+	public function front_matter() {
+		return Spyc::YAMLDump( $this->meta(), false, false, true ) . "---\n";
+	}
 
-  /**
-   * Builds the proper content API endpoint for a given post
-   *
-   * Returns String the relative API call path
-   */
-  function api_endpoint() {
-    global $wpghs;
-    $url = $wpghs->api_base() . "/repos/";
-    $url = $url . $wpghs->repository() . "/contents/";
-    $url = $url . $this->github_path();
-    return $url;
-  }
+	/**
+	 * Returns the post_content
+	 *
+	 * Markdownify's the content if applicable
+	 */
+	public function post_content() {
+		$content = $this->post->post_content;
 
-  /**
-   * Calls the content API to get the post's contents and metadata
-   *
-   * Returns Object the response from the API
-   */
-  function remote_contents() {
-    global $wpghs;
-    $response = wp_remote_get( $this->api_endpoint(), array(
-      "headers" => array(
-        "Authorization" => "token " . $wpghs->oauth_token()
-        )
-      )
-    );
-    $body = wp_remote_retrieve_body($response);
-    $data = json_decode($body);
-    return $data;
-  }
+		if ( function_exists( 'wpmarkdown_html_to_markdown' ) ) {
+			$content = wpmarkdown_html_to_markdown( $content );
+		} else if( class_exists( "WPCom_Markdown" ) ) {
+			$wpcomMd = WPCom_Markdown::get_instance();
+			if( $wpcomMd->is_markdown( $this->post->ID ) ) {
+				$content = $this->post->post_content_filtered;
+			}
+		}
 
-  /**
-   * The post's sha
-   * Cached as post meta, or will make a live call if need be
-   *
-   * Returns String the sha1 hash
-   */
-  function sha() {
-    if ($sha = get_post_meta( $this->id, "_sha", true)) {
-      return $sha;
-    } else {
-      $data = $this->remote_contents();
-      if ($data && isset($data->sha)) {
-        add_post_meta( $this->id, '_sha', $data->sha, true ) || update_post_meta( $this->id, '_sha', $data->sha );
-        return $data->sha;
-      } else {
-        return "";
-      }
-    }
-  }
+		return apply_filters( 'wpghs_content', $content );
+	}
 
-  /**
-   * Push the post to GitHub
-   */
-  function push() {
-    global $wpghs;
+	/**
+	 * Retrieves or calculates the proper GitHub path for a given post
+	 *
+	 * Returns (string) the path relative to repo root
+	 */
+	public function github_path() {
+		return $this->github_folder() . $this->github_filename();
+	}
 
-    if ($wpghs->push_lock)
-      return false;
+	/**
+	 * Get GitHub folder based on post
+	 */
+	public function github_folder() {
+		$folder = '';
 
-    $args = array(
+		if ( 'post' === $this->type() ) {
+			$folder = '_posts/';
+		}
 
-      "method"  => "PUT",
-      "headers" => array(
-          "Authorization" => "token " . $wpghs->oauth_token()
-        ),
-      "body"    => json_encode( array(
-          "message" => "Syncing " . $this->github_path() . " from WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
-          "content" => base64_encode($this->front_matter() . $this->content()),
-          "author"  => $this->last_modified_author(),
-          "sha"     => $this->sha()
-        ) )
-    );
+		return $folder;
+	}
 
-    $response = wp_remote_request( $this->api_endpoint(), $args );
-    $body = wp_remote_retrieve_body($response);
-    $data = json_decode($body);
+	/**
+	 * Build GitHub filename based on post
+	 */
+	public function github_filename() {
+		$filename = '';
 
-    if ($data && isset($data->content) && !isset($data->errors)) {
-      $sha = $data->content->sha;
-      add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
-    } else {
-      // save a message and quit
-      if ( isset($data->message) ) {
-        $error = new WP_Error( 'wpghs_error_message', $data->message );
-      } elseif( empty($data) ) {
-        $error = new WP_Error( 'wpghs_error_message', __( 'No body returned', WordPress_GitHub_Sync::$text_domain ) );
-      }
+		if ( 'post' === $this->type() ) {
+			$filename = get_the_time( 'Y-m-d-', $this->id ) . $this->name() . '.md';
+		} elseif ( 'page' === $this->type() ) {
+			$filename = get_page_uri( $this->id ) . '.md';
+		}
 
-      return $error;
-    }
+		return $filename;
+	}
 
-    return true;
-  }
+	/**
+	 * Determines the last author to modify the post
+	 *
+	 * Returns Array an array containing the author name and email
+	 */
+	public function last_modified_author() {
+		if ( $last_id = get_post_meta( $this->id, '_edit_last', true ) ) {
+			$user = get_userdata( $last_id );
+			if ( ! $user ) {
+				return array();
+			}
+			return array( 'name' => $user->display_name, 'email' => $user->user_email );
+		} else {
+			return array();
+		}
+	}
 
-  /**
-   * Pull the post from GitHub
-   */
-  function pull() {
-    global $wpghs;
+	/**
+	 * The post's sha
+	 * Cached as post meta, or will make a live call if need be
+	 *
+	 * Returns String the sha1 hash
+	 */
+	public function sha() {
+		$sha = get_post_meta( $this->id, '_sha', true );
 
-    $data = $this->remote_contents();
-    $content = base64_decode($data->content);
+		// If we've done a full export and we have no sha
+		// then we should try a live check to see if it exists
+		if ( ! $sha && 'yes' === get_option( '_wpghs_fully_exported' ) ) {
+			$data = $this->api->remote_contents( $this );
 
-    // Break out meta, if present
-    preg_match( "/(^---(.*?)---$)?(.*)/ms", $content, $matches );
+			if ( ! is_wp_error( $data ) ) {
+				add_post_meta( $this->id, '_sha', $data->sha, true ) || update_post_meta( $this->id, '_sha', $data->sha );
+				$sha = $data->sha;
+			}
+		}
 
-    $body = array_pop( $matches );
+		// if the sha still doesn't exist, then it's empty
+		if ( ! $sha ) {
+			$sha = '';
+		}
 
-    if (count($matches) == 3) {
-      $meta = spyc_load($matches[2]);
-      if ($meta['permalink']) $meta['permalink'] = str_replace(home_url(), '', get_permalink($meta['permalink']));
-    } else {
-      $meta = array();
-    }
+		return $sha;
+	}
 
-    if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
-      $body = wpmarkdown_markdown_to_html( $body );
-    }
+	/**
+	 * Save the sha to post
+	 */
+	public function set_sha($sha) {
+		add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
+	}
 
-    wp_update_post( array_merge( $meta, array(
-        "ID"           => $this->id,
-        "post_content" => $body
-      ))
-    );
-  }
+	/**
+	 * The post's metadata
+	 *
+	 * Returns Array the post's metadata
+	 */
+	public function meta() {
 
-  /**
-   * Delete a post from GitHub
-   */
-  function delete() {
-    global $wpghs;
+		$meta = array(
+			'ID'           => $this->post->ID,
+			'post_title'   => get_the_title( $this->post ),
+			'author'       => get_userdata( $this->post->post_author )->display_name,
+			'post_date'    => $this->post->post_date,
+			'post_excerpt' => $this->post->post_excerpt,
+			'layout'       => get_post_type( $this->post ),
+			'permalink'    => get_permalink( $this->post )
+		);
 
-    if ($wpghs->push_lock)
-      return false;
+		//convert traditional post_meta values, hide hidden values
+		foreach ( get_post_custom( $this->id ) as $key => $value ) {
 
-    $args = array(
-      "method"  => "DELETE",
-      "headers" => array(
-          "Authorization" => "token " . $wpghs->oauth_token()
-        ),
-      "body"    => json_encode( array(
-          "message" => "Deleting " . $this->github_path() . " via WordPress at " . site_url() . " (" . get_bloginfo( 'name' ) . ")",
-          "author"  => $this->last_modified_author(),
-          "sha"     => $this->sha()
-        ) )
-    );
+			if ( '_' === substr( $key, 0, 1 ) ) {
+				continue;
+			}
 
-    wp_remote_request( $this->api_endpoint(), $args );
-  }
+			$meta[ $key ] = $value;
 
-  /**
-   * The post's metadata
-   *
-   * Returns Array the post's metadata
-   */
-  function meta() {
+		}
 
-    $meta = array(
-      'post_title'   => get_the_title( $this->post ),
-      'author'       => get_userdata( $this->post->post_author )->display_name,
-      'post_date'    => $this->post->post_date,
-      'post_excerpt' => $this->post->post_excerpt,
-      'layout'       => get_post_type( $this->post ),
-      'permalink'    => get_permalink( $this->post )
-    );
+		return $meta;
 
-    //convert traditional post_meta values, hide hidden values
-    foreach ( get_post_custom( $this->id ) as $key => $value ) {
-
-      if ( substr( $key, 0, 1 ) == '_' )
-        continue;
-
-      $meta[ $key ] = $value;
-
-    }
-
-    return $meta;
-
-  }
-
-  /**
-   * The post's YAML frontmatter
-   *
-   * Returns String the YAML frontmatter, ready to be written to the file
-   */
-  function front_matter() {
-    return Spyc::YAMLDump($this->meta(), false, false, true) . "---\n";
-  }
+	}
 }
