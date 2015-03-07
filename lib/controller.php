@@ -168,7 +168,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		if ( 3 === count( $matches ) ) {
 			$meta = spyc_load( $matches[2] );
-			if ( $meta['permalink'] ) {
+			if ( isset( $meta['permalink'] ) ) {
 				$meta['permalink'] = str_replace( home_url(), '', get_permalink( $meta['permalink'] ) );
 			}
 		} else {
