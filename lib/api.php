@@ -1,4 +1,5 @@
 <?php
+use WordPress_GitHub_Sync_Cache as Cache;
 /**
  * Interfaces with the GitHub API
  */
@@ -12,7 +13,11 @@ class WordPress_GitHub_Sync_Api {
 			return false;
 		}
 
-		return $this->call( 'GET', $this->blob_endpoint() . '/' . $sha );
+		if ( $cache = Cache::open()->get( 'blobs', $sha ) ) {
+			return $cache;
+		}
+
+		return Cache::open()->save( 'blobs', $sha, $this->call( 'GET', $this->blob_endpoint() . '/' . $sha ) );
 	}
 
 	/**
@@ -21,6 +26,10 @@ class WordPress_GitHub_Sync_Api {
 	public function get_tree_recursive($sha) {
 		if ( ! $this->oauth_token() || ! $this->repository() ) {
 			return false;
+		}
+
+		if ( $cache = Cache::open()->get( 'trees', $sha ) ) {
+			return $cache;
 		}
 
 		$data = $this->call( 'GET', $this->tree_endpoint() . '/' . $sha . '?recursive=1' );
@@ -34,7 +43,7 @@ class WordPress_GitHub_Sync_Api {
 			}
 		}
 
-		return array_values( $data->tree );
+		return Cache::open()->save( 'trees', $sha, array_values( $data->tree ) );
 	}
 
 	/**
@@ -45,7 +54,11 @@ class WordPress_GitHub_Sync_Api {
 			return false;
 		}
 
-		return $this->call( 'GET', $this->commit_endpoint() . '/' . $sha );
+		if ( $cache = Cache::open()->get( 'commits', $sha ) ) {
+			return $cache;
+		}
+
+		return Cache::open()->save( 'commits', $sha, $this->call( 'GET', $this->commit_endpoint() . '/' . $sha ) );
 	}
 
 	/**
