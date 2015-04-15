@@ -48,8 +48,12 @@ class WordPress_GitHub_Sync_Controller {
 	 */
 	public function pull($payload) {
 		if ( strtolower( $payload->repository->full_name ) !== strtolower( $this->api->repository() ) ) {
-			WordPress_GitHub_Sync::write_log( strtolower( $payload->repository->full_name ) . __( ' is an invalid repository.', WordPress_GitHub_Sync::$text_domain ) );
-			return;
+			$msg = strtolower( $payload->repository->full_name ) . __( ' is an invalid repository.', WordPress_GitHub_Sync::$text_domain );
+			WordPress_GitHub_Sync::write_log( $msg );
+			return array(
+				'result'  => 'error',
+				'message' => $msg,
+			);
 		}
 
 		// the last term in the ref is the branch name
@@ -57,21 +61,33 @@ class WordPress_GitHub_Sync_Controller {
 		$branch = array_pop( $refs );
 
 		if ( 'master' !== $branch ) {
-			WordPress_GitHub_Sync::write_log( __( 'Not on the master branch.', WordPress_GitHub_Sync::$text_domain ) );
-			return;
+			$msg = __( 'Not on the master branch.', WordPress_GitHub_Sync::$text_domain );
+			WordPress_GitHub_Sync::write_log( $msg );
+			return array(
+				'result'  => 'error',
+				'message' => $msg,
+			);
 		}
 
 		// We add wpghs to commits we push out, so we shouldn't pull them in again
 		if ( 'wpghs' === substr( $payload->head_commit->message, -5 ) ) {
-			WordPress_GitHub_Sync::write_log( __( 'Already synced this commit.', WordPress_GitHub_Sync::$text_domain ) );
-			return;
+			$msg = __( 'Already synced this commit.', WordPress_GitHub_Sync::$text_domain );
+			WordPress_GitHub_Sync::write_log( $msg );
+			return array(
+				'result'  => 'error',
+				'message' => $msg,
+			);
 		}
 
 		$commit = $this->api->get_commit( $payload->head_commit->id );
 
 		if ( is_wp_error( $commit ) ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting commit with error: ', WordPress_GitHub_Sync::$text_domain ) . $commit->get_error_message() );
-			return;
+			$msg = __( 'Failed getting commit with error: ', WordPress_GitHub_Sync::$text_domain ) . $commit->get_error_message();
+			WordPress_GitHub_Sync::write_log( $msg );
+			return array(
+				'result'  => 'error',
+				'message' => $msg,
+			);
 		}
 
 		$this->import_tree( $commit->tree->sha );
@@ -87,7 +103,13 @@ class WordPress_GitHub_Sync_Controller {
 			wp_delete_post( $post->id );
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Payload processed', WordPress_GitHub_Sync::$text_domain ) );
+		$msg = __( 'Payload processed', WordPress_GitHub_Sync::$text_domain );
+		WordPress_GitHub_Sync::write_log( $msg );
+
+		return array(
+			'result'  => 'success',
+			'message' => $msg,
+		);
 	}
 
 	/**
