@@ -78,6 +78,9 @@ class WordPress_GitHub_Sync {
 		}
 		$this->controller = new WordPress_GitHub_Sync_Controller;
 
+		register_activation_hook( __FILE__, array( $this, 'activate' ) );
+		add_action( 'admin_notices', array( $this, 'activation_notice' ) );
+
 		add_action( 'init', array( &$this, 'l10n' ) );
 		add_action( 'save_post', array( &$this, 'save_post_callback' ) );
 		add_action( 'delete_post', array( &$this, 'delete_post_callback' ) );
@@ -215,6 +218,30 @@ class WordPress_GitHub_Sync {
 
 		wp_schedule_single_event( time(), 'wpghs_import' );
 		spawn_cron();
+	}
+
+	/**
+	 * Enables the admin notice on initial activation
+	 */
+	public function activate() {
+		if ( 'yes' !== get_option( '_wpghs_fully_exported' ) ) {
+			set_transient( '_wpghs_activated', 'yes' );
+		}
+	}
+
+	/**
+	 * Displays the activation admin notice
+	 */
+	public function activation_notice() {
+		if ( ! get_transient( '_wpghs_activated' ) ) {
+			return;
+		}
+
+		delete_transient( '_wpghs_activated' );
+
+		?><div class="updated">
+			<p><?php _e( 'To set up your site to sync with GitHub, update your <a href="' . admin_url( 'options-general.php?page=wordpress-github-sync' ) . '">settings</a> and click "Export to GitHub."', WordPress_GitHub_Sync::$text_domain ); ?></p>
+		</div><?php
 	}
 
 	/**
