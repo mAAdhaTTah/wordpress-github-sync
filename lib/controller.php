@@ -11,6 +11,13 @@ class WordPress_GitHub_Sync_Controller {
 	public $api;
 
 	/**
+	 * Currently whitelisted post types & statuses
+	 * @var  array
+	 */
+	protected $whitelisted_post_types;
+	protected $whitelisted_post_statuses;
+
+	/**
 	 * Whether any posts have changed
 	 * @var boolean
 	 */
@@ -41,6 +48,8 @@ class WordPress_GitHub_Sync_Controller {
 	 */
 	public 	function __construct() {
 		$this->api = new WordPress_GitHub_Sync_Api;
+		$this->whitelisted_post_types = apply_filters( 'wpghs_whitelisted_post_types', array( 'post', 'page' ) );
+		$this->whitelisted_post_statuses = apply_filters( 'wpghs_whitelisted_post_statuses', array( 'publish' ) );
 	}
 
 	/**
@@ -169,7 +178,6 @@ class WordPress_GitHub_Sync_Controller {
 			return;
 		}
 
-		$path = $blob->path;
 		$blob = $this->api->get_blob( $blob->sha );
 
 		if ( is_wp_error( $blob ) ) {
@@ -203,28 +211,31 @@ class WordPress_GitHub_Sync_Controller {
 			$body = wpmarkdown_markdown_to_html( $body );
 		}
 
-		$post = new WordPress_GitHub_Sync_Post( $args['ID'] );
+		$args = array( 'post_content' => $body );
 
-		// Can we really just mash everything together here?
-		$post_type = $post->get_type_from_path($path);
-		$post_name = $post->get_name_from_path($path);
-		$args = array_merge( $meta, array(
-			'post_type'    => $post_type,
-			'post_name'    => $post_name,
-			'post_content' => $body
-		) );
+		if ( ! empty( $meta ) ) {
+			$args['post_type'] = $meta['layout'];
+			unset( $meta['layout'] );
 
-		if ( $post->is_post_type_blacklisted($post_type) ) {
-			return;
+			if ( isset( $meta['ID'] ) ) {
+				$args['ID'] = $meta['ID'];
+				unset( $meta['ID'] );
+			}
 		}
 
 		if ( ! isset($args['ID']) ) {
+			// @todo create a revision when we add revision author support
 			$post_id = wp_insert_post( $args );
 		} else {
 			$post_id = wp_update_post( $args );
 		}
 
-		$post->set_sha($blob->sha, $post_id);
+		$post = new WordPress_GitHub_Sync_Post( $post_id );
+		$post->set_sha( $blob->sha );
+
+		foreach ( $meta as $key => $value ) {
+			update_post_meta( $post_id, $key, $value );
+		}
 	}
 
 	/**
@@ -237,9 +248,15 @@ class WordPress_GitHub_Sync_Controller {
 			return;
 		}
 
-		$post = new WordPress_GitHub_Sync_Post(0);
-		$blacklisted_post_types = $post->get_blacklisted_values();
-		$posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type NOT IN ( $blacklisted_post_types )" );
+		$post_statuses = $this->format_for_query( $this->whitelisted_post_statuses );
+		$post_types = $this->format_for_query( $this->whitelisted_post_types );
+
+		$posts = $wpdb->get_col(
+			"SELECT ID FROM $wpdb->posts WHERE
+			post_status IN ( $post_statuses ) AND
+			post_type IN ( $post_types )"
+		);
+
 		$this->msg = 'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ') - wpghs';
 
 		$this->get_tree();
@@ -302,9 +319,12 @@ class WordPress_GitHub_Sync_Controller {
 	public function post_to_tree($post, $remove = false) {
 		$match = false;
 
+		if ( ! $this->is_post_supported( $post ) ) {
+			return;
+		}
+
 		foreach ( $this->tree as $index => $blob ) {
 			if ( ! isset( $blob->sha ) ) {
-
 				continue;
 			}
 
@@ -378,8 +398,8 @@ class WordPress_GitHub_Sync_Controller {
 	 * If blob is provided, compares blob to post
 	 * and updates blob data based on differences
 	 */
-	public function new_blob($post, $blob = array()) {
-		if ( empty($blob) ) {
+	public function new_blob( $post, $blob = array() ) {
+		if ( empty( $blob ) ) {
 			$blob = $this->blob_from_post( $post );
 		} else {
 			unset($blob->url);
@@ -497,5 +517,36 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		$this->tree = $tree;
+	}
+
+	/**
+	 * Formats a whitelist array for a query
+	 *
+	 * @param  array $whitelist
+	 * @return string            Whitelist formatted for query
+	 */
+	protected function format_for_query( $whitelist ) {
+		return implode(', ', array_map( function( $v ) {
+			return "'$v'";
+		}, $whitelist ) );
+	}
+
+	/**
+	 * Verifies that both the post's status & type
+	 * are currently whitelisted
+	 *
+	 * @param  WPGHS_Post  $post  post to verify
+	 * @return boolean            true if supported, false if not
+	 */
+	protected function is_post_supported( $post ) {
+		if ( ! in_array( $post->status(), $this->whitelisted_post_statuses ) ) {
+			return false;
+		}
+
+		if ( ! in_array( $post->type(), $this->whitelisted_post_types ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }

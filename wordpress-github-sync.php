@@ -109,25 +109,12 @@ class WordPress_GitHub_Sync {
 	 *
 	 * $post_id - (int) the post to sync
 	 */
-	public function save_post_callback($post_id) {
-
+	public function save_post_callback( $post_id ) {
 		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
 			return;
 		}
 
-		// Right now CPTs are not supported
-		$post = new WordPress_GitHub_Sync_Post( $post_id );
-		if ($post->is_post_type_blacklisted()) {
-			return;
-		}
-
-		// Not yet published
-		if ( 'publish' !== get_post_status( $post_id ) ) {
-			return;
-		}
-
 		$this->controller->export_post( $post_id );
-
 	}
 
 	/**
@@ -136,17 +123,11 @@ class WordPress_GitHub_Sync {
 	 * $post_id - (int) the post to delete
 	 */
 	public function delete_post_callback( $post_id ) {
-
-		$post = get_post( $post_id );
-
-		// Right now CPTs are not supported
-		$post = new WordPress_GitHub_Sync_Post( $post_id );
-		if ($post->is_post_type_blacklisted()) {
+		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
 			return;
 		}
 
 		$this->controller->delete_post( $post_id );
-
 	}
 
 	/**

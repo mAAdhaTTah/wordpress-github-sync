@@ -29,12 +29,6 @@ class WordPress_GitHub_Sync_Post {
 	public $post;
 
 	/**
-	 * Blacklisted Post Types
-	 * @var Array
-	 */
-	public $blacklisted_post_types = array('attachment', 'revision', 'nav_menu_item');
-
-	/**
 	 * Instantiates a new Post object
 	 *
 	 * $id_or_path - (int|string) either a postID (WordPress) or a path to a file (GitHub)
@@ -60,12 +54,12 @@ class WordPress_GitHub_Sync_Post {
 	 * @todo - CUSTOM FORMAT SUPPORT
 	 */
 	public function parts_from_path() {
-		$directory = trim($this->github_directory(), '/');
+		$directory = trim( $this->github_directory(), '/' );
 
 		if ( 'post' === $this->type() ) {
-			$pattern = sprintf('/%s\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $directory);
+			$pattern = sprintf( '/%s\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $directory );
 		} else {
-			$pattern = sprintf('/%s\/(.*)\.md/', $directory);
+			$pattern = sprintf( '/%s\/(.*)\.md/', $directory );
 		}
 
 		preg_match( $pattern, $this->path, $matches );
@@ -125,25 +119,10 @@ class WordPress_GitHub_Sync_Post {
 	}
 
 	/**
-	 * Is the post type blacklisted?
-	 *
-	 * If the $page parameter is specified, this function will additionally
-	 * check if the query is for one of the pages specified.
-	 *
-	 * @param string $post_type
-	 * @return bool
+	 * Returns the post type
 	 */
-	public function is_post_type_blacklisted($post_type = '') {
-		if(empty($post_type)) {
-			$post_type = $this->type();
-		}
-		return (bool) in_array($post_type, $this->blacklisted_post_types);
-	}
-
-	public function get_blacklisted_values() {
-		if (!array($this->blacklisted_post_types)) return '';
-
-		return implode(', ', array_map(function($v) { return "'$v'"; }, $this->blacklisted_post_types ));
+	public function status() {
+		return $this->post->post_status;
 	}
 
 	/**
@@ -202,32 +181,36 @@ class WordPress_GitHub_Sync_Post {
 	 * Get GitHub directory based on post
 	 */
 	public function github_directory() {
-		$directory = '';
-
-		if (!$this->is_post_type_blacklisted()) {
-			$obj = get_post_type_object($this->type());
-			$name = strtolower($obj->labels->name);
-			if($name) {
-				$directory = '_' . strtolower($obj->labels->name) . '/';
-			}
+		if ( 'publish' !== $this->status() ) {
+			return apply_filters( 'wpghs_directory_unpublished', '_drafts/', $this );
 		}
 
-		return $directory;
+		$obj = get_post_type_object( $this->type() );
+
+		if ( ! $obj ) {
+			return '';
+		}
+
+		$name = strtolower( $obj->labels->name );
+
+		if ( ! $name ) {
+			return '';
+		}
+
+		return apply_filters( 'wpghs_directory_published', '_' . strtolower( $name ) . '/', $this );
 	}
 
 	/**
 	 * Build GitHub filename based on post
 	 */
 	public function github_filename() {
-		$filename = '';
-
 		if ( 'post' === $this->type() ) {
 			$filename = get_the_time( 'Y-m-d-', $this->id ) . $this->name() . '.md';
-		} elseif (!$this->is_post_type_blacklisted()) {
+		} else {
 			$filename = $this->name() . '.md';
 		}
 
-		return $filename;
+		return apply_filters( 'wpghs_filename', $filename, $this );
 	}
 
 	/**
@@ -235,56 +218,11 @@ class WordPress_GitHub_Sync_Post {
 	* @param string $path
 	* @return string
 	*/
-	 public function get_directory_from_path($path) {
-		$directory = explode('/',$path);
-		$directory = count($directory) > 0 ? $directory[0] : '';
+	public function get_directory_from_path( $path ) {
+		$directory = explode( '/',$path );
+		$directory = count( $directory ) > 0 ? $directory[0] : '';
 
 		return $directory;
-	}
-
-	/**
-	 * Retrieve post type from blob path
-	 * @param string $path
-	 * @return string
-	 */
-	public function get_type_from_path($path) {
-		global $wp_post_types;
-
-		$directory = $this->get_directory_from_path($path);
-		if ($directory) {
-			// remove the underscore
-			$directory = substr($directory, 1);
-
-			foreach ($wp_post_types as $key => $pt) {
-				if ( strtolower($pt->labels->name) === $directory ) {
-					return $key;
-				}
-			}
-		}
-
-			// default post type
-		return 'post';
-	}
-
-	/**
-	 * Retrieve post name from blob path
-	 * @param string $path
-	 * @return string
-	 */
-	public function get_name_from_path($path) {
-		$post_type = $this->get_type_from_path($path);
-		$directory = $this->get_directory_from_path($path);
-
-		if ( 'post' === $post_type ) {
-			$pattern = sprintf('/%s\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $directory);
-			$match_index = 4;
-		} else {
-			$pattern = sprintf('/%s\/(.*)\.md/', $directory);
-			$match_index = 1;
-		}
-
-		preg_match( $pattern, $path, $matches );
-		return $matches[$match_index];
 	}
 
 
@@ -296,13 +234,13 @@ class WordPress_GitHub_Sync_Post {
 	public function last_modified_author() {
 		if ( $last_id = get_post_meta( $this->id, '_edit_last', true ) ) {
 			$user = get_userdata( $last_id );
-			if ( ! $user ) {
-				return array();
+
+			if ( $user ) {
+				return array( 'name' => $user->display_name, 'email' => $user->user_email );
 			}
-			return array( 'name' => $user->display_name, 'email' => $user->user_email );
-		} else {
-			return array();
 		}
+
+		return array();
 	}
 
 	/**
@@ -317,6 +255,8 @@ class WordPress_GitHub_Sync_Post {
 		// If we've done a full export and we have no sha
 		// then we should try a live check to see if it exists
 		if ( ! $sha && 'yes' === get_option( '_wpghs_fully_exported' ) ) {
+
+			// @todo could we eliminate this by calling down the full tree and searching it
 			$data = $this->api->remote_contents( $this );
 
 			if ( ! is_wp_error( $data ) ) {
@@ -336,12 +276,8 @@ class WordPress_GitHub_Sync_Post {
 	/**
 	 * Save the sha to post
 	 */
-	public function set_sha($sha, $post_id = 0) {
-		if ( 0 === $post_id ) {
-			$post_id = $this->id;
-		}
-
-		update_post_meta( $post_id, '_sha', $sha );
+	public function set_sha( $sha ) {
+		update_post_meta( $this->id, '_sha', $sha );
 	}
 
 	/**
@@ -350,7 +286,6 @@ class WordPress_GitHub_Sync_Post {
 	 * Returns Array the post's metadata
 	 */
 	public function meta() {
-
 		$meta = array(
 			'ID'           => $this->post->ID,
 			'post_title'   => get_the_title( $this->post ),
@@ -358,7 +293,7 @@ class WordPress_GitHub_Sync_Post {
 			'post_date'    => $this->post->post_date,
 			'post_excerpt' => $this->post->post_excerpt,
 			'layout'       => get_post_type( $this->post ),
-			'permalink'    => get_permalink( $this->post )
+			'permalink'    => get_permalink( $this->post ),
 		);
 
 		//convert traditional post_meta values, hide hidden values
@@ -372,7 +307,6 @@ class WordPress_GitHub_Sync_Post {
 
 		}
 
-		return $meta;
-
+		return apply_filters( 'wpghs_post_meta', $meta, $this );
 	}
 }
