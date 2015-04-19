@@ -209,6 +209,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		WordPress_GitHub_Sync::write_log( __( 'Building the tree.', WordPress_GitHub_Sync::$text_domain ) );
 		foreach ( $posts as $post_id ) {
+			$this->posts[] = $post_id;
 			$post = new WordPress_GitHub_Sync_Post( $post_id );
 			$this->post_to_tree( $post );
 		}
