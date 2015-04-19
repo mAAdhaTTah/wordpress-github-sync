@@ -160,12 +160,16 @@ class WordPress_GitHub_Sync {
 		// validate secret
 		$hash = hash_hmac( 'sha1', $raw_data, $this->secret() );
 		if ( 'sha1=' . $hash !== $headers['X-Hub-Signature'] ) {
-			self::write_log( __( 'Failed to validate secret.', WordPress_GitHub_Sync::$text_domain ) );
-			die();
+			$msg = __( 'Failed to validate secret.', WordPress_GitHub_Sync::$text_domain );
+			self::write_log( $msg );
+			wp_send_json( array(
+				'result'  => 'error',
+				'message' => $msg,
+			) );
 		}
 
-		$this->controller->pull( json_decode( $raw_data ) );
-		die();
+		$result = $this->controller->pull( json_decode( $raw_data ) );
+		wp_send_json( $result );
 	}
 
 	/**
