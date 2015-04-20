@@ -217,6 +217,9 @@ class WordPress_GitHub_Sync_Controller {
 			$args['post_type'] = $meta['layout'];
 			unset( $meta['layout'] );
 
+			$args['post_status'] = true === $meta['published'] ? 'publish' : 'draft';
+			unset( $meta['published'] );
+
 			if ( isset( $meta['ID'] ) ) {
 				$args['ID'] = $meta['ID'];
 				unset( $meta['ID'] );
