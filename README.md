@@ -92,6 +92,43 @@ WordPress <--> GitHub Sync exports all posts as `.md` files for better display o
 
 You can also activate the Markdown module from [Jetpack](https://wordpress.org/plugins/jetpack/) or the standalone [JP Markdown](https://wordpress.org/plugins/jetpack-markdown/) to save in Markdown and export that version to GitHub.
 
+### Custom Post Type & Status Support ###
+
+By default, WordPress <--> GitHub Sync only exports published posts and pages. If you want to export additional post types or draft posts, you'll have to hook into the filters `wpghs_whitelisted_post_types` or `wpghs_whitelisted_post_statuses` respectively.
+
+In `wp-content`, create or open the `mu-plugins` folder and create a plugin file there called `wpghs-custom-filters.php`. In it, paste and modify the below code:
+
+```php
+<?php
+/**
+ * Plugin Name:  WordPress-GitHub Sync Custom Filters
+ * Plugin URI:   https://github.com/benbalter/wordpress-github-sync
+ * Description:  Adds support for custom post types and statuses
+ * Version:      1.0.0
+ * Author:       James DiGioia
+ * Author URI:   https://jamesdigioia.com/
+ * License:      GPL2
+ */
+
+add_filter('wpghs_whitelisted_post_types', function ($supported_post_types) {
+  return array_merge($supported_post_types, array(
+    // add your custom post types here
+    'gistpen'
+  ));
+});
+
+add_filter('wpghs_whitelisted_post_statuses', function ($supported_post_statuses) {
+  return array_merge($supported_post_statuses, array(
+    // additional statuses available: https://codex.wordpress.org/Post_Status
+    'draft'
+  ));
+});
+```
+
+### Additional Customizations ###
+
+There are a number of other filters available in WordPress <--> GitHub Sync for customizing various parts of the export, including the commit message and YAML front-matter. Want more detail? Check out the [wiki](https://github.com/benbalter/wordpress-github-sync/wiki).
+
 ### Contributing ###
 
 Found a bug? Want to take a stab at [one of the open issues](https://github.com/benbalter/wordpress-github-sync/issues)? We'd love your help!
