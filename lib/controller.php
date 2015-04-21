@@ -218,6 +218,11 @@ class WordPress_GitHub_Sync_Controller {
 			$args['post_status'] = true === $meta['published'] ? 'publish' : 'draft';
 			unset( $meta['published'] );
 
+			if ( array_key_exists( 'post_title', $meta ) ) {
+				$args['post_title'] = isset( $meta['post_title'] ) ? sanitize_text_field( $meta['post_title'] ) : '';
+				unset( $meta['post_title'] );
+			}
+
 			if ( isset( $meta['ID'] ) ) {
 				$args['ID'] = $meta['ID'];
 				unset( $meta['ID'] );
