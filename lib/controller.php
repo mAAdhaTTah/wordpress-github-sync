@@ -212,18 +212,22 @@ class WordPress_GitHub_Sync_Controller {
 		$args = array( 'post_content' => $body );
 
 		if ( ! empty( $meta ) ) {
-			$args['post_type'] = $meta['layout'];
-			unset( $meta['layout'] );
+			if ( array_key_exists( 'layout', $meta ) ) {
+				$args['post_type'] = $meta['layout'];
+				unset( $meta['layout'] );
+			}
 
-			$args['post_status'] = true === $meta['published'] ? 'publish' : 'draft';
-			unset( $meta['published'] );
+			if ( array_key_exists( 'published', $meta ) ) {
+				$args['post_status'] = true === $meta['published'] ? 'publish' : 'draft';
+				unset( $meta['published'] );
+			}
 
 			if ( array_key_exists( 'post_title', $meta ) ) {
-				$args['post_title'] = isset( $meta['post_title'] ) ? sanitize_text_field( $meta['post_title'] ) : '';
+				$args['post_title'] = $meta['post_title'];
 				unset( $meta['post_title'] );
 			}
 
-			if ( isset( $meta['ID'] ) ) {
+			if ( array_key_exists( 'ID', $meta ) ) {
 				$args['ID'] = $meta['ID'];
 				unset( $meta['ID'] );
 			}
