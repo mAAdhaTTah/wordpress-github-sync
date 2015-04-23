@@ -129,6 +129,8 @@ add_filter('wpghs_whitelisted_post_statuses', function ($supported_post_statuses
 
 There are a number of other filters available in WordPress <--> GitHub Sync for customizing various parts of the export, including the commit message and YAML front-matter. Want more detail? Check out the [wiki](https://github.com/benbalter/wordpress-github-sync/wiki).
 
+We're also working on making it possible to import new posts from GitHub into WordPress, but this is **not yet supported**. For now, please create your posts in WordPress initially then edit the exported file to keep it in sync.
+
 ### Contributing ###
 
 Found a bug? Want to take a stab at [one of the open issues](https://github.com/benbalter/wordpress-github-sync/issues)? We'd love your help!
