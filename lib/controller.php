@@ -14,8 +14,8 @@ class WordPress_GitHub_Sync_Controller {
 	 * Currently whitelisted post types & statuses
 	 * @var  array
 	 */
-	protected $whitelisted_post_types;
-	protected $whitelisted_post_statuses;
+	protected $whitelisted_post_types = array( 'post', 'page' );
+	protected $whitelisted_post_statuses = array( 'publish' );
 
 	/**
 	 * Whether any posts have changed
@@ -48,8 +48,6 @@ class WordPress_GitHub_Sync_Controller {
 	 */
 	public 	function __construct() {
 		$this->api = new WordPress_GitHub_Sync_Api;
-		$this->whitelisted_post_types = apply_filters( 'wpghs_whitelisted_post_types', array( 'post', 'page' ) );
-		$this->whitelisted_post_statuses = apply_filters( 'wpghs_whitelisted_post_statuses', array( 'publish' ) );
 	}
 
 	/**
@@ -214,13 +212,22 @@ class WordPress_GitHub_Sync_Controller {
 		$args = array( 'post_content' => $body );
 
 		if ( ! empty( $meta ) ) {
-			$args['post_type'] = $meta['layout'];
-			unset( $meta['layout'] );
+			if ( array_key_exists( 'layout', $meta ) ) {
+				$args['post_type'] = $meta['layout'];
+				unset( $meta['layout'] );
+			}
 
-			$args['post_status'] = true === $meta['published'] ? 'publish' : 'draft';
-			unset( $meta['published'] );
+			if ( array_key_exists( 'published', $meta ) ) {
+				$args['post_status'] = true === $meta['published'] ? 'publish' : 'draft';
+				unset( $meta['published'] );
+			}
 
-			if ( isset( $meta['ID'] ) ) {
+			if ( array_key_exists( 'post_title', $meta ) ) {
+				$args['post_title'] = $meta['post_title'];
+				unset( $meta['post_title'] );
+			}
+
+			if ( array_key_exists( 'ID', $meta ) ) {
 				$args['ID'] = $meta['ID'];
 				unset( $meta['ID'] );
 			}
@@ -251,8 +258,8 @@ class WordPress_GitHub_Sync_Controller {
 			return;
 		}
 
-		$post_statuses = $this->format_for_query( $this->whitelisted_post_statuses );
-		$post_types = $this->format_for_query( $this->whitelisted_post_types );
+		$post_statuses = $this->format_for_query( $this->get_whitelisted_post_statuses() );
+		$post_types = $this->format_for_query( $this->get_whitelisted_post_types() );
 
 		$posts = $wpdb->get_col(
 			"SELECT ID FROM $wpdb->posts WHERE
@@ -535,6 +542,24 @@ class WordPress_GitHub_Sync_Controller {
 	}
 
 	/**
+	 * Returns the list of post type permitted.
+	 *
+	 * @return array
+	 */
+	protected function get_whitelisted_post_types() {
+		return apply_filters( 'wpghs_whitelisted_post_types', $this->whitelisted_post_types );
+	}
+
+	/**
+	 * Returns the list of post status permitted.
+	 *
+	 * @return array
+	 */
+	protected function get_whitelisted_post_statuses() {
+		return apply_filters( 'wpghs_whitelisted_post_statuses', $this->whitelisted_post_statuses );
+	}
+
+	/**
 	 * Verifies that both the post's status & type
 	 * are currently whitelisted
 	 *
@@ -542,11 +567,11 @@ class WordPress_GitHub_Sync_Controller {
 	 * @return boolean            true if supported, false if not
 	 */
 	protected function is_post_supported( $post ) {
-		if ( ! in_array( $post->status(), $this->whitelisted_post_statuses ) ) {
+		if ( ! in_array( $post->status(), $this->get_whitelisted_post_statuses() ) ) {
 			return false;
 		}
 
-		if ( ! in_array( $post->type(), $this->whitelisted_post_types ) ) {
+		if ( ! in_array( $post->type(), $this->get_whitelisted_post_types() ) ) {
 			return false;
 		}
 

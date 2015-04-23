@@ -294,7 +294,7 @@ class WordPress_GitHub_Sync_Post {
 			'post_excerpt' => $this->post->post_excerpt,
 			'layout'       => get_post_type( $this->post ),
 			'permalink'    => get_permalink( $this->post ),
-			'published'    => 'publish' === $this->status ? true : false,
+			'published'    => 'publish' === $this->status() ? true : false,
 		);
 
 		//convert traditional post_meta values, hide hidden values
