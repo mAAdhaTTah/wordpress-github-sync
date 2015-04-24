@@ -29,6 +29,12 @@ class WordPress_GitHub_Sync_Post {
 	public $post;
 
 	/**
+	 * Blacklisted Post Types
+	 * @var Array
+	 */
+	public $blacklisted_post_types = array('attachment', 'revision', 'nav_menu_item');
+
+	/**
 	 * Instantiates a new Post object
 	 *
 	 * $id_or_path - (int|string) either a postID (WordPress) or a path to a file (GitHub)
@@ -36,7 +42,6 @@ class WordPress_GitHub_Sync_Post {
 	 * Returns the Post object, duh
 	 */
 	public function __construct( $id_or_path ) {
-
 		$this->api = new WordPress_GitHub_Sync_Api;
 
 		if ( is_numeric( $id_or_path ) ) {
@@ -52,10 +57,18 @@ class WordPress_GitHub_Sync_Post {
 	/**
 	 * Parse the various parts of a filename from a path
 	 *
-	 * @todo - PAGE SUPPORT
+	 * @todo - CUSTOM FORMAT SUPPORT
 	 */
 	public function parts_from_path() {
-		preg_match( '/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $this->path, $matches );
+		$directory = trim($this->github_directory(), '/');
+
+		if ( 'post' === $this->type() ) {
+			$pattern = sprintf('/%s\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $directory);
+		} else {
+			$pattern = sprintf('/%s\/(.*)\.md/', $directory);
+		}
+
+		preg_match( $pattern, $this->path, $matches );
 		return $matches;
 	}
 
@@ -64,7 +77,11 @@ class WordPress_GitHub_Sync_Post {
 	 */
 	public function title_from_path() {
 		$matches = $this->parts_from_path();
-		return $matches[4];
+		if ( 'post' === $this->type() ) {
+			return $matches[4];
+		}
+
+		return $matches[1];
 	}
 
 	/**
@@ -105,6 +122,28 @@ class WordPress_GitHub_Sync_Post {
 	 */
 	public function type() {
 		return $this->post->post_type;
+	}
+
+	/**
+	 * Is the post type blacklisted?
+	 *
+	 * If the $page parameter is specified, this function will additionally
+	 * check if the query is for one of the pages specified.
+	 *
+	 * @param string $post_type
+	 * @return bool
+	 */
+	public function is_post_type_blacklisted($post_type = '') {
+		if(empty($post_type)) {
+			$post_type = $this->type();
+		}
+		return (bool) in_array($post_type, $this->blacklisted_post_types);
+	}
+
+	public function get_blacklisted_values() {
+		if (!array($this->blacklisted_post_types)) return '';
+
+		return implode(', ', array_map(function($v) { return "'$v'"; }, $this->blacklisted_post_types ));
 	}
 
 	/**
@@ -156,20 +195,24 @@ class WordPress_GitHub_Sync_Post {
 	 * Returns (string) the path relative to repo root
 	 */
 	public function github_path() {
-		return $this->github_folder() . $this->github_filename();
+		return $this->github_directory() . $this->github_filename();
 	}
 
 	/**
-	 * Get GitHub folder based on post
+	 * Get GitHub directory based on post
 	 */
-	public function github_folder() {
-		$folder = '';
+	public function github_directory() {
+		$directory = '';
 
-		if ( 'post' === $this->type() ) {
-			$folder = '_posts/';
+		if (!$this->is_post_type_blacklisted()) {
+			$obj = get_post_type_object($this->type());
+			$name = strtolower($obj->labels->name);
+			if($name) {
+				$directory = '_' . strtolower($obj->labels->name) . '/';
+			}
 		}
 
-		return $folder;
+		return $directory;
 	}
 
 	/**
@@ -180,12 +223,70 @@ class WordPress_GitHub_Sync_Post {
 
 		if ( 'post' === $this->type() ) {
 			$filename = get_the_time( 'Y-m-d-', $this->id ) . $this->name() . '.md';
-		} elseif ( 'page' === $this->type() ) {
-			$filename = get_page_uri( $this->id ) . '.md';
+		} elseif (!$this->is_post_type_blacklisted()) {
+			$filename = $this->name() . '.md';
 		}
 
 		return $filename;
 	}
+
+	/**
+	* Retrieve post type directory from blob path
+	* @param string $path
+	* @return string
+	*/
+	 public function get_directory_from_path($path) {
+		$directory = explode('/',$path);
+		$directory = count($directory) > 0 ? $directory[0] : '';
+
+		return $directory;
+	}
+
+	/**
+	 * Retrieve post type from blob path
+	 * @param string $path
+	 * @return string
+	 */
+	public function get_type_from_path($path) {
+		global $wp_post_types;
+
+		$directory = $this->get_directory_from_path($path);
+		if ($directory) {
+			// remove the underscore
+			$directory = substr($directory, 1);
+
+			foreach ($wp_post_types as $key => $pt) {
+				if ( strtolower($pt->labels->name) === $directory ) {
+					return $key;
+				}
+			}
+		}
+
+			// default post type
+		return 'post';
+	}
+
+	/**
+	 * Retrieve post name from blob path
+	 * @param string $path
+	 * @return string
+	 */
+	public function get_name_from_path($path) {
+		$post_type = $this->get_type_from_path($path);
+		$directory = $this->get_directory_from_path($path);
+
+		if ( 'post' === $post_type ) {
+			$pattern = sprintf('/%s\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $directory);
+			$match_index = 4;
+		} else {
+			$pattern = sprintf('/%s\/(.*)\.md/', $directory);
+			$match_index = 1;
+		}
+
+		preg_match( $pattern, $path, $matches );
+		return $matches[$match_index];
+	}
+
 
 	/**
 	 * Determines the last author to modify the post
@@ -219,7 +320,7 @@ class WordPress_GitHub_Sync_Post {
 			$data = $this->api->remote_contents( $this );
 
 			if ( ! is_wp_error( $data ) ) {
-				add_post_meta( $this->id, '_sha', $data->sha, true ) || update_post_meta( $this->id, '_sha', $data->sha );
+				update_post_meta( $this->id, '_sha', $data->sha );
 				$sha = $data->sha;
 			}
 		}
@@ -235,8 +336,12 @@ class WordPress_GitHub_Sync_Post {
 	/**
 	 * Save the sha to post
 	 */
-	public function set_sha($sha) {
-		add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
+	public function set_sha($sha, $post_id = 0) {
+		if ( 0 === $post_id ) {
+			$post_id = $this->id;
+		}
+
+		update_post_meta( $post_id, '_sha', $sha );
 	}
 
 	/**

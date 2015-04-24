@@ -119,7 +119,8 @@ class WordPress_GitHub_Sync {
 		}
 
 		// Right now CPTs are not supported
-		if ( 'page' !== get_post_type( $post_id ) && 'post' !== get_post_type( $post_id ) ) {
+		$post = new WordPress_GitHub_Sync_Post( $post_id );
+		if ($post->is_post_type_blacklisted()) {
 			return;
 		}
 
@@ -142,7 +143,8 @@ class WordPress_GitHub_Sync {
 		$post = get_post( $post_id );
 
 		// Right now CPTs are not supported
-		if ( 'page' !== $post->post_type && 'post' !== $post->post_type ) {
+		$post = new WordPress_GitHub_Sync_Post( $post_id );
+		if ($post->is_post_type_blacklisted()) {
 			return;
 		}
 
