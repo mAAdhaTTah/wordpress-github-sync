@@ -174,7 +174,11 @@ class WordPress_GitHub_Sync_Post {
 	 * Returns (string) the path relative to repo root
 	 */
 	public function github_path() {
-		return $this->github_directory() . $this->github_filename();
+		$path = $this->github_directory() . $this->github_filename();
+
+		update_post_meta( $this->id, '_wpghs_github_path', $path );
+
+		return $path;
 	}
 
 	/**
