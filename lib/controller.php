@@ -267,7 +267,7 @@ class WordPress_GitHub_Sync_Controller {
 			post_type IN ( $post_types )"
 		);
 
-		$this->msg = 'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ') - wpghs';
+		$this->msg = apply_filters( 'wpghs_commit_msg_full', 'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) .  ' - wpghs';
 
 		$this->get_tree();
 
@@ -291,7 +291,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		$this->posts[] = $post_id;
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
-		$this->msg = 'Syncing ' . $post->github_path() . ' from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ') - wpghs';
+		$this->msg = apply_filters( 'wpghs_commit_msg_single', 'Syncing ' . $post->github_path() . ' from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')', $post ) .  ' - wpghs';
 
 		$this->get_tree();
 
@@ -311,7 +311,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		$this->posts[] = $post_id;
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
-		$this->msg = 'Deleting ' . $post->github_path() . ' via WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ') - wpghs';
+		$this->msg = apply_filters( 'wpghs_commit_msg_delete', 'Deleting ' . $post->github_path() . ' via WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')', $post ) .  ' - wpghs';
 
 		$this->get_tree();
 
