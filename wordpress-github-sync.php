@@ -27,7 +27,10 @@
 		Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-require_once dirname( __FILE__ ) . '/vendor/autoload.php';
+$path = dirname( __FILE__ ) . '/vendor/autoload.php';
+if ( ! file_exists( $path ) ) {
+	require_once $path;
+}
 
 class WordPress_GitHub_Sync {
 
