@@ -1,24 +1,30 @@
 {
-	"name": "benbalter/wordpress-github-sync",
-	"description": "A WordPress plugin to sync content with a GitHub repository (or Jekyll site)",
-	"type": "wordpress-plugin",
-	"minimum-stability": "stable",
-	"license": "GPL",
-	"authors": [
-		{
-			"name": "Ben Balter",
-			"email": "ben@balter.com"
-		}
-	],
-	"autoload": {
-		"classmap": ["lib/"]
-	},
-	"require": {
-		"php": ">=5.3.1",
-		"mustangostang/spyc": "0.5.1"
-	},
-	"require-dev": {
-		"jdgrimes/wp-http-testcase": "1.2.1",
-		"mockery/mockery": "0.9.3"
-	}
+  "name": "benbalter/wordpress-github-sync",
+  "description": "A WordPress plugin to sync content with a GitHub repository (or Jekyll site)",
+  "type": "wordpress-plugin",
+  "minimum-stability": "stable",
+  "license": "GPL",
+  "authors": [
+    {
+      "name": "Ben Balter",
+      "email": "ben@balter.com"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/mAAdhaTTah/cyps"
+    }
+  ],
+  "autoload": {
+    "classmap": ["lib/"]
+  },
+  "require": {
+    "php": ">=5.3.1",
+    "mAAdhaTTah/cyps": "1.0.0"
+  },
+  "require-dev": {
+    "jdgrimes/wp-http-testcase": "1.2.1",
+    "mockery/mockery": "0.9.3"
+  }
 }
