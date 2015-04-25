@@ -169,7 +169,6 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		// If the blob sha already matches a post, then move on
-		// @TODO: check if we moved this post from one directory to another, so that we need to update the post type.
 		$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'" );
 		if ( $id ) {
 			WordPress_GitHub_Sync::write_log( __( 'Already synced blob ', WordPress_GitHub_Sync::$text_domain ) . $blob->path );
@@ -246,6 +245,8 @@ class WordPress_GitHub_Sync_Controller {
 		foreach ( $meta as $key => $value ) {
 			update_post_meta( $post_id, $key, $value );
 		}
+
+		WordPress_GitHub_Sync::write_log( __( 'Updated blob ', WordPress_GitHub_Sync::$text_domain ) . $blob->sha );
 	}
 
 	/**
