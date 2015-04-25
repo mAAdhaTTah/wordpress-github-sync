@@ -28,7 +28,7 @@
 */
 
 $path = dirname( __FILE__ ) . '/vendor/autoload.php';
-if ( ! file_exists( $path ) ) {
+if ( file_exists( $path ) ) {
 	require_once $path;
 }
 
