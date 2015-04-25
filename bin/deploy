@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+
+# built on:
+# https://github.com/ocean90/svn2git-tools/blob/master/automated-wordpress-plugin-deployment/deploy.sh
+# http://scribu.net/blog/deploying-from-git-to-svn.html
+
+# main config
+
+# users
+GIT_USER="mAAdhaTTah"
+SVN_USER="JamesDiGioia"
+
+# dirs
+SRC_DIR=$(git rev-parse --show-toplevel)
+SLUG=$(basename $SRC_DIR)
+SVN_DIR="/tmp/$SLUG/trunk"
+
+# repos
+SVN_URL="http://plugins.svn.wordpress.org/$SLUG"
+
+# Let's begin...
+echo
+echo "Deploy WordPress plugin"
+echo "======================="
+echo
+
+# Check version in README is the same as plugin file
+# translates both to unix line breaks to work around grep's failure to identify mac line breaks
+NEWVERSION1=`grep "Stable tag:" "$SRC_DIR/README.md" | awk -F' ' '{print $NF}'`
+echo "README version: $NEWVERSION1"
+NEWVERSION2=`grep "Version:" "$SRC_DIR/$SLUG.php" | awk -F' ' '{print $NF}'`
+echo "$SLUG.php version: $NEWVERSION2"
+
+if [ "$NEWVERSION1" != "$NEWVERSION2" ];then
+	echo "Version in README & $SLUG.php don't match. Please fix and try again."
+	exit 1
+fi
+
+# Also, make sure to check:
+# composer
+# constant
+# CHANGELOG
+# @todo: something about this - checklist?
+
+echo "Versions match in README and $SLUG.php. Let's proceed..."
+
+# Check if version has already been deployed
+if git show-ref --quiet --tags --verify -- "refs/tags/$NEWVERSION1"
+	then
+		echo "Version $NEWVERSION1 already exists as git tag. Proceeding..."
+	else
+		# create git tag
+		echo -n "Version $NEWVERSION1 does not exist. Creating and pushing new version tag to GitHub..."
+		git tag $NEWVERSION1
+		git push --quiet
+		git push --tags --quiet
+		echo "Done."
+fi
+
+# Check if working directory is clean
+if [ ! -z "$(git status --porcelain)" ]; then
+	echo "There appears to be uncommitted changes in your working directory. Please commit or stash them and try again."
+	exit 1
+fi
+
+# prep tmp folder for deploy
+if [ -d $SVN_DIR ]; then
+	echo -n "Cleaning up previous deployment..."
+	rm -Rf $SVN_DIR
+	echo "Done."
+fi
+
+# checkout svn repo
+echo -n "Creating local copy of SVN repo..."
+svn checkout --quiet $SVN_URL/trunk $SVN_DIR
+echo "Done."
+
+# clean svn repo
+echo -n "Cleaning local copy of SVN repo..."
+for file in $(find $SVN_DIR/* -type f -and -not -path "*.svn*")
+do
+	rm $file
+done
+find /tmp/$SLUG/trunk -type d -and -not -path "*.svn*" -empty -delete
+echo "Done."
+
+# copy current plugin to svn dir
+echo -n "Copying git files to SVN repo..."
+git checkout-index --quiet --all --force --prefix=$SVN_DIR/
+echo "Done."
+
+cd $SVN_DIR/
+
+# install npm, bower, and composer dependencies
+echo -n "Installing dependencies..."
+composer install --quiet --no-dev --optimize-autoloader &>/dev/null
+echo "Done."
+
+# transform the readme
+if [ -f README.md ]; then
+	echo -n "Converting the README to WordPress format..."
+	$SVN_DIR/bin/wp2md $SVN_DIR/README.md $SVN_DIR/README.txt to-wp
+	echo "Done."
+fi
+
+# remove unneeded files via .svnignore
+echo -n "Removing unwanted development files using .svnignore..."
+for file in $(cat "$SVN_DIR/.svnignore" 2> /dev/null)
+do
+	rm -rf $SVN_DIR/$file
+done
+echo "Done."
+
+# build release zip
+echo -n "Building production release zip..."
+zip -r $SLUG * --quiet
+mv $SLUG.zip /tmp/$SLUG.zip
+# todo: upload this zip directly to the GitHub release
+echo "Done. Zip file is in /tmp."
+
+# svn addremove
+echo "Adding new commit to SVN..."
+svn stat | awk '/^\?/ {print $2}' | xargs svn add > /dev/null 2>&1
+svn stat | awk '/^\M/ {print $2}' | xargs svn add > /dev/null 2>&1
+svn stat | awk '/^\!/ {print $2}' | xargs svn rm --force  > /dev/null 2>&1
+
+svn ci --username=$SVN_USER -m "Deploy version $NEWVERSION1 to .org" -q
+
+echo "Done."
+
+echo -n "Deploying new tag to SVN repo..."
+svn copy $SVN_URL/trunk $SVN_URL/tags/$NEWVERSION1 -m "Release $NEWVERSION1" -q
+echo "Done."
+
+echo "Finished deploying $SLUG."
