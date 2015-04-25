@@ -11,6 +11,13 @@ class WordPress_GitHub_Sync_Controller {
 	public $api;
 
 	/**
+	 * Currently whitelisted post types & statuses
+	 * @var  array
+	 */
+	protected $whitelisted_post_types = array( 'post', 'page' );
+	protected $whitelisted_post_statuses = array( 'publish' );
+
+	/**
 	 * Whether any posts have changed
 	 * @var boolean
 	 */
@@ -162,6 +169,7 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		// If the blob sha already matches a post, then move on
+		// @TODO: check if we moved this post from one directory to another, so that we need to update the post type.
 		$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'" );
 		if ( $id ) {
 			WordPress_GitHub_Sync::write_log( __( 'Already synced blob ', WordPress_GitHub_Sync::$text_domain ) . $blob->path );
@@ -201,16 +209,42 @@ class WordPress_GitHub_Sync_Controller {
 			$body = wpmarkdown_markdown_to_html( $body );
 		}
 
-		// Can we really just mash everything together here?
-		$args = array_merge( $meta, array(
-			'post_content' => $body,
-			'_sha'         => $blob->sha,
-		) );
+		$args = array( 'post_content' => $body );
+
+		if ( ! empty( $meta ) ) {
+			if ( array_key_exists( 'layout', $meta ) ) {
+				$args['post_type'] = $meta['layout'];
+				unset( $meta['layout'] );
+			}
+
+			if ( array_key_exists( 'published', $meta ) ) {
+				$args['post_status'] = true === $meta['published'] ? 'publish' : 'draft';
+				unset( $meta['published'] );
+			}
+
+			if ( array_key_exists( 'post_title', $meta ) ) {
+				$args['post_title'] = $meta['post_title'];
+				unset( $meta['post_title'] );
+			}
+
+			if ( array_key_exists( 'ID', $meta ) ) {
+				$args['ID'] = $meta['ID'];
+				unset( $meta['ID'] );
+			}
+		}
 
 		if ( ! isset($args['ID']) ) {
-			wp_insert_post( $args );
+			// @todo create a revision when we add revision author support
+			$post_id = wp_insert_post( $args );
 		} else {
-			wp_update_post( $args );
+			$post_id = wp_update_post( $args );
+		}
+
+		$post = new WordPress_GitHub_Sync_Post( $post_id );
+		$post->set_sha( $blob->sha );
+
+		foreach ( $meta as $key => $value ) {
+			update_post_meta( $post_id, $key, $value );
 		}
 	}
 
@@ -224,8 +258,16 @@ class WordPress_GitHub_Sync_Controller {
 			return;
 		}
 
-		$posts = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ('post', 'page' )" );
-		$this->msg = 'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ') - wpghs';
+		$post_statuses = $this->format_for_query( $this->get_whitelisted_post_statuses() );
+		$post_types = $this->format_for_query( $this->get_whitelisted_post_types() );
+
+		$posts = $wpdb->get_col(
+			"SELECT ID FROM $wpdb->posts WHERE
+			post_status IN ( $post_statuses ) AND
+			post_type IN ( $post_types )"
+		);
+
+		$this->msg = apply_filters( 'wpghs_commit_msg_full', 'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) .  ' - wpghs';
 
 		$this->get_tree();
 
@@ -249,7 +291,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		$this->posts[] = $post_id;
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
-		$this->msg = 'Syncing ' . $post->github_path() . ' from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ') - wpghs';
+		$this->msg = apply_filters( 'wpghs_commit_msg_single', 'Syncing ' . $post->github_path() . ' from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')', $post ) .  ' - wpghs';
 
 		$this->get_tree();
 
@@ -269,7 +311,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		$this->posts[] = $post_id;
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
-		$this->msg = 'Deleting ' . $post->github_path() . ' via WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ') - wpghs';
+		$this->msg = apply_filters( 'wpghs_commit_msg_delete', 'Deleting ' . $post->github_path() . ' via WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')', $post ) .  ' - wpghs';
 
 		$this->get_tree();
 
@@ -286,6 +328,10 @@ class WordPress_GitHub_Sync_Controller {
 	 */
 	public function post_to_tree($post, $remove = false) {
 		$match = false;
+
+		if ( ! $this->is_post_supported( $post ) ) {
+			return;
+		}
 
 		foreach ( $this->tree as $index => $blob ) {
 			if ( ! isset( $blob->sha ) ) {
@@ -362,8 +408,8 @@ class WordPress_GitHub_Sync_Controller {
 	 * If blob is provided, compares blob to post
 	 * and updates blob data based on differences
 	 */
-	public function new_blob($post, $blob = array()) {
-		if ( empty($blob) ) {
+	public function new_blob( $post, $blob = array() ) {
+		if ( empty( $blob ) ) {
 			$blob = $this->blob_from_post( $post );
 		} else {
 			unset($blob->url);
@@ -481,5 +527,54 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		$this->tree = $tree;
+	}
+
+	/**
+	 * Formats a whitelist array for a query
+	 *
+	 * @param  array $whitelist
+	 * @return string            Whitelist formatted for query
+	 */
+	protected function format_for_query( $whitelist ) {
+		return implode(', ', array_map( function( $v ) {
+			return "'$v'";
+		}, $whitelist ) );
+	}
+
+	/**
+	 * Returns the list of post type permitted.
+	 *
+	 * @return array
+	 */
+	protected function get_whitelisted_post_types() {
+		return apply_filters( 'wpghs_whitelisted_post_types', $this->whitelisted_post_types );
+	}
+
+	/**
+	 * Returns the list of post status permitted.
+	 *
+	 * @return array
+	 */
+	protected function get_whitelisted_post_statuses() {
+		return apply_filters( 'wpghs_whitelisted_post_statuses', $this->whitelisted_post_statuses );
+	}
+
+	/**
+	 * Verifies that both the post's status & type
+	 * are currently whitelisted
+	 *
+	 * @param  WPGHS_Post  $post  post to verify
+	 * @return boolean            true if supported, false if not
+	 */
+	protected function is_post_supported( $post ) {
+		if ( ! in_array( $post->status(), $this->get_whitelisted_post_statuses() ) ) {
+			return false;
+		}
+
+		if ( ! in_array( $post->type(), $this->get_whitelisted_post_types() ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }

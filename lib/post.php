@@ -36,7 +36,6 @@ class WordPress_GitHub_Sync_Post {
 	 * Returns the Post object, duh
 	 */
 	public function __construct( $id_or_path ) {
-
 		$this->api = new WordPress_GitHub_Sync_Api;
 
 		if ( is_numeric( $id_or_path ) ) {
@@ -52,10 +51,18 @@ class WordPress_GitHub_Sync_Post {
 	/**
 	 * Parse the various parts of a filename from a path
 	 *
-	 * @todo - PAGE SUPPORT
+	 * @todo - CUSTOM FORMAT SUPPORT
 	 */
 	public function parts_from_path() {
-		preg_match( '/_posts\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $this->path, $matches );
+		$directory = trim( $this->github_directory(), '/' );
+
+		if ( 'post' === $this->type() ) {
+			$pattern = sprintf( '/%s\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $directory );
+		} else {
+			$pattern = sprintf( '/%s\/(.*)\.md/', $directory );
+		}
+
+		preg_match( $pattern, $this->path, $matches );
 		return $matches;
 	}
 
@@ -64,7 +71,11 @@ class WordPress_GitHub_Sync_Post {
 	 */
 	public function title_from_path() {
 		$matches = $this->parts_from_path();
-		return $matches[4];
+		if ( 'post' === $this->type() ) {
+			return $matches[4];
+		}
+
+		return $matches[1];
 	}
 
 	/**
@@ -108,6 +119,13 @@ class WordPress_GitHub_Sync_Post {
 	}
 
 	/**
+	 * Returns the post type
+	 */
+	public function status() {
+		return $this->post->post_status;
+	}
+
+	/**
 	 * Returns the post name
 	 */
 	public function name() {
@@ -147,7 +165,7 @@ class WordPress_GitHub_Sync_Post {
 			}
 		}
 
-		return apply_filters( 'wpghs_content', $content );
+		return $content;
 	}
 
 	/**
@@ -156,36 +174,61 @@ class WordPress_GitHub_Sync_Post {
 	 * Returns (string) the path relative to repo root
 	 */
 	public function github_path() {
-		return $this->github_folder() . $this->github_filename();
+		$path = $this->github_directory() . $this->github_filename();
+
+		update_post_meta( $this->id, '_wpghs_github_path', $path );
+
+		return $path;
 	}
 
 	/**
-	 * Get GitHub folder based on post
+	 * Get GitHub directory based on post
 	 */
-	public function github_folder() {
-		$folder = '';
-
-		if ( 'post' === $this->type() ) {
-			$folder = '_posts/';
+	public function github_directory() {
+		if ( 'publish' !== $this->status() ) {
+			return apply_filters( 'wpghs_directory_unpublished', '_drafts/', $this );
 		}
 
-		return $folder;
+		$obj = get_post_type_object( $this->type() );
+
+		if ( ! $obj ) {
+			return '';
+		}
+
+		$name = strtolower( $obj->labels->name );
+
+		if ( ! $name ) {
+			return '';
+		}
+
+		return apply_filters( 'wpghs_directory_published', '_' . strtolower( $name ) . '/', $this );
 	}
 
 	/**
 	 * Build GitHub filename based on post
 	 */
 	public function github_filename() {
-		$filename = '';
-
 		if ( 'post' === $this->type() ) {
 			$filename = get_the_time( 'Y-m-d-', $this->id ) . $this->name() . '.md';
-		} elseif ( 'page' === $this->type() ) {
-			$filename = get_page_uri( $this->id ) . '.md';
+		} else {
+			$filename = $this->name() . '.md';
 		}
 
-		return $filename;
+		return apply_filters( 'wpghs_filename', $filename, $this );
 	}
+
+	/**
+	* Retrieve post type directory from blob path
+	* @param string $path
+	* @return string
+	*/
+	public function get_directory_from_path( $path ) {
+		$directory = explode( '/',$path );
+		$directory = count( $directory ) > 0 ? $directory[0] : '';
+
+		return $directory;
+	}
+
 
 	/**
 	 * Determines the last author to modify the post
@@ -195,13 +238,13 @@ class WordPress_GitHub_Sync_Post {
 	public function last_modified_author() {
 		if ( $last_id = get_post_meta( $this->id, '_edit_last', true ) ) {
 			$user = get_userdata( $last_id );
-			if ( ! $user ) {
-				return array();
+
+			if ( $user ) {
+				return array( 'name' => $user->display_name, 'email' => $user->user_email );
 			}
-			return array( 'name' => $user->display_name, 'email' => $user->user_email );
-		} else {
-			return array();
 		}
+
+		return array();
 	}
 
 	/**
@@ -216,10 +259,12 @@ class WordPress_GitHub_Sync_Post {
 		// If we've done a full export and we have no sha
 		// then we should try a live check to see if it exists
 		if ( ! $sha && 'yes' === get_option( '_wpghs_fully_exported' ) ) {
+
+			// @todo could we eliminate this by calling down the full tree and searching it
 			$data = $this->api->remote_contents( $this );
 
 			if ( ! is_wp_error( $data ) ) {
-				add_post_meta( $this->id, '_sha', $data->sha, true ) || update_post_meta( $this->id, '_sha', $data->sha );
+				update_post_meta( $this->id, '_sha', $data->sha );
 				$sha = $data->sha;
 			}
 		}
@@ -235,8 +280,8 @@ class WordPress_GitHub_Sync_Post {
 	/**
 	 * Save the sha to post
 	 */
-	public function set_sha($sha) {
-		add_post_meta( $this->id, '_sha', $sha, true ) || update_post_meta( $this->id, '_sha', $sha );
+	public function set_sha( $sha ) {
+		update_post_meta( $this->id, '_sha', $sha );
 	}
 
 	/**
@@ -245,7 +290,6 @@ class WordPress_GitHub_Sync_Post {
 	 * Returns Array the post's metadata
 	 */
 	public function meta() {
-
 		$meta = array(
 			'ID'           => $this->post->ID,
 			'post_title'   => get_the_title( $this->post ),
@@ -253,7 +297,8 @@ class WordPress_GitHub_Sync_Post {
 			'post_date'    => $this->post->post_date,
 			'post_excerpt' => $this->post->post_excerpt,
 			'layout'       => get_post_type( $this->post ),
-			'permalink'    => get_permalink( $this->post )
+			'permalink'    => get_permalink( $this->post ),
+			'published'    => 'publish' === $this->status() ? true : false,
 		);
 
 		//convert traditional post_meta values, hide hidden values
@@ -267,7 +312,6 @@ class WordPress_GitHub_Sync_Post {
 
 		}
 
-		return $meta;
-
+		return apply_filters( 'wpghs_post_meta', $meta, $this );
 	}
 }
