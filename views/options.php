@@ -12,7 +12,7 @@
 				<th scope="row"><?php _e( 'Bulk actions', WordPress_GitHub_Sync::$text_domain ); ?></th>
 				<td>
 					<a href="<?php echo add_query_arg( array( 'action' => 'export' ) ) ?>"><?php _e( 'Export to GitHub', WordPress_GitHub_Sync::$text_domain ); ?></a> |
-					<a href="<?php echo add_query_arg( array( 'action' => 'import' ) ) ?>"><?php _e( 'Import from GitHb', WordPress_GitHub_Sync::$text_domain ); ?></a>
+					<a href="<?php echo add_query_arg( array( 'action' => 'import' ) ) ?>"><?php _e( 'Import from GitHub', WordPress_GitHub_Sync::$text_domain ); ?></a>
 				</td>
 		</table>
 		<?php submit_button(); ?>
