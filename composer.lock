@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "355d1850c17f42a8ceb95ba530076d50",
+    "hash": "4703e783dbb4bbd435a7e31c293e8eb8",
     "packages": [
         {
             "name": "maadhattah/cyps",
@@ -162,6 +162,7 @@
     "minimum-stability": "stable",
     "stability-flags": [],
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": {
         "php": ">=5.3.1"
     },

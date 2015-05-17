@@ -37,7 +37,6 @@ if [ "$NEWVERSION1" != "$NEWVERSION2" ];then
 fi
 
 # Also, make sure to check:
-# composer
 # constant
 # CHANGELOG
 # @todo: something about this - checklist?

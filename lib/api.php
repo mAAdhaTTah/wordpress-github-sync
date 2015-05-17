@@ -1,5 +1,6 @@
 <?php
 use WordPress_GitHub_Sync_Cache as Cache;
+
 /**
  * Interfaces with the GitHub API
  */

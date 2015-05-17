@@ -50,7 +50,7 @@ class WordPress_GitHub_Sync {
 	 * Current version
 	 * @var string
 	 */
-	public static $version = '0.0.1';
+	public static $version = '1.0.0';
 
 	/**
 	 * Controller object

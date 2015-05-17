@@ -7,4 +7,4 @@ This change log follows the [Keep a Changelog standards](http://keepachangelog.c
 * Initial release
 * Supports full site sync, Markdown import/export, and custom post type & status support
 
-  [1.0.0]: example.com
+  [1.0.0]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.0.0
