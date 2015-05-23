@@ -537,9 +537,10 @@ class WordPress_GitHub_Sync_Controller {
 	 * @return string            Whitelist formatted for query
 	 */
 	protected function format_for_query( $whitelist ) {
-		return implode(', ', array_map( function( $v ) {
-			return "'$v'";
-		}, $whitelist ) );
+		foreach( $whitelist as $key => $value ) {
+			$whitelist[ $key ] = "'$value'";
+		}
+		return implode( ', ', $whitelist );
 	}
 
 	/**
