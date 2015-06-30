@@ -3,7 +3,7 @@
  * Plugin Name: WordPress GitHub Sync
  * Plugin URI: https://github.com/benbalter/wordpress-github-sync
  * Description: A WordPress plugin to sync content with a GitHub repository (or Jekyll site)
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author:  Ben Balter, James DiGioia
  * Author URI: http://ben.balter.com
  * License: GPLv2

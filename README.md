@@ -3,7 +3,7 @@
 **Tags:** github, git, version control, content, collaboration, publishing  
 **Requires at least:** 3.8  
 **Tested up to:** 4.1  
-**Stable tag:** 1.0.1  
+**Stable tag:** 1.0.2  
 **License:** GPLv2  
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
 
