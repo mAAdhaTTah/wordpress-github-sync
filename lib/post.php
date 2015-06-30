@@ -217,12 +217,25 @@ class WordPress_GitHub_Sync_Post {
 	 */
 	public function github_filename() {
 		if ( 'post' === $this->type() ) {
-			$filename = get_the_time( 'Y-m-d-', $this->id ) . $this->name() . '.md';
+			$filename = get_the_time( 'Y-m-d-', $this->id ) . $this->get_name() . '.md';
 		} else {
-			$filename = $this->name() . '.md';
+			$filename = $this->get_name() . '.md';
 		}
 
 		return apply_filters( 'wpghs_filename', $filename, $this );
+	}
+
+	/**
+	 * Returns a post slug we can use in the GitHub filename
+	 *
+	 * @return string
+	 */
+	protected function get_name() {
+		if ($this->name() !== '') {
+			return $this->name();
+		}
+
+		return sanitize_title( get_the_title( $this->post ) );
 	}
 
 	/**
