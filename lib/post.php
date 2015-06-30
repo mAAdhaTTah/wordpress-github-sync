@@ -133,6 +133,14 @@ class WordPress_GitHub_Sync_Post {
 	}
 
 	/**
+	 * Returns true if the post has a password
+	 * @return bool
+	 */
+	public function has_password() {
+		return ! empty( $this->post->post_password );
+	}
+
+	/**
 	 * Combines the 2 content parts for GitHub
 	 */
 	public function github_content() {

@@ -565,8 +565,8 @@ class WordPress_GitHub_Sync_Controller {
 	 * Verifies that both the post's status & type
 	 * are currently whitelisted
 	 *
-	 * @param  WPGHS_Post  $post  post to verify
-	 * @return boolean            true if supported, false if not
+	 * @param  WordPress_GitHub_Sync_Post  $post  post to verify
+	 * @return boolean                            true if supported, false if not
 	 */
 	protected function is_post_supported( $post ) {
 		if ( ! in_array( $post->status(), $this->get_whitelisted_post_statuses() ) ) {
@@ -574,6 +574,10 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		if ( ! in_array( $post->type(), $this->get_whitelisted_post_types() ) ) {
+			return false;
+		}
+
+		if ( $post->has_password() ) {
 			return false;
 		}
 
