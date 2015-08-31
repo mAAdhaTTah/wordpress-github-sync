@@ -173,7 +173,7 @@ class WordPress_GitHub_Sync_Post {
 			}
 		}
 
-		return apply_filters( 'wpghs_content_export', $content );
+		return apply_filters( 'wpghs_content_export', $content, $this );
 	}
 
 	/**
