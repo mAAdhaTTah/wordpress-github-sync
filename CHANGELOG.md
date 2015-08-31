@@ -2,6 +2,10 @@
 
 This change log follows the [Keep a Changelog standards](http://keepachangelog.com/). Versions follows [Semantic Versioning](http://semver.org/).
 
+### [1.1.0] ###
+
+* Add filters for content on import and export.
+
 ### [1.0.2] ###
 
 * Hide password-protected posts from being exported to GitHub
@@ -16,6 +20,7 @@ This change log follows the [Keep a Changelog standards](http://keepachangelog.c
 * Initial release
 * Supports full site sync, Markdown import/export, and custom post type & status support
 
+  [1.1.0]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.1.0
   [1.0.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.0.2
   [1.0.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.0.1
   [1.0.0]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.0.0
