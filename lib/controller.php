@@ -208,7 +208,7 @@ class WordPress_GitHub_Sync_Controller {
 			$body = wpmarkdown_markdown_to_html( $body );
 		}
 
-		$args = array( 'post_content' => $body );
+		$args = array( 'post_content' => apply_filters( 'wpghs_content_import', $body ) );
 
 		if ( ! empty( $meta ) ) {
 			if ( array_key_exists( 'layout', $meta ) ) {
