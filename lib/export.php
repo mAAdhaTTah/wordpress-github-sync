@@ -1,11 +1,27 @@
 <?php
 
 /**
- * GitHub export manager.
+ * GitHub Export Manager.
  */
 class WordPress_GitHub_Sync_Export {
 
 	/**
+	 * Current GitHub tree.
+	 *
+	 * @var WordPress_GitHub_Sync_Tree
+	 */
+	protected $tree;
+
+	/**
+	 * Commit message for export.
+	 *
+	 * @var string
+	 */
+	protected $msg;
+
+	/**
+	 * Initializes a new export manager.
+	 *
 	 * @param array|int $source post ID or array of post IDs
 	 * @param string $msg commit message
 	 */
@@ -18,7 +34,8 @@ class WordPress_GitHub_Sync_Export {
 			$this->ids = array( $source );
 		}
 
-		$this->msg = $msg;
+		$this->msg  = $msg;
+		$this->tree = new WordPress_GitHub_Sync_Tree();
 	}
 
 	/**
@@ -29,11 +46,11 @@ class WordPress_GitHub_Sync_Export {
 	 * @param bool|false $delete
 	 */
 	public function run( $delete = false ) {
-		$tree = new WordPress_GitHub_Sync_Tree();
+		$this->tree->fetch_last();
 
-		if ( ! $tree->ready() ) {
+		if ( ! $this->tree->ready() ) {
 			WordPress_GitHub_Sync::write_log( __( 'Failed getting tree with error: ',
-					WordPress_GitHub_Sync::$text_domain ) . $tree->last_error() );
+					WordPress_GitHub_Sync::$text_domain ) . $this->tree->last_error() );
 
 			return;
 		}
@@ -41,10 +58,10 @@ class WordPress_GitHub_Sync_Export {
 		WordPress_GitHub_Sync::write_log( __( 'Building the tree.', WordPress_GitHub_Sync::$text_domain ) );
 		foreach ( $this->ids as $post_id ) {
 			$post = new WordPress_GitHub_Sync_Post( $post_id );
-			$tree->post_to_tree( $post, $delete );
+			$this->tree->post_to_tree( $post, $delete );
 		}
 
-		$result = $tree->export( $this->msg );
+		$result = $this->tree->export( $this->msg );
 
 		if ( ! $result ) {
 			$this->no_change();
@@ -58,12 +75,12 @@ class WordPress_GitHub_Sync_Export {
 			return;
 		}
 
-		$rtree = new WordPress_GitHub_Sync_Tree();
+		$this->tree->fetch_last();
 
 		// @todo what if we fail?
-		if ( $rtree->ready() ) {
+		if ( $this->tree->ready() ) {
 			WordPress_GitHub_Sync::write_log( __( 'Saving the shas.', WordPress_GitHub_Sync::$text_domain ) );
-			$this->save_post_shas( $rtree );
+			$this->save_post_shas();
 		}
 
 		$this->success();
@@ -95,10 +112,10 @@ class WordPress_GitHub_Sync_Export {
 	 *
 	 * @param WordPress_GitHub_Sync_Tree $tree
 	 */
-	public function save_post_shas( $tree ) {
+	public function save_post_shas() {
 		foreach ( $this->ids as $post_id ) {
 			$post = new WordPress_GitHub_Sync_Post( $post_id );
-			$blob = $tree->get_blob_for_path( $post->github_path() );
+			$blob = $this->tree->get_blob_for_path( $post->github_path() );
 
 			if ( $blob ) {
 				$post->set_sha( $blob->sha );

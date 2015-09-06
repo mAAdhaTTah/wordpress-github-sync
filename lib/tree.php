@@ -3,7 +3,7 @@
 /**
  * Git commit tree.
  */
-class WordPress_GitHub_Sync_Tree {
+class WordPress_GitHub_Sync_Tree implements Iterator {
 
 	/**
 	 * Whether the tree has changed.
@@ -18,11 +18,48 @@ class WordPress_GitHub_Sync_Tree {
 	protected $api;
 
 	/**
+	 * Current tree if retrieved, otherwise, error
+	 *
+	 * @var array|WP_Error
+	 */
+	protected $tree;
+
+	/**
+	 * Current position in the loop.
+	 *
+	 * @var int
+	 */
+	protected $position;
+
+	/**
+	 * Current blob in the loop.
+	 *
+	 * @var stdClass
+	 */
+	protected $current;
+
+	/**
 	 * Fetches the current tree from GitHub.
 	 */
 	public function __construct() {
 		$this->api  = new WordPress_GitHub_Sync_Api;
+		$this->tree = new WP_Error( 'no_tree', __( 'Tree not initialized' ) );
+	}
+
+	/**
+	 * Fetch the last tree from the repository.
+	 */
+	public function fetch_last() {
 		$this->tree = $this->api->last_tree_recursive();
+	}
+
+	/**
+	 * Fetch the tree for the provided sha from the repository.
+	 *
+	 * @param $sha
+	 */
+	public function fetch_sha( $sha ) {
+		$this->tree = $this->api->get_tree_recursive( $sha );
 	}
 
 	/**
@@ -51,6 +88,12 @@ class WordPress_GitHub_Sync_Tree {
 	}
 
 	/**
+	 * Manipulates the tree for a given post.
+	 *
+	 * If remove is true, removes the provided post from the current true.
+	 * If false or nothing is provided, adds or updates the tree
+	 * with the provided post.
+	 *
 	 * @param WordPress_GitHub_Sync_Post $post
 	 * @param bool $remove
 	 */
@@ -123,6 +166,7 @@ class WordPress_GitHub_Sync_Tree {
 	 * Creates a blob with the data required for the tree.
 	 *
 	 * @param WordPress_GitHub_Sync_Post $post
+	 *
 	 * @return stdClass
 	 */
 	public function blob_from_post( $post ) {
@@ -140,6 +184,7 @@ class WordPress_GitHub_Sync_Tree {
 	 * Retrieves a tree blob for a given path.
 	 *
 	 * @param string $path
+	 *
 	 * @return bool|stdClass
 	 */
 	public function get_blob_for_path( $path ) {
@@ -159,6 +204,7 @@ class WordPress_GitHub_Sync_Tree {
 	 * Exports the tree as a new commit with a provided commit message.
 	 *
 	 * @param string $msg
+	 *
 	 * @return bool|WP_Error false if unchanged, true if success, WP_Error if error
 	 */
 	public function export( $msg ) {
@@ -191,4 +237,101 @@ class WordPress_GitHub_Sync_Tree {
 		return true;
 	}
 
+	/**
+	 * Return the current element.
+	 *
+	 * @link http://php.net/manual/en/iterator.current.php
+	 * @return stdClass
+	 */
+	public function current() {
+		return $this->current;
+	}
+
+	/**
+	 * Move forward to next element.
+	 *
+	 * @link http://php.net/manual/en/iterator.next.php
+	 */
+	public function next() {
+		$this->position++;
+	}
+
+	/**
+	 * Return the key of the current element
+	 *
+	 * @link http://php.net/manual/en/iterator.key.php
+	 * @return int|null int on success, or null on failure.
+	 */
+	public function key() {
+		if ( $this->valid() ) {
+			return $this->position;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Checks if current position is valid
+	 *
+	 * @link http://php.net/manual/en/iterator.valid.php
+	 * @return boolean true on success, false on failure.
+	 */
+	public function valid() {
+		global $wpdb;
+
+		if ( ! isset( $this->tree[ $this->position ] ) ) {
+			return false;
+		}
+
+		$blob = $this->tree[ $this->position ];
+
+		// Skip the repo's readme
+		if ( 'readme' === strtolower( substr( $blob->path, 0, 6 ) ) ) {
+			WordPress_GitHub_Sync::write_log( __( 'Skipping README', WordPress_GitHub_Sync::$text_domain ) );
+
+			return false;
+		}
+
+		// If the blob sha already matches a post, then move on
+		$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'" );
+		if ( $id ) {
+			WordPress_GitHub_Sync::write_log( __( 'Already synced blob ',
+					WordPress_GitHub_Sync::$text_domain ) . $blob->path );
+
+			return false;
+		}
+
+		$blob = $this->api->get_blob( $blob->sha );
+
+		if ( is_wp_error( $blob ) ) {
+			WordPress_GitHub_Sync::write_log( __( 'Failed getting blob with error: ',
+					WordPress_GitHub_Sync::$text_domain ) . $blob->get_error_message() );
+
+			return false;
+		}
+
+		$content = base64_decode( $blob->content );
+
+		// If it doesn't have YAML frontmatter, then move on
+		if ( '---' !== substr( $content, 0, 3 ) ) {
+			WordPress_GitHub_Sync::write_log( __( 'No front matter on blob ',
+					WordPress_GitHub_Sync::$text_domain ) . $blob->sha );
+
+			return false;
+		}
+
+		$blob->content = $content;
+		$this->current = $blob;
+
+		return true;
+	}
+
+	/**
+	 * Rewind the Iterator to the first element
+	 *
+	 * @link http://php.net/manual/en/iterator.rewind.php
+	 */
+	public function rewind() {
+		$this->position = 0;
+	}
 }
