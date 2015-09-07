@@ -6,6 +6,13 @@
 class WordPress_GitHub_Sync_Import {
 
 	/**
+	 * Tree object to import.
+	 *
+	 * @var WordPress_GitHub_Sync_Tree
+	 */
+	protected $tree;
+
+	/**
 	 * Initializes a new import manager.
 	 */
 	public function __construct() {
@@ -21,8 +28,7 @@ class WordPress_GitHub_Sync_Import {
 		$this->tree->fetch_sha( $sha );
 
 		if ( ! $this->tree->ready() ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting recursive tree with error: ',
-					WordPress_GitHub_Sync::$text_domain ) . $this->tree->last_error() );
+			WordPress_GitHub_Sync::write_log( __( 'Failed getting recursive tree with error: ', WordPress_GitHub_Sync::$text_domain ) . $this->tree->last_error() );
 
 			return;
 		}

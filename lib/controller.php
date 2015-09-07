@@ -60,8 +60,7 @@ class WordPress_GitHub_Sync_Controller {
 	 */
 	public function pull( $payload ) {
 		if ( strtolower( $payload->repository->full_name ) !== strtolower( $this->api->repository() ) ) {
-			$msg = strtolower( $payload->repository->full_name ) . __( ' is an invalid repository.',
-					WordPress_GitHub_Sync::$text_domain );
+			$msg = strtolower( $payload->repository->full_name ) . __( ' is an invalid repository.', WordPress_GitHub_Sync::$text_domain );
 			WordPress_GitHub_Sync::write_log( $msg );
 
 			return array(
@@ -85,7 +84,7 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		// We add wpghs to commits we push out, so we shouldn't pull them in again
-		if ( 'wpghs' === substr( $payload->head_commit->message, - 5 ) ) {
+		if ( 'wpghs' === substr( $payload->head_commit->message, -5 ) ) {
 			$msg = __( 'Already synced this commit.', WordPress_GitHub_Sync::$text_domain );
 			WordPress_GitHub_Sync::write_log( $msg );
 
@@ -98,8 +97,7 @@ class WordPress_GitHub_Sync_Controller {
 		$commit = $this->api->get_commit( $payload->head_commit->id );
 
 		if ( is_wp_error( $commit ) ) {
-			$msg = __( 'Failed getting commit with error: ',
-					WordPress_GitHub_Sync::$text_domain ) . $commit->get_error_message();
+			$msg = __( 'Failed getting commit with error: ', WordPress_GitHub_Sync::$text_domain ) . $commit->get_error_message();
 			WordPress_GitHub_Sync::write_log( $msg );
 
 			return array(
@@ -138,15 +136,13 @@ class WordPress_GitHub_Sync_Controller {
 		$commit = $this->api->last_commit();
 
 		if ( is_wp_error( $commit ) ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting last commit with error: ',
-					WordPress_GitHub_Sync::$text_domain ) . $commit->get_error_message() );
+			WordPress_GitHub_Sync::write_log( __( 'Failed getting last commit with error: ', WordPress_GitHub_Sync::$text_domain ) . $commit->get_error_message() );
 
 			return;
 		}
 
 		if ( 'wpghs' === substr( $commit->message, - 5 ) ) {
-			WordPress_GitHub_Sync::write_log( __( 'Already synced this commit.',
-				WordPress_GitHub_Sync::$text_domain ) );
+			WordPress_GitHub_Sync::write_log( __( 'Already synced this commit.', WordPress_GitHub_Sync::$text_domain ) );
 
 			return;
 		}
@@ -162,6 +158,7 @@ class WordPress_GitHub_Sync_Controller {
 		global $wpdb;
 
 		if ( $this->locked() ) {
+			WordPress_GitHub_Sync::write_log( __( 'Export locked. Terminating.', WordPress_GitHub_Sync::$text_domain ) );
 			return;
 		}
 
@@ -174,8 +171,7 @@ class WordPress_GitHub_Sync_Controller {
 			post_type IN ( $post_types )"
 		);
 
-		$msg = apply_filters( 'wpghs_commit_msg_full',
-				'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
+		$msg = apply_filters( 'wpghs_commit_msg_full', 'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
 
 		$export = new WordPress_GitHub_Sync_Export( $post_ids, $msg );
 		$export->run();
@@ -192,9 +188,7 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
-		$msg  = apply_filters( 'wpghs_commit_msg_single',
-				'Syncing ' . $post->github_path() . ' from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')',
-				$post ) . ' - wpghs';
+		$msg  = apply_filters( 'wpghs_commit_msg_single', 'Syncing ' . $post->github_path() . ' from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')', $post ) . ' - wpghs';
 
 		$export = new WordPress_GitHub_Sync_Export( $post_id, $msg );
 		$export->run();
@@ -211,9 +205,7 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
-		$msg  = apply_filters( 'wpghs_commit_msg_delete',
-				'Deleting ' . $post->github_path() . ' via WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')',
-				$post ) . ' - wpghs';
+		$msg  = apply_filters( 'wpghs_commit_msg_delete', 'Deleting ' . $post->github_path() . ' via WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')', $post ) . ' - wpghs';
 
 		$export = new WordPress_GitHub_Sync_Export( $post_id, $msg );
 		$export->run( true );
