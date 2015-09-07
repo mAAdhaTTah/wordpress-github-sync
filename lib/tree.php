@@ -226,8 +226,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 			return $commit;
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Setting the master branch to our new commit.',
-			WordPress_GitHub_Sync::$text_domain ) );
+		WordPress_GitHub_Sync::write_log( __( 'Setting the master branch to our new commit.', WordPress_GitHub_Sync::$text_domain ) );
 		$ref = $this->api->set_ref( $commit->sha );
 
 		if ( is_wp_error( $ref ) ) {
@@ -288,36 +287,37 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 		// Skip the repo's readme
 		if ( 'readme' === strtolower( substr( $blob->path, 0, 6 ) ) ) {
 			WordPress_GitHub_Sync::write_log( __( 'Skipping README', WordPress_GitHub_Sync::$text_domain ) );
+			$this->next();
 
-			return false;
+			return $this->valid();
 		}
 
 		// If the blob sha already matches a post, then move on
 		$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'" );
 		if ( $id ) {
-			WordPress_GitHub_Sync::write_log( __( 'Already synced blob ',
-					WordPress_GitHub_Sync::$text_domain ) . $blob->path );
+			WordPress_GitHub_Sync::write_log( __( 'Already synced blob ', WordPress_GitHub_Sync::$text_domain ) . $blob->path );
+			$this->next();
 
-			return false;
+			return $this->valid();
 		}
 
 		$blob = $this->api->get_blob( $blob->sha );
 
 		if ( is_wp_error( $blob ) ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting blob with error: ',
-					WordPress_GitHub_Sync::$text_domain ) . $blob->get_error_message() );
+			WordPress_GitHub_Sync::write_log( __( 'Failed getting blob with error: ', WordPress_GitHub_Sync::$text_domain ) . $blob->get_error_message() );
+			$this->next();
 
-			return false;
+			return $this->valid();
 		}
 
 		$content = base64_decode( $blob->content );
 
 		// If it doesn't have YAML frontmatter, then move on
 		if ( '---' !== substr( $content, 0, 3 ) ) {
-			WordPress_GitHub_Sync::write_log( __( 'No front matter on blob ',
-					WordPress_GitHub_Sync::$text_domain ) . $blob->sha );
+			WordPress_GitHub_Sync::write_log( __( 'No front matter on blob ', WordPress_GitHub_Sync::$text_domain ) . $blob->sha );
+			$this->next();
 
-			return false;
+			return $this->valid();
 		}
 
 		$blob->content = $content;
