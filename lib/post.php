@@ -314,7 +314,7 @@ class WordPress_GitHub_Sync_Post {
 		$meta = array(
 			'ID'           => $this->post->ID,
 			'post_title'   => get_the_title( $this->post ),
-			'author'       => get_userdata( $this->post->post_author )->display_name,
+			'author'       => ($author = get_userdata( $this->post->post_author )) ? $author->display_name : '',
 			'post_date'    => $this->post->post_date,
 			'post_excerpt' => $this->post->post_excerpt,
 			'layout'       => get_post_type( $this->post ),
