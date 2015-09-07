@@ -1,7 +1,7 @@
 # WordPress <--> GitHub Sync #
 **Contributors:** benbalter, JamesDiGioia  
 **Tags:** github, git, version control, content, collaboration, publishing  
-**Requires at least:** 3.8  
+**Requires at least:** 3.9  
 **Tested up to:** 4.2.3  
 **Stable tag:** 1.1.1  
 **License:** GPLv2  
