@@ -241,8 +241,17 @@ class WordPress_GitHub_Sync_Post {
 	 *
 	 * @return string
 	 */
-	public function github_url() {
+	public function github_view_url() {
 		return 'https://github.com/' . $this->api->repository() . '/blob/master/' . $this->github_path();
+	}
+
+	/**
+	 * Returns the URL for the post on GitHub.
+	 *
+	 * @return string
+	 */
+	public function github_edit_url() {
+		return 'https://github.com/' . $this->api->repository() . '/edit/master/' . $this->github_path();
 	}
 
 	/**

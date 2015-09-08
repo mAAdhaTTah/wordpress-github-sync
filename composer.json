@@ -21,7 +21,8 @@
     }
   ],
   "autoload": {
-    "classmap": ["lib/"]
+    "classmap": ["lib/"],
+    "files": ["helpers.php"]
   },
   "require": {
     "php": ">=5.3.1",

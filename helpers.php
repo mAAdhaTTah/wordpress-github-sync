@@ -1,0 +1,40 @@
+<?php
+/**
+ * Returns the HTML markup to view the current post on GitHub.
+ *
+ * @return string
+ */
+function get_the_github_view_link() {
+	return '<a href="' . get_the_github_view_url() . '">' . apply_filters( 'wpghs_view_link_text', 'View this post on GitHub.' ) . '</a>';
+}
+
+/**
+ * Returns the URL to view the current post on GitHub.
+ *
+ * @return string
+ */
+function get_the_github_view_url() {
+	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID() );
+
+	return $wpghs_post->github_view_url();
+}
+
+/**
+ * Returns the HTML markup to edit the current post on GitHub.
+ *
+ * @return string
+ */
+function get_the_github_edit_link() {
+	return '<a href="' . get_the_github_edit_url() . '">' . apply_filters( 'wpghs_edit_link_text', 'Edit this post on GitHub.' ) . '</a>';
+}
+
+/**
+ * Returns the URL to edit the current post on GitHub.
+ *
+ * @return string
+ */
+function get_the_github_edit_url() {
+	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID() );
+
+	return $wpghs_post->github_edit_url();
+}

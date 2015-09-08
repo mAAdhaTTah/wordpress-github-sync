@@ -253,9 +253,3 @@ class WordPress_GitHub_Sync {
 }
 
 $wpghs = new WordPress_GitHub_Sync;
-
-function get_the_github_url() {
-	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID() );
-
-	return '<a href="' . $wpghs_post->github_url() . '">' . apply_filters( 'wpghs_edit_link_text', 'Edit this post on GitHub.' ) . '</a>';
-}
