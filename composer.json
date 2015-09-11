@@ -29,6 +29,7 @@
   },
   "require-dev": {
     "jdgrimes/wp-http-testcase": "1.2.1",
-    "mockery/mockery": "0.9.3"
+    "mockery/mockery": "0.9.3",
+    "phpunit/phpunit": "^4.8"
   }
 }

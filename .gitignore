@@ -2,3 +2,4 @@ vendor/
 
 # Ignore IDE settings
 .idea
+build

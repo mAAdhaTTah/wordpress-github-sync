@@ -31,9 +31,7 @@ class WordPress_GitHub_Sync_Post {
 	/**
 	 * Instantiates a new Post object
 	 *
-	 * $id_or_path - (int|string) either a postID (WordPress) or a path to a file (GitHub)
-	 *
-	 * Returns the Post object, duh
+	 * @param int|string $id_or_path either a postID (WordPress) or a path to a file (GitHub)
 	 */
 	public function __construct( $id_or_path ) {
 		$this->api = new WordPress_GitHub_Sync_Api;
@@ -300,6 +298,8 @@ class WordPress_GitHub_Sync_Post {
 
 	/**
 	 * Save the sha to post
+	 *
+	 * @param string $sha
 	 */
 	public function set_sha( $sha ) {
 		update_post_meta( $this->id, '_sha', $sha );
@@ -314,7 +314,7 @@ class WordPress_GitHub_Sync_Post {
 		$meta = array(
 			'ID'           => $this->post->ID,
 			'post_title'   => get_the_title( $this->post ),
-			'author'       => get_userdata( $this->post->post_author )->display_name,
+			'author'       => ( $author = get_userdata( $this->post->post_author ) ) ? $author->display_name : '',
 			'post_date'    => $this->post->post_date,
 			'post_excerpt' => $this->post->post_excerpt,
 			'layout'       => get_post_type( $this->post ),
