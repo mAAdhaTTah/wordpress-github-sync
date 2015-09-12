@@ -212,21 +212,21 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 			return false;
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Creating the tree.', WordPress_GitHub_Sync::$text_domain ) );
+		WordPress_GitHub_Sync::write_log( __( 'Creating the tree.', 'wordpress-github-sync' ) );
 		$tree = $this->api->create_tree( array_values( $this->tree ) );
 
 		if ( is_wp_error( $tree ) ) {
 			return $tree;
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Creating the commit.', WordPress_GitHub_Sync::$text_domain ) );
+		WordPress_GitHub_Sync::write_log( __( 'Creating the commit.', 'wordpress-github-sync' ) );
 		$commit = $this->api->create_commit( $tree->sha, $msg );
 
 		if ( is_wp_error( $commit ) ) {
 			return $commit;
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Setting the master branch to our new commit.', WordPress_GitHub_Sync::$text_domain ) );
+		WordPress_GitHub_Sync::write_log( __( 'Setting the master branch to our new commit.', 'wordpress-github-sync' ) );
 		$ref = $this->api->set_ref( $commit->sha );
 
 		if ( is_wp_error( $ref ) ) {
@@ -283,7 +283,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 
 			// Skip the repo's readme
 			if ( 'readme' === strtolower( substr( $blob->path, 0, 6 ) ) ) {
-				WordPress_GitHub_Sync::write_log( __( 'Skipping README', WordPress_GitHub_Sync::$text_domain ) );
+				WordPress_GitHub_Sync::write_log( __( 'Skipping README', 'wordpress-github-sync' ) );
 				$this->next();
 
 				continue;
@@ -292,7 +292,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 			// If the blob sha already matches a post, then move on
 			$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'" );
 			if ( $id ) {
-				WordPress_GitHub_Sync::write_log( __( 'Already synced blob ', WordPress_GitHub_Sync::$text_domain ) . $blob->path );
+				WordPress_GitHub_Sync::write_log( __( 'Already synced blob ', 'wordpress-github-sync' ) . $blob->path );
 				$this->next();
 
 				continue;
@@ -301,7 +301,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 			$blob = $this->api->get_blob( $blob->sha );
 
 			if ( is_wp_error( $blob ) ) {
-				WordPress_GitHub_Sync::write_log( __( 'Failed getting blob with error: ', WordPress_GitHub_Sync::$text_domain ) . $blob->get_error_message() );
+				WordPress_GitHub_Sync::write_log( __( 'Failed getting blob with error: ', 'wordpress-github-sync' ) . $blob->get_error_message() );
 				$this->next();
 
 				continue;
@@ -311,7 +311,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 
 			// If it doesn't have YAML frontmatter, then move on
 			if ( '---' !== substr( $content, 0, 3 ) ) {
-				WordPress_GitHub_Sync::write_log( __( 'No front matter on blob ', WordPress_GitHub_Sync::$text_domain ) . $blob->sha );
+				WordPress_GitHub_Sync::write_log( __( 'No front matter on blob ', 'wordpress-github-sync' ) . $blob->sha );
 				$this->next();
 
 				continue;
