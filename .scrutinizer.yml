@@ -10,4 +10,4 @@ tools:
         runs: 1
 filter:
     excluded_paths:
-        - 'test/*'
+        - 'tests/*'
