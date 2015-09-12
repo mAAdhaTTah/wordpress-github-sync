@@ -7,9 +7,16 @@ class WordPress_GitHub_Sync_Post_Test extends WP_UnitTestCase {
 	 */
 	protected $id;
 
+	/**
+	 * @var WP_Post
+	 */
+	protected $post;
+
 	public function setUp() {
 		parent::setUp();
-		$this->id = $this->factory->post->create();
+		update_option( 'wpghs_repository', 'owner/repo' );
+		$this->id   = $this->factory->post->create();
+		$this->post = get_post( $this->id );
 	}
 
 	public function test_should_return_correct_directory() {
@@ -29,6 +36,18 @@ class WordPress_GitHub_Sync_Post_Test extends WP_UnitTestCase {
 
 		$this->assertStringStartsWith( '---', $post->github_content() );
 		$this->assertStringEndsWith( 'Post content 1', $post->github_content() );
+	}
+
+	public function test_should_build_github_view_url() {
+		$post = new WordPress_GitHub_Sync_Post( $this->id );
+
+		$this->assertEquals( 'https://github.com/owner/repo/blob/master/_posts/' . get_the_date( 'Y-m-d-', $this->id ) . $this->post->post_name . '.md', $post->github_view_url() );
+	}
+
+	public function test_should_build_github_edit_url() {
+		$post = new WordPress_GitHub_Sync_Post( $this->id );
+
+		$this->assertEquals( 'https://github.com/owner/repo/edit/master/_posts/' . get_the_date( 'Y-m-d-', $this->id ) . $this->post->post_name . '.md', $post->github_edit_url() );
 	}
 }
 
