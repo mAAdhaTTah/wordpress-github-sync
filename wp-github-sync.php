@@ -27,7 +27,7 @@
 		Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-$path = dirname( __FILE__ ) . '/vendor/autoload.php';
+$path = dirname( __FILE__ ) . '/vendor/autoload_52.php';
 if ( file_exists( $path ) ) {
 	require_once $path;
 }
