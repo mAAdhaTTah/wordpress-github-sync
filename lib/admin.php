@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Administrative UI views and callbacks
  */
@@ -62,7 +63,7 @@ class WordPress_GitHub_Sync_Admin {
 	/**
 	 * Callback to render an individual options field
 	 */
-	public function field_callback($args) {
+	public function field_callback( $args ) {
 		include dirname( dirname( __FILE__ ) ) . '/views/setting-field.php';
 	}
 
@@ -118,7 +119,7 @@ class WordPress_GitHub_Sync_Admin {
 			return;
 		}
 
-		if ( ! isset($_GET['action'] ) ) {
+		if ( ! isset( $_GET['action'] ) ) {
 			return;
 		}
 
@@ -129,5 +130,7 @@ class WordPress_GitHub_Sync_Admin {
 		if ( 'import' === $_GET['action'] ) {
 			$wpghs->start_import();
 		}
+
+		wp_redirect( admin_url( 'options-general.php?page=wordpress-github-sync' ) );
 	}
 }
