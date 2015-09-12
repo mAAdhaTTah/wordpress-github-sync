@@ -6,6 +6,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 
 * Update translation strings and implement pot file generation.
 * Redirect user away from settings page page after the import/export process starts.
+* Fix autoloader to be PHP 5.2 compatible.
 
 ### [1.1.1] ###
 

@@ -24,8 +24,9 @@
     "classmap": ["lib/"]
   },
   "require": {
-    "php": ">=5.3.1",
-    "mAAdhaTTah/cyps": "1.0.0"
+    "php": ">=5.2",
+    "mAAdhaTTah/cyps": "1.0.0",
+    "xrstf/composer-php52": "~1.0"
   },
   "require-dev": {
     "jdgrimes/wp-http-testcase": "1.2.1",
@@ -34,6 +35,15 @@
     "websharks/wp-i18n-tools": "dev-master"
   },
   "scripts": {
-    "genpot": "vendor/websharks/wp-i18n-tools/makepot.php wp-plugin . $(pwd)/languages/wordpress-github-sync.pot"
+    "genpot": "vendor/websharks/wp-i18n-tools/makepot.php wp-plugin . $(pwd)/languages/wordpress-github-sync.pot",
+    "post-install-cmd": [
+      "xrstf\\Composer52\\Generator::onPostInstallCmd"
+    ],
+    "post-update-cmd": [
+      "xrstf\\Composer52\\Generator::onPostInstallCmd"
+    ],
+    "post-autoload-dump": [
+      "xrstf\\Composer52\\Generator::onPostInstallCmd"
+    ]
   }
 }

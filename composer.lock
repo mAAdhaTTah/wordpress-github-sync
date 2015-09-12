@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "98dc377189695be9e9b088adafbc28fe",
+    "hash": "1b1d3dc9f4a2647259d2f9ecafd351ce",
     "packages": [
         {
             "name": "maadhattah/cyps",
@@ -54,6 +54,38 @@
                 "source": "https://github.com/mAAdhaTTah/cyps/tree/1.0.0"
             },
             "time": "2015-04-25 02:19:10"
+        },
+        {
+            "name": "xrstf/composer-php52",
+            "version": "v1.0.18",
+            "source": {
+                "type": "hg",
+                "url": "https://bitbucket.org/xrstf/composer-php52",
+                "reference": "32bc8be472523512b0ab1517f61d60bc4032803d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://bitbucket.org/xrstf/composer-php52/get/32bc8be472523512b0ab1517f61d60bc4032803d.zip",
+                "reference": "32bc8be472523512b0ab1517f61d60bc4032803d",
+                "shasum": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-default": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "xrstf\\Composer52": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "homepage": "http://www.xrstf.de/",
+            "time": "2015-08-07 21:44:58"
         }
     ],
     "packages-dev": [
@@ -1164,7 +1196,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=5.3.1"
+        "php": ">=5.2"
     },
     "platform-dev": []
 }
