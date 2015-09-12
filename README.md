@@ -125,6 +125,34 @@ add_filter('wpghs_whitelisted_post_statuses', function ($supported_post_statuses
 });
 ```
 
+### Add "Edit|View on GitHub" Link ###
+
+If you want to add a link to your posts on GitHub, there are 4 functions WordPress<-->GitHub Sync makes available for you to use in your themes or as part of `the_content` filter:
+
+* `get_the_github_view_url` - returns the URL on GitHub to view the current post
+* `get_the_github_view_link` - returns an anchor tag (`<a>`) with its href set the the view url
+* `get_the_github_edit_url` - returns the URL on GitHub to edit the current post
+* `get_the_github_edit_link` - returns an anchor tag (`<a>`) with its href set the the edit url
+
+All four of these functions must be used in the loop. If you'd like to retrieve these URLs outside of the loop, instantiate a new `WordPress_GitHub_Sync_Post` object and call `github_edit_url` or `github_view_url` respectively on it:
+
+```php
+// $id can be retrieved from a query or elsewhere
+$wpghs_post = new WordPress_GitHub_Sync_Post( $id );
+$url = $wpghs_post->github_view_url();
+```
+
+If you'd like to include an edit link without modifying your theme directly, you can add one of these functions to `the_content` like so:
+
+```php
+add_filter( 'the_content', function( $content ) {
+  if( is_page() || is_single() ) {
+    $content .= get_the_github_edit_link();
+  }
+  return $content;
+}, 1000 );
+```
+
 ### Additional Customizations ###
 
 There are a number of other filters available in WordPress <--> GitHub Sync for customizing various parts of the export, including the commit message and YAML front-matter. Want more detail? Check out the [wiki](https://github.com/benbalter/wordpress-github-sync/wiki).
