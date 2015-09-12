@@ -30,6 +30,10 @@
   "require-dev": {
     "jdgrimes/wp-http-testcase": "1.2.1",
     "mockery/mockery": "0.9.3",
-    "phpunit/phpunit": "^4.8"
+    "phpunit/phpunit": "^4.8",
+    "websharks/wp-i18n-tools": "dev-master"
+  },
+  "scripts": {
+    "genpot": "vendor/websharks/wp-i18n-tools/makepot.php wp-plugin . $(pwd)/languages/wordpress-github-sync.pot"
   }
 }
