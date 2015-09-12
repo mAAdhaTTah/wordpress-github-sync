@@ -56,11 +56,11 @@ class WordPress_GitHub_Sync_Export {
 		$this->tree->fetch_last();
 
 		if ( ! $this->tree->ready() ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting tree with error: ', WordPress_GitHub_Sync::$text_domain ) . $this->tree->last_error() );
+			WordPress_GitHub_Sync::write_log( __( 'Failed getting tree with error: ', 'wordpress-github-sync' ) . $this->tree->last_error() );
 			return;
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Building the tree.', WordPress_GitHub_Sync::$text_domain ) );
+		WordPress_GitHub_Sync::write_log( __( 'Building the tree.', 'wordpress-github-sync' ) );
 		foreach ( $this->ids as $post_id ) {
 			$post = new WordPress_GitHub_Sync_Post( $post_id );
 			$this->tree->post_to_tree( $post, $delete );
@@ -84,7 +84,7 @@ class WordPress_GitHub_Sync_Export {
 
 		// @todo what if we fail?
 		if ( $this->tree->ready() ) {
-			WordPress_GitHub_Sync::write_log( __( 'Saving the shas.', WordPress_GitHub_Sync::$text_domain ) );
+			WordPress_GitHub_Sync::write_log( __( 'Saving the shas.', 'wordpress-github-sync' ) );
 			$this->save_post_shas();
 		}
 
@@ -96,7 +96,7 @@ class WordPress_GitHub_Sync_Export {
 	 */
 	public function no_change() {
 		update_option( '_wpghs_export_complete', 'yes' );
-		WordPress_GitHub_Sync::write_log( __( 'There were no changes, so no additional commit was added.', WordPress_GitHub_Sync::$text_domain ), 'warning' );
+		WordPress_GitHub_Sync::write_log( __( 'There were no changes, so no additional commit was added.', 'wordpress-github-sync' ), 'warning' );
 	}
 
 	/**
@@ -106,7 +106,7 @@ class WordPress_GitHub_Sync_Export {
 	 */
 	public function error( $result ) {
 		update_option( '_wpghs_export_error', $result->get_error_message() );
-		WordPress_GitHub_Sync::write_log( __( 'Error exporting to GitHub. Error: ', WordPress_GitHub_Sync::$text_domain ) . $result->get_error_message(), 'error' );
+		WordPress_GitHub_Sync::write_log( __( 'Error exporting to GitHub. Error: ', 'wordpress-github-sync' ) . $result->get_error_message(), 'error' );
 	}
 
 	/**
@@ -121,7 +121,7 @@ class WordPress_GitHub_Sync_Export {
 			if ( $blob ) {
 				$post->set_sha( $blob->sha );
 			} else {
-				WordPress_GitHub_Sync::write_log( __( 'No sha matched for post ID ', WordPress_GitHub_Sync::$text_domain ) . $post_id );
+				WordPress_GitHub_Sync::write_log( __( 'No sha matched for post ID ', 'wordpress-github-sync' ) . $post_id );
 			}
 		}
 	}
@@ -132,7 +132,7 @@ class WordPress_GitHub_Sync_Export {
 	public function success() {
 		update_option( '_wpghs_export_complete', 'yes' );
 		update_option( '_wpghs_fully_exported', 'yes' );
-		WordPress_GitHub_Sync::write_log( __( 'Export to GitHub completed successfully.', WordPress_GitHub_Sync::$text_domain ), 'success' );
+		WordPress_GitHub_Sync::write_log( __( 'Export to GitHub completed successfully.', 'wordpress-github-sync' ), 'success' );
 	}
 
 }

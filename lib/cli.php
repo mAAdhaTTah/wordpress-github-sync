@@ -40,19 +40,19 @@ class WordPress_GitHub_Sync_CLI {
 		list( $post_id, $user_id ) = $args;
 
 		if ( ! is_numeric( $user_id ) ) {
-			WP_CLI::error( __( 'Invalid user ID', WordPress_GitHub_Sync::$text_domain ) );
+			WP_CLI::error( __( 'Invalid user ID', 'wordpress-github-sync' ) );
 		}
 
 		update_option( '_wpghs_export_user_id', (int) $user_id );
 
 		if ( 'all' === $post_id ) {
-			WP_CLI::line( __( 'Starting full export to GitHub.', WordPress_GitHub_Sync::$text_domain ) );
+			WP_CLI::line( __( 'Starting full export to GitHub.', 'wordpress-github-sync' ) );
 			$this->controller->export_all();
 		} elseif ( is_numeric( $post_id ) ) {
-			WP_CLI::line( __( 'Exporting post ID to GitHub: ', WordPress_GitHub_Sync::$text_domain ). $post_id );
+			WP_CLI::line( __( 'Exporting post ID to GitHub: ', 'wordpress-github-sync' ). $post_id );
 			$this->controller->export_post( (int) $post_id );
 		} else {
-			WP_CLI::error( __( 'Invalid post ID', WordPress_GitHub_Sync::$text_domain ) );
+			WP_CLI::error( __( 'Invalid post ID', 'wordpress-github-sync' ) );
 		}
 	}
 
@@ -75,12 +75,12 @@ class WordPress_GitHub_Sync_CLI {
 		list( $user_id ) = $args;
 
 		if ( ! is_numeric( $user_id ) ) {
-			WP_CLI::error( __( 'Invalid user ID', WordPress_GitHub_Sync::$text_domain ) );
+			WP_CLI::error( __( 'Invalid user ID', 'wordpress-github-sync' ) );
 		}
 
 		update_option( '_wpghs_export_user_id', (int) $user_id );
 
-		WP_CLI::line( __( 'Starting import from GitHub.', WordPress_GitHub_Sync::$text_domain ) );
+		WP_CLI::line( __( 'Starting import from GitHub.', 'wordpress-github-sync' ) );
 
 		$this->controller->import_master();
 	}

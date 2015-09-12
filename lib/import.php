@@ -28,7 +28,7 @@ class WordPress_GitHub_Sync_Import {
 		$this->tree->fetch_sha( $sha );
 
 		if ( ! $this->tree->ready() ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting recursive tree with error: ', WordPress_GitHub_Sync::$text_domain ) . $this->tree->last_error() );
+			WordPress_GitHub_Sync::write_log( __( 'Failed getting recursive tree with error: ', 'wordpress-github-sync' ) . $this->tree->last_error() );
 
 			return;
 		}
@@ -37,7 +37,7 @@ class WordPress_GitHub_Sync_Import {
 			$this->import_blob( $blob );
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Imported tree ', WordPress_GitHub_Sync::$text_domain ) . $sha );
+		WordPress_GitHub_Sync::write_log( __( 'Imported tree ', 'wordpress-github-sync' ) . $sha );
 	}
 
 	/**
@@ -103,7 +103,7 @@ class WordPress_GitHub_Sync_Import {
 			update_post_meta( $post_id, $key, $value );
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Updated blob ', WordPress_GitHub_Sync::$text_domain ) . $blob->sha );
+		WordPress_GitHub_Sync::write_log( __( 'Updated blob ', 'wordpress-github-sync' ) . $blob->sha );
 	}
 
 }

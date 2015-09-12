@@ -1,6 +1,10 @@
 ## Changelog ##
 
-This change log follows the [Keep a Changelog standards](http://keepachangelog.com/). Versions follows [Semantic Versioning](http://semver.org/).
+This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
+
+### [Unreleased] ###
+
+* Update translation strings and implement pot file generation.
 
 ### [1.1.1] ###
 
@@ -24,6 +28,9 @@ This change log follows the [Keep a Changelog standards](http://keepachangelog.c
 * Initial release
 * Supports full site sync, Markdown import/export, and custom post type & status support
 
+  [Keep a Changelog standards]: http://keepachangelog.com/
+  [Semantic Versioning]: http://semver.org/
+  [Unreleased]: https://github.com/benbalter/wordpress-github-sync
   [1.1.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.1.1
   [1.1.0]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.1.0
   [1.0.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.0.2

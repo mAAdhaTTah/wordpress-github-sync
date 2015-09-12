@@ -60,7 +60,7 @@ class WordPress_GitHub_Sync_Controller {
 	 */
 	public function pull( $payload ) {
 		if ( strtolower( $payload->repository->full_name ) !== strtolower( $this->api->repository() ) ) {
-			$msg = strtolower( $payload->repository->full_name ) . __( ' is an invalid repository.', WordPress_GitHub_Sync::$text_domain );
+			$msg = strtolower( $payload->repository->full_name ) . __( ' is an invalid repository.', 'wordpress-github-sync' );
 			WordPress_GitHub_Sync::write_log( $msg );
 
 			return array(
@@ -74,7 +74,7 @@ class WordPress_GitHub_Sync_Controller {
 		$branch = array_pop( $refs );
 
 		if ( 'master' !== $branch ) {
-			$msg = __( 'Not on the master branch.', WordPress_GitHub_Sync::$text_domain );
+			$msg = __( 'Not on the master branch.', 'wordpress-github-sync' );
 			WordPress_GitHub_Sync::write_log( $msg );
 
 			return array(
@@ -85,7 +85,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		// We add wpghs to commits we push out, so we shouldn't pull them in again
 		if ( 'wpghs' === substr( $payload->head_commit->message, -5 ) ) {
-			$msg = __( 'Already synced this commit.', WordPress_GitHub_Sync::$text_domain );
+			$msg = __( 'Already synced this commit.', 'wordpress-github-sync' );
 			WordPress_GitHub_Sync::write_log( $msg );
 
 			return array(
@@ -97,7 +97,7 @@ class WordPress_GitHub_Sync_Controller {
 		$commit = $this->api->get_commit( $payload->head_commit->id );
 
 		if ( is_wp_error( $commit ) ) {
-			$msg = __( 'Failed getting commit with error: ', WordPress_GitHub_Sync::$text_domain ) . $commit->get_error_message();
+			$msg = __( 'Failed getting commit with error: ', 'wordpress-github-sync' ) . $commit->get_error_message();
 			WordPress_GitHub_Sync::write_log( $msg );
 
 			return array(
@@ -120,7 +120,7 @@ class WordPress_GitHub_Sync_Controller {
 			wp_delete_post( $post->id );
 		}
 
-		$msg = __( 'Payload processed', WordPress_GitHub_Sync::$text_domain );
+		$msg = __( 'Payload processed', 'wordpress-github-sync' );
 		WordPress_GitHub_Sync::write_log( $msg );
 
 		return array(
@@ -136,13 +136,13 @@ class WordPress_GitHub_Sync_Controller {
 		$commit = $this->api->last_commit();
 
 		if ( is_wp_error( $commit ) ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting last commit with error: ', WordPress_GitHub_Sync::$text_domain ) . $commit->get_error_message() );
+			WordPress_GitHub_Sync::write_log( __( 'Failed getting last commit with error: ', 'wordpress-github-sync' ) . $commit->get_error_message() );
 
 			return;
 		}
 
 		if ( 'wpghs' === substr( $commit->message, - 5 ) ) {
-			WordPress_GitHub_Sync::write_log( __( 'Already synced this commit.', WordPress_GitHub_Sync::$text_domain ) );
+			WordPress_GitHub_Sync::write_log( __( 'Already synced this commit.', 'wordpress-github-sync' ) );
 
 			return;
 		}
@@ -158,7 +158,7 @@ class WordPress_GitHub_Sync_Controller {
 		global $wpdb;
 
 		if ( $this->locked() ) {
-			WordPress_GitHub_Sync::write_log( __( 'Export locked. Terminating.', WordPress_GitHub_Sync::$text_domain ) );
+			WordPress_GitHub_Sync::write_log( __( 'Export locked. Terminating.', 'wordpress-github-sync' ) );
 			return;
 		}
 

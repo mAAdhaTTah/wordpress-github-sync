@@ -149,7 +149,7 @@ class WordPress_GitHub_Sync {
 		// validate secret
 		$hash = hash_hmac( 'sha1', $raw_data, $this->secret() );
 		if ( 'sha1=' . $hash !== $headers['X-Hub-Signature'] ) {
-			$msg = __( 'Failed to validate secret.', WordPress_GitHub_Sync::$text_domain );
+			$msg = __( 'Failed to validate secret.', 'wordpress-github-sync' );
 			self::write_log( $msg );
 			wp_send_json( array(
 				'result'  => 'error',
@@ -188,7 +188,7 @@ class WordPress_GitHub_Sync {
 		update_option( '_wpghs_export_user_id', get_current_user_id() );
 		update_option( '_wpghs_export_started', 'yes' );
 
-		WordPress_GitHub_Sync::write_log( __( 'Starting full export to GitHub.', WordPress_GitHub_Sync::$text_domain ) );
+		WordPress_GitHub_Sync::write_log( __( 'Starting full export to GitHub.', 'wordpress-github-sync' ) );
 
 		wp_schedule_single_event( time(), 'wpghs_export' );
 		spawn_cron();
@@ -200,7 +200,7 @@ class WordPress_GitHub_Sync {
 	public function start_import() {
 		update_option( '_wpghs_import_started', 'yes' );
 
-		WordPress_GitHub_Sync::write_log( __( 'Starting import from GitHub.', WordPress_GitHub_Sync::$text_domain ) );
+		WordPress_GitHub_Sync::write_log( __( 'Starting import from GitHub.', 'wordpress-github-sync' ) );
 
 		wp_schedule_single_event( time(), 'wpghs_import' );
 		spawn_cron();
@@ -226,7 +226,14 @@ class WordPress_GitHub_Sync {
 		delete_transient( '_wpghs_activated' );
 
 		?><div class="updated">
-			<p><?php _e( 'To set up your site to sync with GitHub, update your <a href="' . admin_url( 'options-general.php?page=wordpress-github-sync' ) . '">settings</a> and click "Export to GitHub."', WordPress_GitHub_Sync::$text_domain ); ?></p>
+			<p>
+				<?php
+					printf(
+						__( 'To set up your site to sync with GitHub, update your <a href="%s">settings</a> and click "Export to GitHub."', 'wordpress-github-sync' ),
+						admin_url( 'options-general.php?page=wordpress-github-sync' )
+					);
+				?>
+			</p>
 		</div><?php
 	}
 
