@@ -4,6 +4,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 
 ### [Unreleased] ###
 
+* New Feature: Support displaying an "Edit|View on GitHub" link.
 * Update translation strings and implement pot file generation.
 * Redirect user away from settings page page after the import/export process starts.
 * Fix autoloader to be PHP 5.2 compatible.
