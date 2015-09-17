@@ -2,7 +2,7 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
-### [Unreleased] ###
+### [1.2] ###
 
 * New Feature: Support displaying an "Edit|View on GitHub" link.
 * Update translation strings and implement pot file generation.
@@ -34,6 +34,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
   [Keep a Changelog standards]: http://keepachangelog.com/
   [Semantic Versioning]: http://semver.org/
   [Unreleased]: https://github.com/benbalter/wordpress-github-sync
+  [1.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.2
   [1.1.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.1.1
   [1.1.0]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.1.0
   [1.0.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.0.2
