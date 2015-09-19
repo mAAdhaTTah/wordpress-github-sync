@@ -43,7 +43,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 */
 	public function __construct() {
 		$this->api  = new WordPress_GitHub_Sync_Api;
-		$this->tree = new WP_Error( 'no_tree', __( 'Tree not initialized' ) );
+		$this->tree = new WP_Error( 'no_tree', __( 'Tree not initialized', 'wordpress-github-sync' ) );
 	}
 
 	/**
