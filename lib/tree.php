@@ -70,7 +70,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 *
 	 * @return bool
 	 */
-	public function ready() {
+	public function is_ready() {
 		if ( is_wp_error( $this->tree ) ) {
 			return false;
 		}

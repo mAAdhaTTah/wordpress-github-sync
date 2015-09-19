@@ -27,7 +27,7 @@ class WordPress_GitHub_Sync_Import {
 	public function run( $sha ) {
 		$this->tree->fetch_sha( $sha );
 
-		if ( ! $this->tree->ready() ) {
+		if ( ! $this->tree->is_ready() ) {
 			WordPress_GitHub_Sync::write_log( __( 'Failed getting recursive tree with error: ', 'wordpress-github-sync' ) . $this->tree->last_error() );
 
 			return;

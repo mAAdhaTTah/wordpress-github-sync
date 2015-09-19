@@ -55,7 +55,7 @@ class WordPress_GitHub_Sync_Export {
 	public function run( $delete = false ) {
 		$this->tree->fetch_last();
 
-		if ( ! $this->tree->ready() ) {
+		if ( ! $this->tree->is_ready() ) {
 			WordPress_GitHub_Sync::write_log( __( 'Failed getting tree with error: ', 'wordpress-github-sync' ) . $this->tree->last_error() );
 			return;
 		}
@@ -83,7 +83,7 @@ class WordPress_GitHub_Sync_Export {
 		$this->tree->fetch_last();
 
 		// @todo what if we fail?
-		if ( $this->tree->ready() ) {
+		if ( $this->tree->is_ready() ) {
 			WordPress_GitHub_Sync::write_log( __( 'Saving the shas.', 'wordpress-github-sync' ) );
 			$this->save_post_shas();
 		}
