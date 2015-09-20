@@ -35,7 +35,12 @@ class WordPress_GitHub_Sync_Import {
 		$this->tree->fetch_sha( $sha );
 
 		if ( ! $this->tree->is_ready() ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting recursive tree with error: ', 'wordpress-github-sync' ) . $this->tree->last_error() );
+			WordPress_GitHub_Sync::write_log(
+				sprintf(
+					__( 'Failed getting recursive tree with error: %s', 'wordpress-github-sync' ),
+					$this->tree->last_error()
+				)
+			);
 
 			return;
 		}
@@ -44,14 +49,24 @@ class WordPress_GitHub_Sync_Import {
 			$this->import_blob( $blob );
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Imported tree ', 'wordpress-github-sync' ) . $sha );
+		WordPress_GitHub_Sync::write_log(
+			sprintf(
+				__( 'Imported tree %s', 'wordpress-github-sync' ),
+				$sha
+			)
+		);
 
 		if ( $this->new_posts ) {
 			// disable the lock to allow exporting
 			global $wpghs;
 			$wpghs->push_lock = false;
 
-			WordPress_GitHub_Sync::write_log( sprintf( __( 'Updating new posts with IDs: %s', 'wordpress-github-sync' ), implode( ', ', $this->new_posts ) ) );
+			WordPress_GitHub_Sync::write_log(
+				sprintf(
+					__( 'Updating new posts with IDs: %s', 'wordpress-github-sync' ),
+					implode( ', ', $this->new_posts )
+				)
+			);
 
 			$msg = apply_filters( 'wpghs_commit_msg_new_posts', 'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
 
@@ -123,7 +138,12 @@ class WordPress_GitHub_Sync_Import {
 			update_post_meta( $post_id, $key, $value );
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Updated blob ', 'wordpress-github-sync' ) . $blob->sha );
+		WordPress_GitHub_Sync::write_log(
+			sprintf(
+				__( 'Updated blob %s', 'wordpress-github-sync' ),
+				$blob->sha
+			)
+		);
 
 		if ( ! isset( $args['ID'] ) ) {
 			$this->new_posts[] = $post_id;

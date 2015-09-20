@@ -292,7 +292,12 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 			// If the blob sha already matches a post, then move on
 			$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'" );
 			if ( $id ) {
-				WordPress_GitHub_Sync::write_log( __( 'Already synced blob ', 'wordpress-github-sync' ) . $blob->path );
+				WordPress_GitHub_Sync::write_log(
+					sprintf(
+						__( 'Already synced blob %s', 'wordpress-github-sync' ),
+						$blob->path
+					)
+				);
 				$this->next();
 
 				continue;
@@ -301,7 +306,12 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 			$blob = $this->api->get_blob( $blob->sha );
 
 			if ( is_wp_error( $blob ) ) {
-				WordPress_GitHub_Sync::write_log( __( 'Failed getting blob with error: ', 'wordpress-github-sync' ) . $blob->get_error_message() );
+				WordPress_GitHub_Sync::write_log(
+					sprintf(
+						__( 'Failed getting blob with error: %s', 'wordpress-github-sync' ),
+						$blob->get_error_message()
+					)
+				);
 				$this->next();
 
 				continue;
@@ -311,7 +321,12 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 
 			// If it doesn't have YAML frontmatter, then move on
 			if ( '---' !== substr( $content, 0, 3 ) ) {
-				WordPress_GitHub_Sync::write_log( __( 'No front matter on blob ', 'wordpress-github-sync' ) . $blob->sha );
+				WordPress_GitHub_Sync::write_log(
+					sprintf(
+						__( 'No front matter on blob %s', 'wordpress-github-sync' ),
+						$blob->sha
+					)
+				);
 				$this->next();
 
 				continue;

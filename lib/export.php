@@ -56,7 +56,13 @@ class WordPress_GitHub_Sync_Export {
 		$this->tree->fetch_last();
 
 		if ( ! $this->tree->is_ready() ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting tree with error: ', 'wordpress-github-sync' ) . $this->tree->last_error() );
+			WordPress_GitHub_Sync::write_log(
+				sprintf(
+					__( 'Failed getting tree with error: %s', 'wordpress-github-sync' ),
+					$this->tree->last_error()
+				)
+			);
+
 			return;
 		}
 
@@ -106,7 +112,13 @@ class WordPress_GitHub_Sync_Export {
 	 */
 	public function error( $result ) {
 		update_option( '_wpghs_export_error', $result->get_error_message() );
-		WordPress_GitHub_Sync::write_log( __( 'Error exporting to GitHub. Error: ', 'wordpress-github-sync' ) . $result->get_error_message(), 'error' );
+		WordPress_GitHub_Sync::write_log(
+			sprintf(
+				__( 'Error exporting to GitHub. Error: %s', 'wordpress-github-sync' ),
+				$result->get_error_message()
+			),
+			'error'
+		);
 	}
 
 	/**
@@ -121,7 +133,12 @@ class WordPress_GitHub_Sync_Export {
 			if ( $blob ) {
 				$post->set_sha( $blob->sha );
 			} else {
-				WordPress_GitHub_Sync::write_log( __( 'No sha matched for post ID ', 'wordpress-github-sync' ) . $post_id );
+				WordPress_GitHub_Sync::write_log(
+					sprintf(
+						__( 'No sha matched for post ID %d', 'wordpress-github-sync' ),
+						$post_id
+					)
+				);
 			}
 		}
 	}

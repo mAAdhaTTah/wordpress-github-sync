@@ -97,7 +97,7 @@ class WordPress_GitHub_Sync_Controller {
 		$commit = $this->api->get_commit( $payload->head_commit->id );
 
 		if ( is_wp_error( $commit ) ) {
-			$msg = __( 'Failed getting commit with error: ', 'wordpress-github-sync' ) . $commit->get_error_message();
+			$msg = sprintf( __( 'Failed getting commit with error: %s', 'wordpress-github-sync' ), $commit->get_error_message() );
 			WordPress_GitHub_Sync::write_log( $msg );
 
 			return array(
@@ -136,7 +136,12 @@ class WordPress_GitHub_Sync_Controller {
 		$commit = $this->api->last_commit();
 
 		if ( is_wp_error( $commit ) ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting last commit with error: ', 'wordpress-github-sync' ) . $commit->get_error_message() );
+			WordPress_GitHub_Sync::write_log(
+				sprintf(
+					__( 'Failed getting last commit with error: %s', 'wordpress-github-sync' ),
+					$commit->get_error_message()
+				)
+			);
 
 			return;
 		}
