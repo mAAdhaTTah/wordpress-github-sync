@@ -20,6 +20,13 @@ class WordPress_GitHub_Sync_Import {
 	protected $new_posts = array();
 
 	/**
+	 * Posts that needs their revision author set.
+	 *
+	 * @var int[]
+	 */
+	protected $updated_posts;
+
+	/**
 	 * Initializes a new import manager.
 	 */
 	public function __construct() {
@@ -33,6 +40,15 @@ class WordPress_GitHub_Sync_Import {
 	 */
 	public function new_posts() {
 		return $this->new_posts;
+	}
+
+	/**
+	 * Returns the newly added posts.
+	 *
+	 * @return int[]
+	 */
+	public function updated_posts() {
+		return $this->updated_posts;
 	}
 
 	/**
@@ -114,12 +130,7 @@ class WordPress_GitHub_Sync_Import {
 			}
 		}
 
-		if ( ! isset( $args['ID'] ) ) {
-			// @todo create a revision when we add revision author support
-			$post_id = wp_insert_post( $args );
-		} else {
-			$post_id = wp_update_post( $args );
-		}
+		$post_id = ! isset( $args['ID'] ) ? wp_insert_post( $args ) : wp_update_post( $args );
 
 		/** @var WordPress_GitHub_Sync_Post $post */
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
@@ -136,9 +147,10 @@ class WordPress_GitHub_Sync_Import {
 			)
 		);
 
+		$this->updated_posts[] = $post_id;
+
 		if ( ! isset( $args['ID'] ) ) {
 			$this->new_posts[] = $post_id;
 		}
 	}
-
 }

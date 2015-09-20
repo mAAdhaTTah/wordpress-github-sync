@@ -109,6 +109,66 @@ class WordPress_GitHub_Sync_Controller {
 		$import = new WordPress_GitHub_Sync_Import();
 		$import->run( $commit->tree->sha );
 
+		$user = get_user_by( 'email', $payload->head_commit->author->email );
+
+		if ( ! $user ) {
+			// use the first user registered in the DB
+			// @todo do we want to do this?
+			$user_id = 0;
+
+			while ( ! $user ) {
+				$user_id++;
+
+				$user = get_user_by( 'id', $user_id );
+			}
+		}
+
+		update_option( '_wpghs_export_user_id', $user->ID );
+
+		if ( $updated_posts = $import->updated_posts() ) {
+			global $wpdb;
+
+			foreach ( $updated_posts as $post_id ) {
+				$revision = wp_get_post_revision( $post_id );
+
+				if ( ! $revision ) {
+					$revision = wp_save_post_revision( $post_id );
+
+					if ( ! $revision || is_wp_error( $revision ) ) {
+						// there was a problem saving a new revision
+						continue;
+					}
+
+					// wp_save_post_revision returns the ID, whereas get_post_revision returns the whole object
+					// in order to be consistent, let's make sure we have the whole object before continuing
+					$revision = get_post( $revision );
+				}
+
+				$wpdb->update(
+					$wpdb->posts,
+					array(
+						'post_author' => $user->ID,
+					),
+					array(
+						'ID' => $revision->ID,
+					),
+					array( '%s' ),
+					array( '%d' )
+				);
+			}
+		}
+
+		// Deleting posts from a payload is the only place
+		// we need to search posts by path; another way?
+		$removed = array();
+		foreach ( $payload->commits as $commit ) {
+			$removed = array_merge( $removed, $commit->removed );
+		}
+		foreach ( array_unique( $removed ) as $path ) {
+			$post = new WordPress_GitHub_Sync_Post( $path );
+			wp_delete_post( $post->id );
+		}
+
 		if ( $new_posts = $import->new_posts() ) {
 			// disable the lock to allow exporting
 			global $wpghs;
@@ -121,21 +181,25 @@ class WordPress_GitHub_Sync_Controller {
 				)
 			);
 
+			foreach ( $new_posts as $post_id ) {
+				$wpdb->update(
+					$wpdb->posts,
+					array(
+						'post_author' => $user->ID,
+					),
+					array(
+						'ID' => $post_id,
+					),
+					array( '%s' ),
+					array( '%d' )
+				);
+			}
+
+
 			$msg = apply_filters( 'wpghs_commit_msg_new_posts', 'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
 
 			$export = new WordPress_GitHub_Sync_Export( $new_posts, $msg );
 			$export->run();
-		}
-
-		// Deleting posts from a payload is the only place
-		// we need to search posts by path; another way?
-		$removed = array();
-		foreach ( $payload->commits as $commit ) {
-			$removed = array_merge( $removed, $commit->removed );
-		}
-		foreach ( array_unique( $removed ) as $path ) {
-			$post = new WordPress_GitHub_Sync_Post( $path );
-			wp_delete_post( $post->id );
 		}
 
 		$msg = __( 'Payload processed', 'wordpress-github-sync' );
