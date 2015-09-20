@@ -13,6 +13,13 @@ class WordPress_GitHub_Sync_Import {
 	protected $tree;
 
 	/**
+	 * Post IDs for posts imported from GitHub.
+	 *
+	 * @var int[]
+	 */
+	protected $new_posts = array();
+
+	/**
 	 * Initializes a new import manager.
 	 */
 	public function __construct() {
@@ -38,6 +45,19 @@ class WordPress_GitHub_Sync_Import {
 		}
 
 		WordPress_GitHub_Sync::write_log( __( 'Imported tree ', 'wordpress-github-sync' ) . $sha );
+
+		if ( $this->new_posts ) {
+			// disable the lock to allow exporting
+			global $wpghs;
+			$wpghs->push_lock = false;
+
+			WordPress_GitHub_Sync::write_log( sprintf( __( 'Updating new posts with IDs: %s', 'wordpress-github-sync' ), implode( ', ', $this->new_posts ) ) );
+
+			$msg = apply_filters( 'wpghs_commit_msg_new_posts', 'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
+
+			$export = new WordPress_GitHub_Sync_Export( $this->new_posts, $msg );
+			$export->run();
+		}
 	}
 
 	/**
@@ -104,6 +124,10 @@ class WordPress_GitHub_Sync_Import {
 		}
 
 		WordPress_GitHub_Sync::write_log( __( 'Updated blob ', 'wordpress-github-sync' ) . $blob->sha );
+
+		if ( ! isset( $args['ID'] ) ) {
+			$this->new_posts[] = $post_id;
+		}
 	}
 
 }

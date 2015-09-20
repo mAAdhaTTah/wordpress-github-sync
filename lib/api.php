@@ -214,7 +214,11 @@ class WordPress_GitHub_Sync_Api {
 		$user = get_userdata( $user_id );
 
 		if ( ! $user ) {
-			return array();
+			// @todo is this what we want to include here?
+			return array(
+				'name' => 'Anonymous',
+				'email' => 'anonymous@example.com',
+			);
 		}
 
 		return array(
