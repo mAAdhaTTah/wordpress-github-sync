@@ -27,6 +27,15 @@ class WordPress_GitHub_Sync_Import {
 	}
 
 	/**
+	 * Returns the IDs of newly added posts.
+	 *
+	 * @return int[]
+	 */
+	public function new_posts() {
+		return $this->new_posts;
+	}
+
+	/**
 	 * Runs the import process for a provided sha.
 	 *
 	 * @param string $sha
@@ -55,24 +64,6 @@ class WordPress_GitHub_Sync_Import {
 				$sha
 			)
 		);
-
-		if ( $this->new_posts ) {
-			// disable the lock to allow exporting
-			global $wpghs;
-			$wpghs->push_lock = false;
-
-			WordPress_GitHub_Sync::write_log(
-				sprintf(
-					__( 'Updating new posts with IDs: %s', 'wordpress-github-sync' ),
-					implode( ', ', $this->new_posts )
-				)
-			);
-
-			$msg = apply_filters( 'wpghs_commit_msg_new_posts', 'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
-
-			$export = new WordPress_GitHub_Sync_Export( $this->new_posts, $msg );
-			$export->run();
-		}
 	}
 
 	/**

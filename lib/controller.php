@@ -109,6 +109,24 @@ class WordPress_GitHub_Sync_Controller {
 		$import = new WordPress_GitHub_Sync_Import();
 		$import->run( $commit->tree->sha );
 
+		if ( $new_posts = $import->new_posts() ) {
+			// disable the lock to allow exporting
+			global $wpghs;
+			$wpghs->push_lock = false;
+
+			WordPress_GitHub_Sync::write_log(
+				sprintf(
+					__( 'Updating new posts with IDs: %s', 'wordpress-github-sync' ),
+					implode( ', ', $new_posts )
+				)
+			);
+
+			$msg = apply_filters( 'wpghs_commit_msg_new_posts', 'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
+
+			$export = new WordPress_GitHub_Sync_Export( $new_posts, $msg );
+			$export->run();
+		}
+
 		// Deleting posts from a payload is the only place
 		// we need to search posts by path; another way?
 		$removed = array();
