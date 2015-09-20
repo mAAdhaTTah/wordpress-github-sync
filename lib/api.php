@@ -236,7 +236,7 @@ class WordPress_GitHub_Sync_Api {
 	 * Get the data for the current user
 	 */
 	public function export_user() {
-		if ( $user_id = get_option( '_wpghs_export_user_id' ) ) {
+		if ( $user_id = (int) get_option( '_wpghs_export_user_id' ) ) {
 			delete_option( '_wpghs_export_user_id' );
 		} else {
 			$user_id = get_current_user_id();
@@ -248,7 +248,7 @@ class WordPress_GitHub_Sync_Api {
 			// @todo is this what we want to include here?
 			return array(
 				'name' => 'Anonymous',
-				'email' => 'anonymous@example.com',
+				'email' => 'anonymous@users.noreply.github.com',
 			);
 		}
 
