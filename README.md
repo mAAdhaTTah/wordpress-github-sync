@@ -92,6 +92,21 @@ WordPress <--> GitHub Sync exports all posts as `.md` files for better display o
 
 You can also activate the Markdown module from [Jetpack](https://wordpress.org/plugins/jetpack/) or the standalone [JP Markdown](https://wordpress.org/plugins/jetpack-markdown/) to save in Markdown and export that version to GitHub.
 
+### Importing from GitHub ###
+
+WordPress <--> GitHub Sync is also capable of importing posts directly from GitHub, without creating them in WordPress before hand. In order to have your post imported into GitHub, add this YAML Frontmatter to the top of your .md document:
+
+```yaml
+---
+post_title: 'Post Title'
+layout: post_type_probably_post
+published: true_or_false
+---
+Post goes here.
+```
+
+and fill it out with the data related to the post you're writing. Save the post you're writing and commit it directly to the repository. After the post is added to WordPress, an additional commit will be added to the repository, updating the new post with the new information from the database.   
+ 
 ### Custom Post Type & Status Support ###
 
 By default, WordPress <--> GitHub Sync only exports published posts and pages. If you want to export additional post types or draft posts, you'll have to hook into the filters `wpghs_whitelisted_post_types` or `wpghs_whitelisted_post_statuses` respectively.
