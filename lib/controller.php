@@ -125,9 +125,9 @@ class WordPress_GitHub_Sync_Controller {
 
 		update_option( '_wpghs_export_user_id', $user->ID );
 
-		if ( $updated_posts = $import->updated_posts() ) {
-			global $wpdb;
+		global $wpdb;
 
+		if ( $updated_posts = $import->updated_posts() ) {
 			foreach ( $updated_posts as $post_id ) {
 				$revision = wp_get_post_revision( $post_id );
 
@@ -194,7 +194,6 @@ class WordPress_GitHub_Sync_Controller {
 					array( '%d' )
 				);
 			}
-
 
 			$msg = apply_filters( 'wpghs_commit_msg_new_posts', 'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
 

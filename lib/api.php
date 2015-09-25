@@ -88,7 +88,7 @@ class WordPress_GitHub_Sync_Api {
 	/**
 	 * Create the tree by a set of blob ids
 	 *
-	 * @param string $tree
+	 * @param array $tree
 	 *
 	 * @return mixed
 	 */
