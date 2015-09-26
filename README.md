@@ -22,17 +22,13 @@ Well, now you can! Introducing [WordPress <--> GitHub Sync](https://github.com/b
 ### WordPress <--> GitHub Sync does three things: ###
 
 1. Allows content publishers to version their content in GitHub, exposing "who made what change when" to readers
-
 2. Allows readers to submit proposed improvements to WordPress-served content via GitHub's Pull Request model
-
 3. Allows non-technical writers to draft and edit a Jekyll site in WordPress's best-of-breed editing interface
 
 ### WordPress <--> GitHub sync might be able to do some other cool things: ###
 
 * Allow teams to collaboratively write and edit posts using GitHub (e.g., pull requests, issues, comments)
-
 * Allow you to sync the content of two different WordPress installations via GitHub
-
 * Allow you to stage and preview content before "deploying" to your production server
 
 ### How it works ###
@@ -40,7 +36,6 @@ Well, now you can! Introducing [WordPress <--> GitHub Sync](https://github.com/b
 The sync action is based on two hooks:
 
 1. A per-post sync fired in response to WordPress's `save_post` hook which pushes content to GitHub
-
 2. A sync of all changed files trigged by GitHub's `push` webhook (outbound API call)
 
 ## Installation ##
@@ -105,8 +100,10 @@ published: true_or_false
 Post goes here.
 ```
 
-and fill it out with the data related to the post you're writing. Save the post you're writing and commit it directly to the repository. After the post is added to WordPress, an additional commit will be added to the repository, updating the new post with the new information from the database.   
- 
+and fill it out with the data related to the post you're writing. Save the post you're writing and commit it directly to the repository. After the post is added to WordPress, an additional commit will be added to the repository, updating the new post with the new information from the database.
+
+If WPGHS cannot find the committer for a given import, it will fallback to the default user as set on the settings page. **Make sure you set this user before you begin importing posts from GitHub.** Without it set, WPGHS will default to no user being set for the author as well as unknown-author revisions.
+
 ### Custom Post Type & Status Support ###
 
 By default, WordPress <--> GitHub Sync only exports published posts and pages. If you want to export additional post types or draft posts, you'll have to hook into the filters `wpghs_whitelisted_post_types` or `wpghs_whitelisted_post_statuses` respectively.
