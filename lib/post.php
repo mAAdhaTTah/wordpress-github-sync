@@ -188,10 +188,12 @@ class WordPress_GitHub_Sync_Post {
 
 	/**
 	 * Get GitHub directory based on post
+	 *
+	 * @return string
 	 */
 	public function github_directory() {
 		if ( 'publish' !== $this->status() ) {
-			return apply_filters( 'wpghs_directory_unpublished', '_drafts/', $this );
+			return apply_filters( 'wpghs_directory_unpublished', '_' . strtolower( __( 'Drafts' ) ) . '/', $this );
 		}
 
 		$obj = get_post_type_object( $this->type() );
@@ -206,7 +208,7 @@ class WordPress_GitHub_Sync_Post {
 			return '';
 		}
 
-		return apply_filters( 'wpghs_directory_published', '_' . strtolower( $name ) . '/', $this );
+		return apply_filters( 'wpghs_directory_published', '_' . $name . '/', $this );
 	}
 
 	/**
