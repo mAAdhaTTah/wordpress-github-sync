@@ -165,8 +165,7 @@ class WordPress_GitHub_Sync_Post {
 		if ( function_exists( 'wpmarkdown_html_to_markdown' ) ) {
 			$content = wpmarkdown_html_to_markdown( $content );
 		} else if ( class_exists( 'WPCom_Markdown' ) ) {
-			$wpcomMd = WPCom_Markdown::get_instance();
-			if ( $wpcomMd->is_markdown( $this->post->ID ) ) {
+			if ( WPCom_Markdown::get_instance()->is_markdown( $this->post->ID ) ) {
 				$content = $this->post->post_content_filtered;
 			}
 		}
@@ -229,7 +228,7 @@ class WordPress_GitHub_Sync_Post {
 	 * @return string
 	 */
 	protected function get_name() {
-		if ($this->name() !== '') {
+		if ( '' !== $this->name() ) {
 			return $this->name();
 		}
 

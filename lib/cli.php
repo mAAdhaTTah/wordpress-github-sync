@@ -35,8 +35,10 @@ class WordPress_GitHub_Sync_CLI {
 	 *     wp wpghs export 1 1
 	 *
 	 * @synopsis <post_id|all> <user_id>
+	 *
+	 * @param array $args
 	 */
-	public function export( $args, $assoc_args ) {
+	public function export( $args ) {
 		list( $post_id, $user_id ) = $args;
 
 		if ( ! is_numeric( $user_id ) ) {
@@ -49,7 +51,12 @@ class WordPress_GitHub_Sync_CLI {
 			WP_CLI::line( __( 'Starting full export to GitHub.', 'wordpress-github-sync' ) );
 			$this->controller->export_all();
 		} elseif ( is_numeric( $post_id ) ) {
-			WP_CLI::line( __( 'Exporting post ID to GitHub: ', 'wordpress-github-sync' ). $post_id );
+			WP_CLI::line(
+				sprintf(
+					__( 'Exporting post ID to GitHub: %d', 'wordpress-github-sync' ),
+					$post_id
+				)
+			);
 			$this->controller->export_post( (int) $post_id );
 		} else {
 			WP_CLI::error( __( 'Invalid post ID', 'wordpress-github-sync' ) );
@@ -70,8 +77,10 @@ class WordPress_GitHub_Sync_CLI {
 	 *     wp wpghs import 1
 	 *
 	 * @synopsis <user_id>
+	 *
+	 * @param array $args
 	 */
-	public function import( $args, $assoc_args ) {
+	public function import( $args ) {
 		list( $user_id ) = $args;
 
 		if ( ! is_numeric( $user_id ) ) {

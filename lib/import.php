@@ -13,10 +13,42 @@ class WordPress_GitHub_Sync_Import {
 	protected $tree;
 
 	/**
+	 * Post IDs for posts imported from GitHub.
+	 *
+	 * @var int[]
+	 */
+	protected $new_posts = array();
+
+	/**
+	 * Posts that needs their revision author set.
+	 *
+	 * @var int[]
+	 */
+	protected $updated_posts;
+
+	/**
 	 * Initializes a new import manager.
 	 */
 	public function __construct() {
 		$this->tree = new WordPress_GitHub_Sync_Tree();
+	}
+
+	/**
+	 * Returns the IDs of newly added posts.
+	 *
+	 * @return int[]
+	 */
+	public function new_posts() {
+		return $this->new_posts;
+	}
+
+	/**
+	 * Returns the newly added posts.
+	 *
+	 * @return int[]
+	 */
+	public function updated_posts() {
+		return $this->updated_posts;
 	}
 
 	/**
@@ -27,8 +59,13 @@ class WordPress_GitHub_Sync_Import {
 	public function run( $sha ) {
 		$this->tree->fetch_sha( $sha );
 
-		if ( ! $this->tree->ready() ) {
-			WordPress_GitHub_Sync::write_log( __( 'Failed getting recursive tree with error: ', 'wordpress-github-sync' ) . $this->tree->last_error() );
+		if ( ! $this->tree->is_ready() ) {
+			WordPress_GitHub_Sync::write_log(
+				sprintf(
+					__( 'Failed getting recursive tree with error: %s', 'wordpress-github-sync' ),
+					$this->tree->last_error()
+				)
+			);
 
 			return;
 		}
@@ -37,7 +74,12 @@ class WordPress_GitHub_Sync_Import {
 			$this->import_blob( $blob );
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Imported tree ', 'wordpress-github-sync' ) . $sha );
+		WordPress_GitHub_Sync::write_log(
+			sprintf(
+				__( 'Imported tree %s', 'wordpress-github-sync' ),
+				$sha
+			)
+		);
 	}
 
 	/**
@@ -88,12 +130,7 @@ class WordPress_GitHub_Sync_Import {
 			}
 		}
 
-		if ( ! isset( $args['ID'] ) ) {
-			// @todo create a revision when we add revision author support
-			$post_id = wp_insert_post( $args );
-		} else {
-			$post_id = wp_update_post( $args );
-		}
+		$post_id = ! isset( $args['ID'] ) ? wp_insert_post( $args ) : wp_update_post( $args );
 
 		/** @var WordPress_GitHub_Sync_Post $post */
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
@@ -103,7 +140,17 @@ class WordPress_GitHub_Sync_Import {
 			update_post_meta( $post_id, $key, $value );
 		}
 
-		WordPress_GitHub_Sync::write_log( __( 'Updated blob ', 'wordpress-github-sync' ) . $blob->sha );
-	}
+		WordPress_GitHub_Sync::write_log(
+			sprintf(
+				__( 'Updated blob %s', 'wordpress-github-sync' ),
+				$blob->sha
+			)
+		);
 
+		$this->updated_posts[] = $post_id;
+
+		if ( ! isset( $args['ID'] ) ) {
+			$this->new_posts[] = $post_id;
+		}
+	}
 }

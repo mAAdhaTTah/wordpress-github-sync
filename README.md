@@ -22,17 +22,13 @@ Well, now you can! Introducing [WordPress <--> GitHub Sync](https://github.com/b
 ### WordPress <--> GitHub Sync does three things: ###
 
 1. Allows content publishers to version their content in GitHub, exposing "who made what change when" to readers
-
 2. Allows readers to submit proposed improvements to WordPress-served content via GitHub's Pull Request model
-
 3. Allows non-technical writers to draft and edit a Jekyll site in WordPress's best-of-breed editing interface
 
 ### WordPress <--> GitHub sync might be able to do some other cool things: ###
 
 * Allow teams to collaboratively write and edit posts using GitHub (e.g., pull requests, issues, comments)
-
 * Allow you to sync the content of two different WordPress installations via GitHub
-
 * Allow you to stage and preview content before "deploying" to your production server
 
 ### How it works ###
@@ -40,7 +36,6 @@ Well, now you can! Introducing [WordPress <--> GitHub Sync](https://github.com/b
 The sync action is based on two hooks:
 
 1. A per-post sync fired in response to WordPress's `save_post` hook which pushes content to GitHub
-
 2. A sync of all changed files trigged by GitHub's `push` webhook (outbound API call)
 
 ## Installation ##
@@ -91,6 +86,23 @@ Install the plugin and activate it via WordPress's plugin settings page.
 WordPress <--> GitHub Sync exports all posts as `.md` files for better display on GitHub, but all content is exported and imported as its original HTML. To enable writing, importing, and exporting in Markdown, please install and enable [WP-Markdown](https://wordpress.org/plugins/wp-markdown/), and WordPress <--> GitHub Sync will use it to convert your posts to and from Markdown.
 
 You can also activate the Markdown module from [Jetpack](https://wordpress.org/plugins/jetpack/) or the standalone [JP Markdown](https://wordpress.org/plugins/jetpack-markdown/) to save in Markdown and export that version to GitHub.
+
+### Importing from GitHub ###
+
+WordPress <--> GitHub Sync is also capable of importing posts directly from GitHub, without creating them in WordPress before hand. In order to have your post imported into GitHub, add this YAML Frontmatter to the top of your .md document:
+
+```yaml
+---
+post_title: 'Post Title'
+layout: post_type_probably_post
+published: true_or_false
+---
+Post goes here.
+```
+
+and fill it out with the data related to the post you're writing. Save the post you're writing and commit it directly to the repository. After the post is added to WordPress, an additional commit will be added to the repository, updating the new post with the new information from the database.
+
+If WPGHS cannot find the committer for a given import, it will fallback to the default user as set on the settings page. **Make sure you set this user before you begin importing posts from GitHub.** Without it set, WPGHS will default to no user being set for the author as well as unknown-author revisions.
 
 ### Custom Post Type & Status Support ###
 
