@@ -2,6 +2,12 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [Unreleased] ###
+
+* New Feature: Support importing posts from GitHub
+* New Feature: Support setting revision and new post users on import.
+    * Note: There is a new setting, please selected a default/fallback user and saved the settings.
+
 ### [1.2] ###
 
 * New Feature: Support displaying an "Edit|View on GitHub" link.
