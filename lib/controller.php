@@ -112,18 +112,13 @@ class WordPress_GitHub_Sync_Controller {
 		$user = get_user_by( 'email', $payload->head_commit->author->email );
 
 		if ( ! $user ) {
-			// use the first user registered in the DB
-			// @todo do we want to do this?
-			$user_id = 0;
-
-			while ( ! $user ) {
-				$user_id++;
-
-				$user = get_user_by( 'id', $user_id );
-			}
+			// use the default user
+			$user = get_user_by( 'id', get_option( 'wpghs_default_user' ) );
 		}
 
-		update_option( '_wpghs_export_user_id', $user->ID );
+		// if we can't find a user and a default hasn't been set,
+		// we're just going to set the revision author to 0
+		update_option( '_wpghs_export_user_id', $user ? $user->ID : 0 );
 
 		global $wpdb;
 
@@ -147,7 +142,7 @@ class WordPress_GitHub_Sync_Controller {
 				$wpdb->update(
 					$wpdb->posts,
 					array(
-						'post_author' => $user->ID,
+						'post_author' => (int) get_option( '_wpghs_export_user_id' ),
 					),
 					array(
 						'ID' => $revision->ID,
@@ -185,7 +180,7 @@ class WordPress_GitHub_Sync_Controller {
 				$wpdb->update(
 					$wpdb->posts,
 					array(
-						'post_author' => $user->ID,
+						'post_author' => (int) get_option( '_wpghs_export_user_id' ),
 					),
 					array(
 						'ID' => $post_id,

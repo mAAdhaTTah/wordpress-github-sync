@@ -58,13 +58,32 @@ class WordPress_GitHub_Sync_Admin {
 				'help_text' => __( "The webhook's secret phrase.", 'wordpress-github-sync' )
 			)
 		);
+
+		register_setting( WordPress_GitHub_Sync::$text_domain, 'wpghs_default_user' );
+		add_settings_field( 'wpghs_default_user', __( 'Default Import User', 'wordpress-github-sync' ), array( &$this, 'user_field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
+				'default'   => '',
+				'name'      => 'wpghs_default_user',
+				'help_text' => __( 'The fallback user for import, in case WordPress <--> GitHub Sync cannot find the committer in the database.', 'wordpress-github-sync' )
+			)
+		);
 	}
 
 	/**
 	 * Callback to render an individual options field
+	 *
+	 * @param array $args
 	 */
 	public function field_callback( $args ) {
 		include dirname( dirname( __FILE__ ) ) . '/views/setting-field.php';
+	}
+
+	/**
+	 * Callback to render the default import user field.
+	 *
+	 * @param array $args
+	 */
+	public function user_field_callback( $args ) {
+		include dirname( dirname( __FILE__ ) ) . '/views/user-setting-field.php';
 	}
 
 	/**
