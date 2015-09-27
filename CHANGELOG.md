@@ -2,7 +2,7 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
-### [Unreleased] ###
+### [1.3] ###
 
 * New Feature: Support importing posts from GitHub
 * New Feature: Support setting revision and new post users on import.
@@ -40,6 +40,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
   [Keep a Changelog standards]: http://keepachangelog.com/
   [Semantic Versioning]: http://semver.org/
   [Unreleased]: https://github.com/benbalter/wordpress-github-sync
+  [1.3]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3
   [1.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.2
   [1.1.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.1.1
   [1.1.0]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.1.0
