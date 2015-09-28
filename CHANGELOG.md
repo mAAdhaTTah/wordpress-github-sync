@@ -2,6 +2,10 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [Unreleased] ###
+
+* Exclude "auto-drafts" from being exported.
+
 ### [1.3] ###
 
 * New Feature: Support importing posts from GitHub
