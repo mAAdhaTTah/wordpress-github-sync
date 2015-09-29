@@ -247,15 +247,9 @@ class WordPress_GitHub_Sync_Controller {
 		$post_types    = $this->format_for_query( $this->get_whitelisted_post_types() );
 
 		$post_ids = $wpdb->get_col(
-			$wpdb->prepare(
-				'SELECT ID FROM %s WHERE
-				post_status IN ( %s ) AND
-				post_type IN ( %s )'
-				,
-				$wpdb->posts,
-				$post_statuses,
-				$post_types
-			)
+			"SELECT ID FROM $wpdb->posts WHERE
+			post_status IN ( $post_statuses ) AND
+			post_type IN ( $post_types )"
 		);
 
 		$msg = apply_filters( 'wpghs_commit_msg_full', 'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
