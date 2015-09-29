@@ -2,10 +2,11 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
-### [Unreleased] ###
+### [1.3.1] ###
 
 * Re-add validation of post before exporting.
     * Fixed bug where all post types/statuses were being exported.
+* Reverted busted SQL query
 
 ### [1.3] ###
 
@@ -45,6 +46,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
   [Keep a Changelog standards]: http://keepachangelog.com/
   [Semantic Versioning]: http://semver.org/
   [Unreleased]: https://github.com/benbalter/wordpress-github-sync
+  [1.3.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.1
   [1.3]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3
   [1.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.2
   [1.1.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.1.1
