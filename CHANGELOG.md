@@ -4,7 +4,8 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 
 ### [Unreleased] ###
 
-* Exclude "auto-drafts" from being exported.
+* Re-add validation of post before exporting.
+    * Fixed bug where all post types/statuses were being exported.
 
 ### [1.3] ###
 
