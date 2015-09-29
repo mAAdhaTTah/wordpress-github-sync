@@ -218,7 +218,7 @@ class WordPress_GitHub_Sync_Api {
 			'headers' => array(
 				'Authorization' => 'token ' . $this->oauth_token()
 			),
-			'body'    => json_encode( $body )
+			'body'    => function_exists( 'wp_json_encode' ) ? wp_json_encode($body) : json_encode( $body )
 		);
 
 		$response = wp_remote_request( $endpoint, $args );
