@@ -116,7 +116,7 @@ class WordPress_GitHub_Sync {
 	 * $post_id - (int) the post to sync
 	 */
 	public function save_post_callback( $post_id ) {
-		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || 'auto-draft' === get_post_status( $post_id ) ) {
+		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
 			return;
 		}
 
@@ -129,7 +129,7 @@ class WordPress_GitHub_Sync {
 	 * $post_id - (int) the post to delete
 	 */
 	public function delete_post_callback( $post_id ) {
-		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || 'auto-draft' === get_post_status( $post_id ) ) {
+		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
 			return;
 		}
 
