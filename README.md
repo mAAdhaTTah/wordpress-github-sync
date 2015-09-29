@@ -2,8 +2,8 @@
 **Contributors:** benbalter, JamesDiGioia  
 **Tags:** github, git, version control, content, collaboration, publishing  
 **Requires at least:** 3.9  
-**Tested up to:** 4.2.3  
-**Stable tag:** 1.3  
+**Tested up to:** 4.3.1  
+**Stable tag:** 1.3.1  
 **License:** GPLv2  
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
 
