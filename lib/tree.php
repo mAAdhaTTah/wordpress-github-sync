@@ -119,7 +119,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 			}
 		}
 
-		if ( ! $match ) {
+		if ( ! $match && ! $remove ) {
 			$this->tree[]  = $this->new_blob( $post );
 			$this->changed = true;
 		}
