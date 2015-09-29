@@ -2,6 +2,10 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [Unreleased] ###
+
+* Fix deleting bug where posts that weren't present in the repo were being added.
+
 ### [1.3.1] ###
 
 * Re-add validation of post before exporting.
