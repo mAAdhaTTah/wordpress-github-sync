@@ -275,6 +275,11 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		$post = new WordPress_GitHub_Sync_Post( $post_id );
+
+		if ( ! $this->is_post_supported( $post ) ) {
+			return;
+		}
+
 		$msg  = apply_filters( 'wpghs_commit_msg_single', 'Syncing ' . $post->github_path() . ' from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')', $post ) . ' - wpghs';
 
 		$export = new WordPress_GitHub_Sync_Export( $post_id, $msg );
