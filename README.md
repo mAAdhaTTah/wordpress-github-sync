@@ -91,14 +91,12 @@ You can also activate the Markdown module from [Jetpack](https://wordpress.org/p
 
 WordPress <--> GitHub Sync is also capable of importing posts directly from GitHub, without creating them in WordPress before hand. In order to have your post imported into GitHub, add this YAML Frontmatter to the top of your .md document:
 
-```yaml
----
-post_title: 'Post Title'
-layout: post_type_probably_post
-published: true_or_false
----
-Post goes here.
-```
+    ---
+    post_title: 'Post Title'
+    layout: post_type_probably_post
+    published: true_or_false
+    ---
+    Post goes here.
 
 and fill it out with the data related to the post you're writing. Save the post you're writing and commit it directly to the repository. After the post is added to WordPress, an additional commit will be added to the repository, updating the new post with the new information from the database.
 
@@ -110,32 +108,30 @@ By default, WordPress <--> GitHub Sync only exports published posts and pages. I
 
 In `wp-content`, create or open the `mu-plugins` folder and create a plugin file there called `wpghs-custom-filters.php`. In it, paste and modify the below code:
 
-```php
-<?php
-/**
- * Plugin Name:  WordPress-GitHub Sync Custom Filters
- * Plugin URI:   https://github.com/benbalter/wordpress-github-sync
- * Description:  Adds support for custom post types and statuses
- * Version:      1.0.0
- * Author:       James DiGioia
- * Author URI:   https://jamesdigioia.com/
- * License:      GPL2
- */
-
-add_filter('wpghs_whitelisted_post_types', function ($supported_post_types) {
-  return array_merge($supported_post_types, array(
-    // add your custom post types here
-    'gistpen'
-  ));
-});
-
-add_filter('wpghs_whitelisted_post_statuses', function ($supported_post_statuses) {
-  return array_merge($supported_post_statuses, array(
-    // additional statuses available: https://codex.wordpress.org/Post_Status
-    'draft'
-  ));
-});
-```
+    <?php
+    /**
+     * Plugin Name:  WordPress-GitHub Sync Custom Filters
+     * Plugin URI:   https://github.com/benbalter/wordpress-github-sync
+     * Description:  Adds support for custom post types and statuses
+     * Version:      1.0.0
+     * Author:       James DiGioia
+     * Author URI:   https://jamesdigioia.com/
+     * License:      GPL2
+     */
+    
+    add_filter('wpghs_whitelisted_post_types', function ($supported_post_types) {
+      return array_merge($supported_post_types, array(
+        // add your custom post types here
+        'gistpen'
+      ));
+    });
+    
+    add_filter('wpghs_whitelisted_post_statuses', function ($supported_post_statuses) {
+      return array_merge($supported_post_statuses, array(
+        // additional statuses available: https://codex.wordpress.org/Post_Status
+        'draft'
+      ));
+    });
 
 ### Add "Edit|View on GitHub" Link ###
 
@@ -148,22 +144,18 @@ If you want to add a link to your posts on GitHub, there are 4 functions WordPre
 
 All four of these functions must be used in the loop. If you'd like to retrieve these URLs outside of the loop, instantiate a new `WordPress_GitHub_Sync_Post` object and call `github_edit_url` or `github_view_url` respectively on it:
 
-```php
-// $id can be retrieved from a query or elsewhere
-$wpghs_post = new WordPress_GitHub_Sync_Post( $id );
-$url = $wpghs_post->github_view_url();
-```
+    // $id can be retrieved from a query or elsewhere
+    $wpghs_post = new WordPress_GitHub_Sync_Post( $id );
+    $url = $wpghs_post->github_view_url();
 
 If you'd like to include an edit link without modifying your theme directly, you can add one of these functions to `the_content` like so:
 
-```php
-add_filter( 'the_content', function( $content ) {
-  if( is_page() || is_single() ) {
-    $content .= get_the_github_edit_link();
-  }
-  return $content;
-}, 1000 );
-```
+    add_filter( 'the_content', function( $content ) {
+      if( is_page() || is_single() ) {
+        $content .= get_the_github_edit_link();
+      }
+      return $content;
+    }, 1000 );
 
 ### Additional Customizations ###
 
