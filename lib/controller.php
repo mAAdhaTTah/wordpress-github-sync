@@ -43,12 +43,43 @@ class WordPress_GitHub_Sync_Controller {
 	public $msg = '';
 
 	/**
+	 * Locked when receiving payload
+	 * @var boolean
+	 */
+	public $push_lock = false;
+
+	/**
 	 * Instantiates a new Controller object
 	 *
 	 * $posts - array of post IDs to export
 	 */
 	public function __construct() {
 		$this->api = new WordPress_GitHub_Sync_Api;
+	}
+
+	/**
+	 * Webhook callback as triggered from GitHub push
+	 */
+	public function pull_posts() {
+		// Prevent pushes on update
+		$this->push_lock = true;
+
+		$raw_data = file_get_contents( 'php://input' );
+		$headers = $this->headers();
+
+		// validate secret
+		$hash = hash_hmac( 'sha1', $raw_data, $this->secret() );
+		if ( 'sha1=' . $hash !== $headers['X-Hub-Signature'] ) {
+			$msg = __( 'Failed to validate secret.', 'wordpress-github-sync' );
+			WordPress_GitHub_Sync::write_log( $msg );
+			wp_send_json( array(
+				'result'  => 'error',
+				'message' => $msg,
+			) );
+		}
+
+		$result = $this->controller->pull( json_decode( $raw_data ) );
+		wp_send_json( $result );
 	}
 
 	/**
@@ -259,12 +290,14 @@ class WordPress_GitHub_Sync_Controller {
 	}
 
 	/**
-	 * Exports a single post to GitHub by ID
+	 * Exports a single post to GitHub by ID.
 	 *
-	 * @param int $post_id
+	 * Called on the save_post hook.
+	 *
+	 * @param int $post_id Post ID
 	 */
 	public function export_post( $post_id ) {
-		if ( $this->locked() ) {
+		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || $this->locked() ) {
 			return;
 		}
 
@@ -283,10 +316,12 @@ class WordPress_GitHub_Sync_Controller {
 	/**
 	 * Removes the post from the tree
 	 *
-	 * @param int $post_id
+	 * Called the delete_post hook.
+	 *
+	 * @param int $post_id Post ID
 	 */
 	public function delete_post( $post_id ) {
-		if ( $this->locked() ) {
+		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || $this->locked() ) {
 			return;
 		}
 
@@ -301,13 +336,31 @@ class WordPress_GitHub_Sync_Controller {
 	 * Check if we're clear to call the api
 	 */
 	public function locked() {
-		global $wpghs;
-
-		if ( ! $this->api->oauth_token() || ! $this->api->repository() || $wpghs->push_lock ) {
+		if ( ! $this->api->oauth_token() || ! $this->api->repository() || $this->push_lock ) {
 			return true;
 		}
 
 		return false;
+	}
+
+	/**
+	 * Cross-server header support
+	 * Returns an array of the request's headers
+	 */
+	public function headers() {
+		if ( function_exists( 'getallheaders' ) ) {
+			return getallheaders();
+		}
+
+		// Nginx and pre 5.4 workaround
+		// http://www.php.net/manual/en/function.getallheaders.php
+		$headers = array();
+		foreach ( $_SERVER as $name => $value ) {
+			if ( 'HTTP_' === substr( $name, 0, 5 ) ) {
+				$headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
+			}
+		}
+		return $headers;
 	}
 
 	/**
@@ -323,6 +376,13 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		return implode( ', ', $whitelist );
+	}
+
+	/**
+	 * Returns the Webhook secret
+	 */
+	public function secret() {
+		return get_option( 'wpghs_secret' );
 	}
 
 	/**

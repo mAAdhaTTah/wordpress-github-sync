@@ -65,16 +65,10 @@ class WordPress_GitHub_Sync {
 	public $admin;
 
 	/**
-	 * Locked when receiving payload
-	 * @var boolean
-	 */
-	public $push_lock = false;
-
-	/**
 	 * Called at load time, hooks into WP core
 	 */
 	public function __construct() {
-		self::$instance = &$this;
+		self::$instance = $this;
 
 		if ( is_admin() ) {
 			$this->admin = new WordPress_GitHub_Sync_Admin;
@@ -84,12 +78,14 @@ class WordPress_GitHub_Sync {
 		register_activation_hook( __FILE__, array( $this, 'activate' ) );
 		add_action( 'admin_notices', array( $this, 'activation_notice' ) );
 
-		add_action( 'init', array( &$this, 'l10n' ) );
-		add_action( 'save_post', array( &$this, 'save_post_callback' ) );
-		add_action( 'delete_post', array( &$this, 'delete_post_callback' ) );
-		add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ) );
-		add_action( 'wpghs_export', array( &$this->controller, 'export_all' ) );
-		add_action( 'wpghs_import', array( &$this->controller, 'import_master' ) );
+		add_action( 'init', array( $this, 'l10n' ) );
+
+		// Controller actions.
+		add_action( 'save_post', array( $this->controller, 'export_post' ) );
+		add_action( 'delete_post', array( $this->controller, 'delete_post_callback' ) );
+		add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( $this->controller, 'pull_posts' ) );
+		add_action( 'wpghs_export', array( $this->controller, 'export_all' ) );
+		add_action( 'wpghs_import', array( $this->controller, 'import_master' ) );
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			WP_CLI::add_command( 'wpghs', 'WordPress_GitHub_Sync_CLI' );
@@ -101,84 +97,6 @@ class WordPress_GitHub_Sync {
 		*/
 	public function l10n() {
 		load_plugin_textdomain( self::$text_domain, false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' );
-	}
-
-	/**
-	 * Returns the Webhook secret
-	 */
-	public function secret() {
-		return get_option( 'wpghs_secret' );
-	}
-
-	/**
-	 * Callback triggered on post save, used to initiate an outbound sync
-	 *
-	 * $post_id - (int) the post to sync
-	 */
-	public function save_post_callback( $post_id ) {
-		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
-			return;
-		}
-
-		$this->controller->export_post( $post_id );
-	}
-
-	/**
-	 * Callback triggered on post delete, used to initiate an outbound sync
-	 *
-	 * $post_id - (int) the post to delete
-	 */
-	public function delete_post_callback( $post_id ) {
-		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
-			return;
-		}
-
-		$this->controller->delete_post( $post_id );
-	}
-
-	/**
-	 * Webhook callback as trigered from GitHub push
-	 */
-	public function pull_posts() {
-		# Prevent pushes on update
-		$this->push_lock = true;
-
-		$raw_data = file_get_contents( 'php://input' );
-		$headers = $this->headers();
-
-		// validate secret
-		$hash = hash_hmac( 'sha1', $raw_data, $this->secret() );
-		if ( 'sha1=' . $hash !== $headers['X-Hub-Signature'] ) {
-			$msg = __( 'Failed to validate secret.', 'wordpress-github-sync' );
-			self::write_log( $msg );
-			wp_send_json( array(
-				'result'  => 'error',
-				'message' => $msg,
-			) );
-		}
-
-		$result = $this->controller->pull( json_decode( $raw_data ) );
-		wp_send_json( $result );
-	}
-
-	/**
-	 * Cross-server header support
-	 * Returns an array of the request's headers
-	 */
-	public function headers() {
-		if ( function_exists( 'getallheaders' ) ) {
-			return getallheaders();
-		}
-
-		// Nginx and pre 5.4 workaround
-		// http://www.php.net/manual/en/function.getallheaders.php
-		$headers = array();
-		foreach ( $_SERVER as $name => $value ) {
-			if ( 'HTTP_' === substr( $name, 0, 5 ) ) {
-				$headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
-			}
-		}
-		return $headers;
 	}
 
 	/**
