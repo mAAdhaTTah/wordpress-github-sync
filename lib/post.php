@@ -33,8 +33,8 @@ class WordPress_GitHub_Sync_Post {
 	 *
 	 * @param int|string $id_or_path either a postID (WordPress) or a path to a file (GitHub)
 	 */
-	public function __construct( $id_or_path ) {
-		$this->api = new WordPress_GitHub_Sync_Api;
+	public function __construct( $id_or_path, WordPress_GitHub_Sync_Api $api ) {
+		$this->api = $api;
 
 		if ( is_numeric( $id_or_path ) ) {
 			$this->id = $id_or_path;

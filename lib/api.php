@@ -7,6 +7,22 @@ use WordPress_GitHub_Sync_Cache as Cache;
 class WordPress_GitHub_Sync_Api {
 
 	/**
+	 * Application container.
+	 *
+	 * @var WordPress_GitHub_Sync
+	 */
+	protected $app;
+
+	/**
+	 * Instantiates a new Api object.
+	 *
+	 * @param WordPress_GitHub_Sync $app Application container.
+	 */
+	public function __construct( WordPress_GitHub_Sync $app ) {
+		$this->app = $app;
+	}
+
+	/**
 	 * Retrieves the blob data for a given sha
 	 *
 	 * @param string $sha

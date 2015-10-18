@@ -27,8 +27,8 @@
 		Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-// if the functions have already been autoloaded, don't reload
-// this fixes function duplication during unit testing
+// If the functions have already been autoloaded, don't reload.
+// This fixes function duplication during unit testing.
 $path = dirname( __FILE__ ) . '/vendor/autoload_52.php';
 if ( ! function_exists( 'get_the_github_view_link' ) && file_exists( $path ) ) {
 	require_once $path;
@@ -250,7 +250,7 @@ class WordPress_GitHub_Sync {
 	 */
 	public function api() {
 		if ( ! $this->api ) {
-			$this->api = new WordPress_GitHub_Sync_Api();
+			$this->api = new WordPress_GitHub_Sync_Api( $this );
 		}
 
 		return $this->api;

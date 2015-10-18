@@ -14,7 +14,9 @@ function get_the_github_view_link() {
  * @return string
  */
 function get_the_github_view_url() {
-	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID() );
+	global $wpghs;
+
+	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID(), $wpghs->api() );
 
 	return $wpghs_post->github_view_url();
 }
@@ -34,7 +36,9 @@ function get_the_github_edit_link() {
  * @return string
  */
 function get_the_github_edit_url() {
-	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID() );
+	global $wpghs;
+
+	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID(), $wpghs->api() );
 
 	return $wpghs_post->github_edit_url();
 }

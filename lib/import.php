@@ -134,7 +134,7 @@ class WordPress_GitHub_Sync_Import {
 			$removed = array_merge( $removed, $commit->removed );
 		}
 		foreach ( array_unique( $removed ) as $path ) {
-			$post = new WordPress_GitHub_Sync_Post( $path );
+			$post = new WordPress_GitHub_Sync_Post( $path, $this->app->api() );
 			wp_delete_post( $post->id );
 		}
 
@@ -258,7 +258,7 @@ class WordPress_GitHub_Sync_Import {
 		$post_id = ! isset( $args['ID'] ) ? wp_insert_post( $args ) : wp_update_post( $args );
 
 		/** @var WordPress_GitHub_Sync_Post $post */
-		$post = new WordPress_GitHub_Sync_Post( $post_id );
+		$post = new WordPress_GitHub_Sync_Post( $post_id, $this->app->api() );
 		$post->set_sha( $blob->sha );
 
 		foreach ( $meta as $key => $value ) {

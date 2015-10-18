@@ -9,7 +9,7 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_Base_TestCase
 		update_option( 'wpghs_oauth_token', 'the-token' );
 		update_option( 'wpghs_host', 'github.api' );
 		$this->http_responder = array( $this, 'mock_github_api' );
-		$this->api = new WordPress_GitHub_Sync_Api;
+		$this->api = new WordPress_GitHub_Sync_Api( $this->app );
 	}
 
 	public function test_should_return_blob() {
