@@ -5,16 +5,19 @@
 class WordPress_GitHub_Sync_CLI {
 
 	/**
-	 * Controller object
-	 * @var WordPress_GitHub_Sync_Controller
+	 * Application container.
+	 *
+	 * @var WordPress_GitHub_Sync
 	 */
-	public $controller;
+	protected $app;
 
 	/**
 	 * Wire up controller object on init
+	 *
+	 * @param WordPress_GitHub_Sync $app
 	 */
-	public function __construct() {
-		$this->controller = new WordPress_GitHub_Sync_Controller;
+	public function __construct( WordPress_GitHub_Sync $app ) {
+		$this->app = $app;
 	}
 
 	/**
@@ -49,7 +52,7 @@ class WordPress_GitHub_Sync_CLI {
 
 		if ( 'all' === $post_id ) {
 			WP_CLI::line( __( 'Starting full export to GitHub.', 'wordpress-github-sync' ) );
-			$this->controller->export_all();
+			$this->app->controller()->export_all();
 		} elseif ( is_numeric( $post_id ) ) {
 			WP_CLI::line(
 				sprintf(
@@ -57,7 +60,7 @@ class WordPress_GitHub_Sync_CLI {
 					$post_id
 				)
 			);
-			$this->controller->export_post( (int) $post_id );
+			$this->app->controller()->export_post( (int) $post_id );
 		} else {
 			WP_CLI::error( __( 'Invalid post ID', 'wordpress-github-sync' ) );
 		}
@@ -91,6 +94,6 @@ class WordPress_GitHub_Sync_CLI {
 
 		WP_CLI::line( __( 'Starting import from GitHub.', 'wordpress-github-sync' ) );
 
-		$this->controller->import_master();
+		$this->app->controller()->import_master();
 	}
 }

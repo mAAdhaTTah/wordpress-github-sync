@@ -69,6 +69,13 @@ class WordPress_GitHub_Sync {
 	public $admin;
 
 	/**
+	 * CLI object.
+	 *
+	 * @var WordPress_GitHub_Sync_CLI
+	 */
+	protected $cli;
+
+	/**
 	 * Request object.
 	 *
 	 * @var WordPress_GitHub_Sync_Request
@@ -121,7 +128,7 @@ class WordPress_GitHub_Sync {
 		add_action( 'wpghs_import', array( $this->controller, 'import_master' ) );
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			WP_CLI::add_command( 'wpghs', 'WordPress_GitHub_Sync_CLI' );
+			WP_CLI::add_command( 'wpghs', $this->cli() );
 		}
 	}
 
@@ -186,6 +193,28 @@ class WordPress_GitHub_Sync {
 				?>
 			</p>
 		</div><?php
+	}
+
+	/**
+	 * Get the Controller object.
+	 *
+	 * @return WordPress_GitHub_Sync_Controller
+	 */
+	public function controller() {
+		return $this->controller;
+	}
+
+	/**
+	 * Lazy-load the CLI object.
+	 *
+	 * @return WordPress_GitHub_Sync_CLI
+	 */
+	public function cli() {
+		if ( ! $this->cli ) {
+			$this->cli = new WordPress_GitHub_Sync_CLI( $this );
+		}
+
+		return $this->cli;
 	}
 
 	/**
