@@ -24,6 +24,9 @@
     "classmap": ["lib/"],
     "files": ["helpers.php"]
   },
+  "autoload-dev": {
+    "classmap": ["tests/"]
+  },
   "require": {
     "php": ">=5.2",
     "mAAdhaTTah/cyps": "1.0.0",

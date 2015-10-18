@@ -1,6 +1,6 @@
 <?php
 
-class WordPress_GitHub_Sync_Helpers_Test extends WP_UnitTestCase {
+class WordPress_GitHub_Sync_Helpers_Test extends WordPress_GitHub_Sync_Base_TestCase {
 
 	/**
 	 * @var WordPress_GitHub_Sync_Post
