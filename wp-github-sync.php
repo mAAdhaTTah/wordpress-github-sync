@@ -27,10 +27,14 @@
 		Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+// if the functions have already been autoloaded, don't reload
+// this fixes function duplication during unit testing
 $path = dirname( __FILE__ ) . '/vendor/autoload_52.php';
-if ( file_exists( $path ) ) {
+if ( ! function_exists( 'get_the_github_view_link' ) && file_exists( $path ) ) {
 	require_once $path;
 }
+
+$wpghs = new WordPress_GitHub_Sync;
 
 class WordPress_GitHub_Sync {
 
@@ -176,5 +180,3 @@ class WordPress_GitHub_Sync {
 		}
 	}
 }
-
-$wpghs = new WordPress_GitHub_Sync;
