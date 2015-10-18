@@ -30,8 +30,8 @@ class WordPress_GitHub_Sync_Api {
 	 * @return mixed
 	 */
 	public function get_blob( $sha ) {
-		if ( ! $this->oauth_token() || ! $this->repository() ) {
-			return false;
+		if ( is_wp_error( $error = $this->can_call() ) ) {
+			return $error;
 		}
 
 		if ( $cache = Cache::open()->get( 'blobs', $sha ) ) {
@@ -49,8 +49,8 @@ class WordPress_GitHub_Sync_Api {
 	 * @return mixed
 	 */
 	public function get_tree_recursive( $sha ) {
-		if ( ! $this->oauth_token() || ! $this->repository() ) {
-			return false;
+		if ( is_wp_error( $error = $this->can_call() ) ) {
+			return $error;
 		}
 
 		if ( $cache = Cache::open()->get( 'trees', $sha ) ) {
@@ -79,8 +79,8 @@ class WordPress_GitHub_Sync_Api {
 	 * @return mixed
 	 */
 	public function get_commit( $sha ) {
-		if ( ! $this->oauth_token() || ! $this->repository() ) {
-			return false;
+		if ( is_wp_error( $error = $this->can_call() ) ) {
+			return $error;
 		}
 
 		if ( $cache = Cache::open()->get( 'commits', $sha ) ) {
@@ -94,8 +94,8 @@ class WordPress_GitHub_Sync_Api {
 	 * Retrieves the current master branch
 	 */
 	public function get_ref_master() {
-		if ( ! $this->oauth_token() || ! $this->repository() ) {
-			return false;
+		if ( is_wp_error( $error = $this->can_call() ) ) {
+			return $error;
 		}
 
 		return $this->call( 'GET', $this->reference_endpoint() );
@@ -347,5 +347,21 @@ class WordPress_GitHub_Sync_Api {
 		$url = $url . $this->repository() . '/contents/';
 
 		return $url;
+	}
+
+	/**
+	 * Validates whether the Api object can make a call.
+	 *
+	 * @return true|WP_Error
+	 */
+	protected function can_call() {
+		if ( ! $this->oauth_token() || ! $this->repository() ) {
+			return new WP_Error(
+				'missing_settings',
+				__( "Not all of WPGHS's settings are set.", 'wordpress-github-sync' )
+			);
+		}
+
+		return true;
 	}
 }
