@@ -23,7 +23,8 @@ class WordPress_GitHub_Sync_Response {
 	 * @return false
 	 */
 	public function error( WP_Error $error ) {
-		WordPress_GitHub_Sync::write_log( $error->get_error_message() );
+		$this->log( $error );
+
 		// @todo back-compat this, only 4.1+ works
 		wp_send_json_error( $error );
 
@@ -37,9 +38,25 @@ class WordPress_GitHub_Sync_Response {
 	 * @return true
 	 */
 	public function success( $result ) {
-		WordPress_GitHub_Sync::write_log( $result );
+		$this->log( $result );
+
 		wp_send_json_success( $result );
 
 		return true;
+	}
+
+	/**
+	 * Writes a log message.
+	 *
+	 * Can extract a message from WP_Error object.
+	 *
+	 * @param string|WP_Error $msg Message to log.
+	 */
+	public function log( $msg ) {
+		if ( is_wp_error( $msg ) ) {
+			$msg = $msg->get_error_message();
+		}
+
+		WordPress_GitHub_Sync::write_log( $msg );
 	}
 }
