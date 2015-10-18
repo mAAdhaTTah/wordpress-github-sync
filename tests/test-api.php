@@ -37,10 +37,10 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_Base_TestCase
 	}
 
 	public function test_should_return_master_reference() {
-		$response = $this->api->get_ref_master();
+		$response = $this->api->last_commit_sha();
 
 		$this->assertCount( 1, $this->http_requests );
-		$this->assertEquals( 'aa218f56b14c9653891f9e74264a383fa43fefbd', $response->object->sha );
+		$this->assertEquals( 'aa218f56b14c9653891f9e74264a383fa43fefbd', $response );
 	}
 
 	public function test_should_create_tree() {

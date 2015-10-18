@@ -22,7 +22,7 @@ class WordPress_GitHub_Sync_Commit {
 	 * @param WordPress_GitHub_Sync_Api $api
 	 * @param stdClass $data
 	 */
-	function __construct( WordPress_GitHub_Sync_Api $api, $data ) {
+	public function __construct( WordPress_GitHub_Sync_Api $api, $data ) {
 		$this->api = $api;
 		$this->data = $data;
 	}

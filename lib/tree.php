@@ -42,7 +42,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 * Represents a commit tree.
 	 *
 	 * @param WordPress_GitHub_Sync_Api $api Api object.
-	 * @param array $tree
+	 * @param array $data
 	 */
 	public function __construct( WordPress_GitHub_Sync_Api $api, $data ) {
 		$this->api = $api;
@@ -71,17 +71,17 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	public function post_to_tree( $post, $remove = false ) {
 		$match = false;
 
-		foreach ( $this->tree as $index => $blob ) {
+		foreach ( $this->data as $index => $blob ) {
 			if ( ! isset( $blob->sha ) ) {
 				continue;
 			}
 
 			if ( $blob->sha === $post->sha() ) {
-				unset( $this->tree[ $index ] );
+				unset( $this->data[ $index ] );
 				$match = true;
 
 				if ( ! $remove ) {
-					$this->tree[] = $this->new_blob( $post, $blob );
+					$this->data[] = $this->new_blob( $post, $blob );
 				} else {
 					$this->changed = true;
 				}
@@ -91,7 +91,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 		}
 
 		if ( ! $match && ! $remove ) {
-			$this->tree[]  = $this->new_blob( $post );
+			$this->data[]  = $this->new_blob( $post );
 			$this->changed = true;
 		}
 	}
@@ -159,7 +159,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 * @return bool|stdClass
 	 */
 	public function get_blob_for_path( $path ) {
-		foreach ( $this->tree as $blob ) {
+		foreach ( $this->data as $blob ) {
 			// this might be a problem if the filename changed since it was set
 			// (i.e. post updated in middle mass export)
 			// solution?
@@ -184,7 +184,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 		}
 
 		WordPress_GitHub_Sync::write_log( __( 'Creating the tree.', 'wordpress-github-sync' ) );
-		$tree = $this->api->create_tree( array_values( $this->tree ) );
+		$tree = $this->api->create_tree( array_values( $this->data ) );
 
 		if ( is_wp_error( $tree ) ) {
 			return $tree;
@@ -249,8 +249,8 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	public function valid() {
 		global $wpdb;
 
-		while ( isset( $this->tree[ $this->position ] ) ) {
-			$blob = $this->tree[ $this->position ];
+		while ( isset( $this->data[ $this->position ] ) ) {
+			$blob = $this->data[ $this->position ];
 
 			// Skip the repo's readme
 			if ( 'readme' === strtolower( substr( $blob->path, 0, 6 ) ) ) {

@@ -13,13 +13,6 @@ class WordPress_GitHub_Sync_Import {
 	protected $app;
 
 	/**
-	 * Tree object to import.
-	 *
-	 * @var WordPress_GitHub_Sync_Tree
-	 */
-	protected $tree;
-
-	/**
 	 * Post IDs for posts imported from GitHub.
 	 *
 	 * @var int[]
@@ -40,7 +33,6 @@ class WordPress_GitHub_Sync_Import {
 	 */
 	public function __construct( WordPress_GitHub_Sync $app ) {
 		$this->app  = $app;
-		$this->tree = new WordPress_GitHub_Sync_Tree();
 	}
 
 	/**
@@ -96,7 +88,7 @@ class WordPress_GitHub_Sync_Import {
 
 		global $wpdb;
 
-		if ( $updated_posts = $this->app->import()->updated_posts() ) {
+		if ( $updated_posts = $this->updated_posts() ) {
 			foreach ( $updated_posts as $post_id ) {
 				$revision = wp_get_post_revision( $post_id );
 
@@ -184,6 +176,10 @@ class WordPress_GitHub_Sync_Import {
 	 */
 	public function commit( WordPress_GitHub_Sync_Commit $commit ) {
 		$tree = $this->app->api()->get_tree_recursive( $commit->tree_sha() );
+
+		if ( is_wp_error( $tree ) ) {
+			return $tree;
+		}
 
 		foreach ( $tree as $blob ) {
 			$this->import_blob( $blob );

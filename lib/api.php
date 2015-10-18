@@ -96,17 +96,6 @@ class WordPress_GitHub_Sync_Api {
 	}
 
 	/**
-	 * Retrieves the current master branch
-	 */
-	public function get_ref_master() {
-		if ( is_wp_error( $error = $this->can_call() ) ) {
-			return $error;
-		}
-
-		return $this->call( 'GET', $this->reference_endpoint() );
-	}
-
-	/**
 	 * Create the tree by a set of blob ids.
 	 *
 	 * @param array $tree
@@ -208,7 +197,11 @@ class WordPress_GitHub_Sync_Api {
 	 * @return string|WP_Error
 	 */
 	public function last_commit_sha() {
-		$data = $this->get_ref_master();
+		if ( is_wp_error( $error = $this->can_call() ) ) {
+			return $error;
+		}
+
+		$data = $this->call( 'GET', $this->reference_endpoint() );
 
 		if ( is_wp_error( $data ) ) {
 			return $data;
