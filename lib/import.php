@@ -72,10 +72,13 @@ class WordPress_GitHub_Sync_Import {
 		$commit = $this->app->api()->get_commit( $payload->get_commit_id() );
 
 		if ( is_wp_error( $commit ) ) {
-			$msg = sprintf( __( 'Failed getting commit with error: %s', 'wordpress-github-sync' ),
-				$commit->get_error_message() );
-
-			return new WP_Error( 'api_error', $msg );
+			return new WP_Error(
+				'api_error',
+				sprintf(
+					__( 'Failed getting commit with error: %s', 'wordpress-github-sync' ),
+					$commit->get_error_message()
+				)
+			);
 		}
 
 		$this->import_sha( $commit->tree->sha );
@@ -161,8 +164,7 @@ class WordPress_GitHub_Sync_Import {
 				);
 			}
 
-			$msg = apply_filters( 'wpghs_commit_msg_new_posts',
-					'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
+			$msg = apply_filters( 'wpghs_commit_msg_new_posts', 'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
 
 			$export = new WordPress_GitHub_Sync_Export( $new_posts, $msg );
 			$export->run();

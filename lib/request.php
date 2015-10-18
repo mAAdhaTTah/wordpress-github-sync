@@ -70,8 +70,7 @@ class WordPress_GitHub_Sync_Request {
 		$headers = array();
 		foreach ( $_SERVER as $name => $value ) {
 			if ( 'HTTP_' === substr( $name, 0, 5 ) ) {
-				$headers[ str_replace( ' ', '-',
-					ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
+				$headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
 			}
 		}
 
