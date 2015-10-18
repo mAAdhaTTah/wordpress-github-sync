@@ -24,7 +24,7 @@ class WordPress_GitHub_Sync_Payload {
 	 */
 	public function __construct( WordPress_GitHub_Sync_Api $api, $raw_data ) {
 		$this->api  = $api;
-		$this->data = json_encode( $raw_data );
+		$this->data = json_decode( $raw_data );
 	}
 
 	/**
