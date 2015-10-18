@@ -44,7 +44,7 @@ class WordPress_GitHub_Sync_Api {
 	/**
 	 * Retrieves a tree by sha recursively from the GitHub API
 	 *
-	 * @param string $sha
+	 * @param string $sha Commit sha to retrieve tree from.
 	 *
 	 * @return WordPress_GitHub_Sync_Tree|WP_Error
 	 */
@@ -62,7 +62,7 @@ class WordPress_GitHub_Sync_Api {
 		foreach ( $data->tree as $index => $thing ) {
 			// We need to remove the trees because
 			// the recursive tree includes both
-			// the subtrees as well the subtrees' blobs
+			// the subtrees as well the subtrees' blobs.
 			if ( 'tree' === $thing->type ) {
 				unset( $data->tree[ $index ] );
 			}
@@ -78,8 +78,7 @@ class WordPress_GitHub_Sync_Api {
 	 * Retrieves a commit by sha from the GitHub API
 	 *
 	 * @param string $sha
-	 *
-	 * @return mixed
+	 * @return stdClass|WP_Error
 	 */
 	public function get_commit( $sha ) {
 		if ( is_wp_error( $error = $this->can_call() ) ) {
@@ -105,7 +104,7 @@ class WordPress_GitHub_Sync_Api {
 	}
 
 	/**
-	 * Create the tree by a set of blob ids
+	 * Create the tree by a set of blob ids.
 	 *
 	 * @param array $tree
 	 *
@@ -187,6 +186,8 @@ class WordPress_GitHub_Sync_Api {
 
 	/**
 	 * Retrieve the last commit in the repository
+	 *
+	 * @return stdClass|WP_Error
 	 */
 	public function last_commit() {
 		$sha = $this->last_commit_sha();
@@ -218,9 +219,9 @@ class WordPress_GitHub_Sync_Api {
 	 *
 	 * @param WordPress_GitHub_Sync_Post $post
 	 *
-	 * @return mixed
+	 * @return stdClass|WP_Error
 	 */
-	public function remote_contents( $post ) {
+	public function remote_contents( WordPress_GitHub_Sync_Post $post ) {
 		return $this->call( 'GET', $this->content_endpoint() . $post->github_path() );
 	}
 
@@ -231,20 +232,22 @@ class WordPress_GitHub_Sync_Api {
 	 * @param string $endpoint
 	 * @param array $body
 	 *
-	 * @return mixed
+	 * @return stdClass|WP_Error
 	 */
 	public function call( $method, $endpoint, $body = array() ) {
 		$args = array(
 			'method'  => $method,
 			'headers' => array(
-				'Authorization' => 'token ' . $this->oauth_token()
+				'Authorization' => 'token ' . $this->oauth_token(),
 			),
-			'body'    => function_exists( 'wp_json_encode' ) ? wp_json_encode($body) : json_encode( $body )
+			'body'    => function_exists( 'wp_json_encode' ) ?
+				wp_json_encode( $body ) :
+				json_encode( $body ),
 		);
 
 		$response = wp_remote_request( $endpoint, $args );
-		$status = wp_remote_retrieve_header( $response, 'status' );
-		$body = json_decode( wp_remote_retrieve_body( $response ) );
+		$status   = wp_remote_retrieve_header( $response, 'status' );
+		$body     = json_decode( wp_remote_retrieve_body( $response ) );
 
 		if ( '2' !== substr( $status, 0, 1 ) && '3' !== substr( $status, 0, 1 ) ) {
 			return new WP_Error(
@@ -276,7 +279,7 @@ class WordPress_GitHub_Sync_Api {
 		if ( ! $user ) {
 			// @todo is this what we want to include here?
 			return array(
-				'name' => 'Anonymous',
+				'name'  => 'Anonymous',
 				'email' => 'anonymous@users.noreply.github.com',
 			);
 		}
