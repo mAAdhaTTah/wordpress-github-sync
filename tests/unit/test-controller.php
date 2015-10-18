@@ -3,7 +3,7 @@
 /**
  * @group controller
  */
-class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_Base_TestCase {
+class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCase {
 
 	public function setUp() {
 		parent::setUp();

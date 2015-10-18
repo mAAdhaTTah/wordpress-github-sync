@@ -1,6 +1,6 @@
 <?php
 
-class WordPress_GitHub_Sync_Base_TestCase extends WP_HTTP_TestCase {
+abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 
 	/**
 	 * @var WordPress_GitHub_Sync|Mockery\Mock

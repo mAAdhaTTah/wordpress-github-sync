@@ -1,6 +1,6 @@
 <?php
 
-class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_Base_TestCase {
+class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 
 	public function setUp() {
 		parent::setUp();

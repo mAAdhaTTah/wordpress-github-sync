@@ -8,11 +8,11 @@ if ( ! $_tests_dir ) {
 require_once $_tests_dir . '/includes/functions.php';
 
 function _manually_load_plugin() {
-	require dirname( __FILE__ ) . '/../wp-github-sync.php';
+	require dirname( __FILE__ ) . '/../../wp-github-sync.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 require $_tests_dir . '/includes/bootstrap.php';
 
-require dirname( __FILE__ ) . '/../vendor/jdgrimes/wp-http-testcase/wp-http-testcase.php';
+require dirname( __FILE__ ) . '/../../vendor/jdgrimes/wp-http-testcase/wp-http-testcase.php';
 WP_HTTP_TestCase::init();
