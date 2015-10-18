@@ -41,8 +41,8 @@
     "squizlabs/php_codesniffer": "~2.3"
   },
   "scripts": {
-    "sniff": "phpcs --runtime-set installed_paths vendor/wp-coding-standards/wpcs -p ./ --standard=WordPress-Extra --report=full --extensions=php --ignore=*/tests/*,*/vendor/*",
-    "clean": "phpcbf --runtime-set installed_paths vendor/wp-coding-standards/wpcs -p ./ --standard=WordPress-Extra --report=full --extensions=php --ignore=*/tests/*,*/vendor/*",
+    "sniff": "phpcs --runtime-set installed_paths vendor/wp-coding-standards/wpcs -p ./ --standard=WordPress --report=full --extensions=php --ignore=*/tests/*,*/vendor/*",
+    "clean": "phpcbf --runtime-set installed_paths vendor/wp-coding-standards/wpcs -p ./ --standard=WordPress --report=full --extensions=php --ignore=*/tests/*,*/vendor/*",
     "test": "phpunit",
     "genpot": "vendor/websharks/wp-i18n-tools/makepot.php wp-plugin . $(pwd)/languages/wordpress-github-sync.pot",
     "post-install-cmd": [
