@@ -246,8 +246,16 @@ class WordPress_GitHub_Sync_Api {
 		$status = wp_remote_retrieve_header( $response, 'status' );
 		$body = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if ( '2' !== substr( $status, 0, 1 ) && '3' !== substr( $status, 0, 1 )  ) {
-			return new WP_Error( $status, $body ? $body->message : 'Unknown error' );
+		if ( '2' !== substr( $status, 0, 1 ) && '3' !== substr( $status, 0, 1 ) ) {
+			return new WP_Error(
+				$status,
+				sprintf(
+					'Method %s to endpoint %s failed with error: %s',
+					$method,
+					$endpoint,
+					$body && $body->message ? $body->message : 'Unknown error'
+				)
+			);
 		}
 
 		return $body;
