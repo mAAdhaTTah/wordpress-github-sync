@@ -77,8 +77,8 @@ class WordPress_GitHub_Sync_Api {
 	/**
 	 * Retrieves a commit by sha from the GitHub API
 	 *
-	 * @param string $sha
-	 * @return stdClass|WP_Error
+	 * @param string $sha Sha for commit to retrieve.
+	 * @return WordPress_GitHub_Sync_Commit|WP_Error
 	 */
 	public function get_commit( $sha ) {
 		if ( is_wp_error( $error = $this->can_call() ) ) {
@@ -86,10 +86,13 @@ class WordPress_GitHub_Sync_Api {
 		}
 
 		if ( $cache = Cache::open()->get( 'commits', $sha ) ) {
-			return $cache;
+			return new WordPress_GitHub_Sync_Commit( $this, $cache );
 		}
 
-		return Cache::open()->save( 'commits', $sha, $this->call( 'GET', $this->commit_endpoint() . '/' . $sha ) );
+		return new WordPress_GitHub_Sync_Commit(
+			$this,
+			Cache::open()->save( 'commits', $sha, $this->call( 'GET', $this->commit_endpoint() . '/' . $sha ) )
+		);
 	}
 
 	/**
@@ -181,13 +184,13 @@ class WordPress_GitHub_Sync_Api {
 			return $data;
 		}
 
-		return $data->tree->sha;
+		return $data->tree_sha();
 	}
 
 	/**
 	 * Retrieve the last commit in the repository
 	 *
-	 * @return stdClass|WP_Error
+	 * @return WordPress_GitHub_Sync_Commit|WP_Error
 	 */
 	public function last_commit() {
 		$sha = $this->last_commit_sha();
@@ -201,6 +204,8 @@ class WordPress_GitHub_Sync_Api {
 
 	/**
 	 * Retrieve the sha for the latest commit
+	 *
+	 * @return string|WP_Error
 	 */
 	public function last_commit_sha() {
 		$data = $this->get_ref_master();

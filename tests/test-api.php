@@ -29,11 +29,11 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_Base_TestCase
 	}
 
 	public function test_should_return_commit() {
-		$response = $this->api->get_commit( '123' );
+		$commit = $this->api->get_commit( '123' );
 
 		$this->assertCount( 1, $this->http_requests );
-		$this->assertEquals( "added readme, because im a good github citizen\n", $response->message );
-		$this->assertEquals( '7638417db6d59f3c431d3e1f261cc637155684cd', $response->sha );
+		$this->assertEquals( "added readme, because im a good github citizen\n", $commit->message());
+		$this->assertEquals( '7638417db6d59f3c431d3e1f261cc637155684cd', $commit->sha() );
 	}
 
 	public function test_should_return_master_reference() {

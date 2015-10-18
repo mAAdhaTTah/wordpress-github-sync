@@ -81,7 +81,7 @@ class WordPress_GitHub_Sync_Import {
 			);
 		}
 
-		$this->import_sha( $commit->tree->sha );
+		$this->import_sha( $commit->tree_sha() );
 
 		$user = get_user_by( 'email', $payload->get_author_email() );
 

@@ -37,6 +37,11 @@ class WordPress_GitHub_Sync_Base_TestCase extends WP_HTTP_TestCase {
 	 */
 	protected $api;
 
+	/**
+	 * @var WordPress_GitHub_Sync_Commit|Mockery\Mock
+	 */
+	protected $commit;
+
 	public function setUp() {
 		parent::setUp();
 
@@ -47,6 +52,7 @@ class WordPress_GitHub_Sync_Base_TestCase extends WP_HTTP_TestCase {
 		$this->response   = Mockery::mock( 'WordPress_GitHub_Sync_Response' );
 		$this->payload    = Mockery::mock( 'WordPress_GitHub_Sync_Payload' );
 		$this->api        = Mockery::mock( 'WordPress_GitHub_Sync_Api' );
+		$this->commit     = Mockery::mock( 'WordPress_GitHub_Sync_Commit' );
 
 		global $wpghs;
 		$wpghs = $this->app;
