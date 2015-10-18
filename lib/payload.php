@@ -3,6 +3,13 @@
 class WordPress_GitHub_Sync_Payload {
 
 	/**
+	 * Application container.
+	 *
+	 * @var WordPress_GitHub_Sync
+	 */
+	protected $app;
+
+	/**
 	 * Payload data.
 	 *
 	 * @var stdClass
@@ -10,20 +17,13 @@ class WordPress_GitHub_Sync_Payload {
 	protected $data;
 
 	/**
-	 *
-	 *
-	 * @var WordPress_GitHub_Sync_Api
-	 */
-	protected $api;
-
-	/**
 	 * WordPress_GitHub_Sync_Payload constructor.
 	 *
-	 * @param WordPress_GitHub_Sync_Api $api
-	 * @param string $raw_data
+	 * @param WordPress_GitHub_Sync $app      Application container.
+	 * @param string                $raw_data Raw request data.
 	 */
-	public function __construct( WordPress_GitHub_Sync_Api $api, $raw_data ) {
-		$this->api  = $api;
+	public function __construct( WordPress_GitHub_Sync $app, $raw_data ) {
+		$this->app  = $app;
 		$this->data = json_decode( $raw_data );
 	}
 
@@ -34,7 +34,7 @@ class WordPress_GitHub_Sync_Payload {
 	 */
 	public function should_import() {
 		// @todo how do we get this without importing the whole api object just for this?
-		if ( strtolower( $this->data->repository->full_name ) !== strtolower( $this->api->repository() ) ) {
+		if ( strtolower( $this->data->repository->full_name ) !== strtolower( $this->app->api()->repository() ) ) {
 			return new WP_Error( 'invalid_repo',
 				sprintf(
 					__( '%s is an invalid repository.', 'wordpress-github-sync' ),
@@ -43,7 +43,7 @@ class WordPress_GitHub_Sync_Payload {
 			);
 		}
 
-		// the last term in the ref is the branch name
+		// The last term in the ref is the branch name.
 		$refs   = explode( '/', $this->data->ref );
 		$branch = array_pop( $refs );
 
@@ -51,8 +51,8 @@ class WordPress_GitHub_Sync_Payload {
 			return new WP_Error( 'invalid_branch', __( 'Not on the master branch.', 'wordpress-github-sync' ) );
 		}
 
-		// We add wpghs to commits we push out, so we shouldn't pull them in again
-		if ( 'wpghs' === substr( $this->data->head_commit->message, - 5 ) ) {
+		// We add wpghs to commits we push out, so we shouldn't pull them in again.
+		if ( 'wpghs' === substr( $this->data->head_commit->message, -5 ) ) {
 			return new WP_Error( 'synced_commit', __( 'Already synced this commit.', 'wordpress-github-sync' ) );
 		}
 

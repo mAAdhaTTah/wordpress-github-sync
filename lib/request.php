@@ -50,7 +50,7 @@ class WordPress_GitHub_Sync_Request {
 	 * @return WordPress_GitHub_Sync_Payload
 	 */
 	public function payload() {
-		return new WordPress_GitHub_Sync_Payload( $this->app->api(), $this->raw_data );
+		return new WordPress_GitHub_Sync_Payload( $this->app, $this->raw_data );
 	}
 
 	/**
