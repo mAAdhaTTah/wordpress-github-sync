@@ -368,7 +368,7 @@ class WordPress_GitHub_Sync_Api {
 	 *
 	 * @return true|WP_Error
 	 */
-	protected function can_call() {
+	public function can_call() {
 		if ( ! $this->oauth_token() || ! $this->repository() ) {
 			return new WP_Error(
 				'missing_settings',

@@ -8,6 +8,44 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 	public function setUp() {
 		parent::setUp();
 		$this->controller = new WordPress_GitHub_Sync_Controller( $this->app );
+
+		$this->semaphore
+			->shouldReceive( 'is_open' )
+			->once()
+			->andReturn( true )
+			->byDefault();
+		$this->semaphore
+			->shouldReceive( 'lock' )
+			->once()
+			->byDefault();
+		$this->semaphore
+			->shouldReceive( 'unlock' )
+			->once()
+			->byDefault();
+	}
+
+	public function test_should_fail_pull_if_semaphore_locked() {
+		$error = new WP_Error( 'semaphore_locked', 'Semaphore locked' );
+
+		$this->semaphore
+			->shouldReceive( 'is_open' )
+			->once()
+			->andReturn( $error );
+		$this->semaphore
+			->shouldReceive( 'lock' )
+			->never();
+		$this->semaphore
+			->shouldReceive( 'unlock' )
+			->never();
+		$this->response
+			->shouldReceive( 'error' )
+			->once()
+			->with( $error )
+			->andReturn( false );
+
+		$result = $this->controller->pull_posts();
+
+		$this->assertFalse( $result );
 	}
 
 	public function test_should_fail_if_invalid_secret() {
@@ -110,6 +148,30 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$result = $this->controller->pull_posts();
 
 		$this->assertTrue( $result );
+	}
+
+	public function test_should_fail_full_import_if_semaphore_locked() {
+		$error = new WP_Error( 'semaphore_locked', 'Semaphore locked' );
+
+		$this->semaphore
+			->shouldReceive( 'is_open' )
+			->once()
+			->andReturn( $error );
+		$this->semaphore
+			->shouldReceive( 'lock' )
+			->never();
+		$this->semaphore
+			->shouldReceive( 'unlock' )
+			->never();
+		$this->response
+			->shouldReceive( 'error' )
+			->once()
+			->with( $error )
+			->andReturn( false );
+
+		$result = $this->controller->import_master();
+
+		$this->assertFalse( $result );
 	}
 
 	public function test_should_fail_if_cant_retreive_master() {

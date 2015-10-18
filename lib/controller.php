@@ -44,12 +44,6 @@ class WordPress_GitHub_Sync_Controller {
 	public $msg = '';
 
 	/**
-	 * Locked when receiving payload
-	 * @var boolean
-	 */
-	public $push_lock = false;
-
-	/**
 	 * Instantiates a new Controller object
 	 *
 	 * @param WordPress_GitHub_Sync $app
@@ -66,21 +60,29 @@ class WordPress_GitHub_Sync_Controller {
 	 * @return boolean
 	 */
 	public function pull_posts() {
-		// Prevent pushes on update
-		// @todo move to semaphore
-		// $this->push_lock = true;
+		if ( is_wp_error( $error = $this->app->semaphore()->is_open() ) ) {
+			return $this->app->response()->error( $error );
+		}
+
+		$this->app->semaphore()->lock();
 
 		if ( is_wp_error( $error = $this->app->request()->is_secret_valid() ) ) {
+			$this->app->semaphore()->unlock();
+
 			return $this->app->response()->error( $error );
 		}
 
 		$payload = $this->app->request()->payload();
 
 		if ( is_wp_error( $error = $payload->should_import() ) ) {
+			$this->app->semaphore()->unlock();
+
 			return $this->app->response()->error( $error );
 		}
 
 		$result = $this->app->import()->payload( $payload );
+
+		$this->app->semaphore()->unlock();
 
 		if ( is_wp_error( $result ) ) {
 			return $this->app->response()->error( $result );
@@ -95,15 +97,23 @@ class WordPress_GitHub_Sync_Controller {
 	 * @return boolean
 	 */
 	public function import_master() {
+		if ( is_wp_error( $error = $this->app->semaphore()->is_open() ) ) {
+			return $this->app->response()->error( $error );
+		}
+
+		$this->app->semaphore()->lock();
+
 		$commit = $this->app->api()->last_commit();
 
 		if ( is_wp_error( $commit ) ) {
+			$this->app->semaphore()->unlock();
 			$this->app->response()->log( $commit );
 
 			return false;
 		}
 
 		if ( $commit->already_synced() ) {
+			$this->app->semaphore()->unlock();
 			$this->app->response()->log(
 				new WP_Error( 'commit_synced', __( 'Already synced this commit.', 'wordpress-github-sync' ) )
 			);
@@ -113,6 +123,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		$result = $this->app->import()->commit( $commit );
 
+		$this->app->semaphore()->unlock();
 		$this->app->response()->log( $result );
 
 		return is_wp_error( $result ) ? false : true;
@@ -124,7 +135,7 @@ class WordPress_GitHub_Sync_Controller {
 	public function export_all() {
 		global $wpdb;
 
-		if ( $this->locked() ) {
+		if ( $this->app->semaphore()->is_open() ) {
 			WordPress_GitHub_Sync::write_log( __( 'Export locked. Terminating.', 'wordpress-github-sync' ) );
 			return;
 		}
@@ -152,7 +163,7 @@ class WordPress_GitHub_Sync_Controller {
 	 * @param int $post_id Post ID
 	 */
 	public function export_post( $post_id ) {
-		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || $this->locked() ) {
+		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || $this->app->semaphore()->is_open() ) {
 			return;
 		}
 
@@ -176,7 +187,7 @@ class WordPress_GitHub_Sync_Controller {
 	 * @param int $post_id Post ID
 	 */
 	public function delete_post( $post_id ) {
-		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || $this->locked() ) {
+		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || $this->app->semaphore()->is_open() ) {
 			return;
 		}
 
@@ -185,17 +196,6 @@ class WordPress_GitHub_Sync_Controller {
 
 		$export = new WordPress_GitHub_Sync_Export( $post_id, $msg );
 		$export->run( true );
-	}
-
-	/**
-	 * Check if we're clear to call the api
-	 */
-	public function locked() {
-		if ( ! $this->app->api()->oauth_token() || ! $this->app->api()->repository() || $this->push_lock ) {
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
@@ -237,9 +237,9 @@ class WordPress_GitHub_Sync_Controller {
 	 *
 	 * @param  WordPress_GitHub_Sync_Post $post post to verify
 	 *
-	 * @return boolean                            true if supported, false if not
+	 * @return boolean                          true if supported, false if not
 	 */
-	protected function is_post_supported( $post ) {
+	protected function is_post_supported( WordPress_GitHub_Sync_Post $post ) {
 		if ( ! in_array( $post->status(), $this->get_whitelisted_post_statuses() ) ) {
 			return false;
 		}

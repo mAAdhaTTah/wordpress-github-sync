@@ -104,6 +104,13 @@ class WordPress_GitHub_Sync {
 	protected $import;
 
 	/**
+	 * Semaphore object.
+	 *
+	 * @var WordPress_GitHub_Sync_Semaphore
+	 */
+	protected $semaphore;
+
+	/**
 	 * Called at load time, hooks into WP core
 	 */
 	public function __construct() {
@@ -267,6 +274,19 @@ class WordPress_GitHub_Sync {
 		}
 
 		return $this->import;
+	}
+
+	/**
+	 * Lazy-load the Semaphore object.
+	 *
+	 * @return WordPress_GitHub_Sync_Semaphore
+	 */
+	public function semaphore() {
+		if ( ! $this->semaphore ) {
+			$this->semaphore = new WordPress_GitHub_Sync_Semaphore( $this );
+		}
+
+		return $this->semaphore;
 	}
 
 	/**
