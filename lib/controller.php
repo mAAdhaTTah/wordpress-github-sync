@@ -90,29 +90,38 @@ class WordPress_GitHub_Sync_Controller {
 	}
 
 	/**
-	 * Imports posts from the current master branch
+	 * Imports posts from the current master branch.
+	 *
+	 * @return boolean
 	 */
 	public function import_master() {
 		$commit = $this->app->api()->last_commit();
 
 		if ( is_wp_error( $commit ) ) {
-			WordPress_GitHub_Sync::write_log(
-				sprintf(
-					__( 'Failed getting last commit with error: %s', 'wordpress-github-sync' ),
-					$commit->get_error_message()
-				)
+			$this->app->response()->log( $commit );
+
+			return false;
+		}
+
+		if ( $commit->already_synced() ) {
+			$this->app->response()->log(
+				new WP_Error( 'commit_synced', __( 'Already synced this commit.', 'wordpress-github-sync' ) )
 			);
 
-			return;
+			return false;
 		}
 
-		if ( 'wpghs' === substr( $commit->message, - 5 ) ) {
-			WordPress_GitHub_Sync::write_log( __( 'Already synced this commit.', 'wordpress-github-sync' ) );
+		$result = $this->app->import()->import_commit( $commit );
 
-			return;
+		if ( is_wp_error( $result ) ) {
+			$this->app->response()->log( $result );
+
+			return false;
 		}
 
-		$this->app->import()->import_sha( $commit->tree->sha );
+		$this->app->response()->log( __( 'Successfully imported master branch.', 'wordpress-github-sync' ) );
+
+		return true;
 	}
 
 	/**
