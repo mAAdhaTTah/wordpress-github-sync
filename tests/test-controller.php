@@ -157,7 +157,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_Base_T
 			->once()
 			->andReturn( false );
 		$this->import
-			->shouldReceive( 'import_commit' )
+			->shouldReceive( 'commit' )
 			->with( $this->commit )
 			->andReturn( $error );
 		$this->response
@@ -179,7 +179,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_Base_T
 			->once()
 			->andReturn( false );
 		$this->import
-			->shouldReceive( 'import_commit' )
+			->shouldReceive( 'commit' )
 			->with( $this->commit )
 			->andReturn( true );
 		$this->response

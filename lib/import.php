@@ -81,7 +81,7 @@ class WordPress_GitHub_Sync_Import {
 			);
 		}
 
-		$this->import_sha( $commit->tree_sha() );
+		$this->commit( $commit );
 
 		$user = get_user_by( 'email', $payload->get_author_email() );
 
@@ -177,33 +177,21 @@ class WordPress_GitHub_Sync_Import {
 	}
 
 	/**
-	 * Runs the import process for a provided sha.
+	 * Imports a provided commit into the database.
 	 *
-	 * @param string $sha
+	 * @param WordPress_GitHub_Sync_Commit $commit
+	 * @return string|WP_Error
 	 */
-	public function import_sha( $sha ) {
-		$this->tree->fetch_sha( $sha );
+	public function commit( WordPress_GitHub_Sync_Commit $commit ) {
+		$tree = $this->app->api()->get_tree_recursive( $commit->tree_sha() );
 
-		if ( ! $this->tree->is_ready() ) {
-			WordPress_GitHub_Sync::write_log(
-				sprintf(
-					__( 'Failed getting recursive tree with error: %s', 'wordpress-github-sync' ),
-					$this->tree->last_error()
-				)
-			);
-
-			return;
-		}
-
-		foreach ( $this->tree as $blob ) {
+		foreach ( $tree as $blob ) {
 			$this->import_blob( $blob );
 		}
 
-		WordPress_GitHub_Sync::write_log(
-			sprintf(
-				__( 'Imported tree %s', 'wordpress-github-sync' ),
-				$sha
-			)
+		return sprintf(
+			__( 'Successfully imported commit %s.', 'wordpress-github-sync' ),
+			$commit->message()
 		);
 	}
 

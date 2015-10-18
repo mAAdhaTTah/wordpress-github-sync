@@ -111,17 +111,11 @@ class WordPress_GitHub_Sync_Controller {
 			return false;
 		}
 
-		$result = $this->app->import()->import_commit( $commit );
+		$result = $this->app->import()->commit( $commit );
 
-		if ( is_wp_error( $result ) ) {
-			$this->app->response()->log( $result );
+		$this->app->response()->log( $result );
 
-			return false;
-		}
-
-		$this->app->response()->log( __( 'Successfully imported master branch.', 'wordpress-github-sync' ) );
-
-		return true;
+		return is_wp_error( $result ) ? false : true;
 	}
 
 	/**
