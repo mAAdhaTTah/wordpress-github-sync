@@ -6,10 +6,11 @@
 class WordPress_GitHub_Sync_Controller {
 
 	/**
-	 * Api object
-	 * @var WordPress_GitHub_Sync_Api
+	 * Application container.
+	 *
+	 * @var WordPress_GitHub_Sync
 	 */
-	public $api;
+	public $app;
 
 	/**
 	 * Currently whitelisted post types & statuses
@@ -51,196 +52,48 @@ class WordPress_GitHub_Sync_Controller {
 	/**
 	 * Instantiates a new Controller object
 	 *
-	 * $posts - array of post IDs to export
+	 * @param WordPress_GitHub_Sync $app
 	 */
-	public function __construct() {
-		$this->api = new WordPress_GitHub_Sync_Api;
+	public function __construct( WordPress_GitHub_Sync $app ) {
+		$this->app = $app;
 	}
 
 	/**
-	 * Webhook callback as triggered from GitHub push
+	 * Webhook callback as triggered from GitHub push.
+	 *
+	 * Reads the Webhook payload and syncs posts as necessary.
+	 *
+	 * @return boolean
 	 */
 	public function pull_posts() {
 		// Prevent pushes on update
-		$this->push_lock = true;
+		// @todo move to semaphore
+		// $this->push_lock = true;
 
-		$raw_data = file_get_contents( 'php://input' );
-		$headers = $this->headers();
-
-		// validate secret
-		$hash = hash_hmac( 'sha1', $raw_data, $this->secret() );
-		if ( 'sha1=' . $hash !== $headers['X-Hub-Signature'] ) {
-			$msg = __( 'Failed to validate secret.', 'wordpress-github-sync' );
-			WordPress_GitHub_Sync::write_log( $msg );
-			wp_send_json( array(
-				'result'  => 'error',
-				'message' => $msg,
-			) );
+		if ( is_wp_error( $error = $this->app->request()->is_secret_valid() ) ) {
+			return $this->app->response()->error( $error );
 		}
 
-		$result = $this->controller->pull( json_decode( $raw_data ) );
-		wp_send_json( $result );
-	}
+		$payload = $this->app->request()->payload();
 
-	/**
-	 * Reads the Webhook payload and syncs posts as necessary
-	 *
-	 * @param stdClass $payload
-	 *
-	 * @return array
-	 */
-	public function pull( $payload ) {
-		if ( strtolower( $payload->repository->full_name ) !== strtolower( $this->api->repository() ) ) {
-			$msg = strtolower( $payload->repository->full_name ) . __( ' is an invalid repository.', 'wordpress-github-sync' );
-			WordPress_GitHub_Sync::write_log( $msg );
-
-			return array(
-				'result'  => 'error',
-				'message' => $msg,
-			);
+		if ( is_wp_error( $error = $payload->should_import() ) ) {
+			return $this->app->response()->error( $error );
 		}
 
-		// the last term in the ref is the branch name
-		$refs   = explode( '/', $payload->ref );
-		$branch = array_pop( $refs );
+		$result = $this->app->import()->payload( $payload );
 
-		if ( 'master' !== $branch ) {
-			$msg = __( 'Not on the master branch.', 'wordpress-github-sync' );
-			WordPress_GitHub_Sync::write_log( $msg );
-
-			return array(
-				'result'  => 'error',
-				'message' => $msg,
-			);
+		if ( is_wp_error( $result ) ) {
+			return $this->app->response()->error( $result );
 		}
 
-		// We add wpghs to commits we push out, so we shouldn't pull them in again
-		if ( 'wpghs' === substr( $payload->head_commit->message, -5 ) ) {
-			$msg = __( 'Already synced this commit.', 'wordpress-github-sync' );
-			WordPress_GitHub_Sync::write_log( $msg );
-
-			return array(
-				'result'  => 'error',
-				'message' => $msg,
-			);
-		}
-
-		$commit = $this->api->get_commit( $payload->head_commit->id );
-
-		if ( is_wp_error( $commit ) ) {
-			$msg = sprintf( __( 'Failed getting commit with error: %s', 'wordpress-github-sync' ), $commit->get_error_message() );
-			WordPress_GitHub_Sync::write_log( $msg );
-
-			return array(
-				'result'  => 'error',
-				'message' => $msg,
-			);
-		}
-
-		$import = new WordPress_GitHub_Sync_Import();
-		$import->run( $commit->tree->sha );
-
-		$user = get_user_by( 'email', $payload->head_commit->author->email );
-
-		if ( ! $user ) {
-			// use the default user
-			$user = get_user_by( 'id', get_option( 'wpghs_default_user' ) );
-		}
-
-		// if we can't find a user and a default hasn't been set,
-		// we're just going to set the revision author to 0
-		update_option( '_wpghs_export_user_id', $user ? $user->ID : 0 );
-
-		global $wpdb;
-
-		if ( $updated_posts = $import->updated_posts() ) {
-			foreach ( $updated_posts as $post_id ) {
-				$revision = wp_get_post_revision( $post_id );
-
-				if ( ! $revision ) {
-					$revision = wp_save_post_revision( $post_id );
-
-					if ( ! $revision || is_wp_error( $revision ) ) {
-						// there was a problem saving a new revision
-						continue;
-					}
-
-					// wp_save_post_revision returns the ID, whereas get_post_revision returns the whole object
-					// in order to be consistent, let's make sure we have the whole object before continuing
-					$revision = get_post( $revision );
-				}
-
-				$wpdb->update(
-					$wpdb->posts,
-					array(
-						'post_author' => (int) get_option( '_wpghs_export_user_id' ),
-					),
-					array(
-						'ID' => $revision->ID,
-					),
-					array( '%d' ),
-					array( '%d' )
-				);
-			}
-		}
-
-		// Deleting posts from a payload is the only place
-		// we need to search posts by path; another way?
-		$removed = array();
-		foreach ( $payload->commits as $commit ) {
-			$removed = array_merge( $removed, $commit->removed );
-		}
-		foreach ( array_unique( $removed ) as $path ) {
-			$post = new WordPress_GitHub_Sync_Post( $path );
-			wp_delete_post( $post->id );
-		}
-
-		if ( $new_posts = $import->new_posts() ) {
-			// disable the lock to allow exporting
-			global $wpghs;
-			$wpghs->push_lock = false;
-
-			WordPress_GitHub_Sync::write_log(
-				sprintf(
-					__( 'Updating new posts with IDs: %s', 'wordpress-github-sync' ),
-					implode( ', ', $new_posts )
-				)
-			);
-
-			foreach ( $new_posts as $post_id ) {
-				$wpdb->update(
-					$wpdb->posts,
-					array(
-						'post_author' => (int) get_option( '_wpghs_export_user_id' ),
-					),
-					array(
-						'ID' => $post_id,
-					),
-					array( '%d' ),
-					array( '%d' )
-				);
-			}
-
-			$msg = apply_filters( 'wpghs_commit_msg_new_posts', 'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
-
-			$export = new WordPress_GitHub_Sync_Export( $new_posts, $msg );
-			$export->run();
-		}
-
-		$msg = __( 'Payload processed', 'wordpress-github-sync' );
-		WordPress_GitHub_Sync::write_log( $msg );
-
-		return array(
-			'result'  => 'success',
-			'message' => $msg,
-		);
+		return $this->app->response()->success( $result );
 	}
 
 	/**
 	 * Imports posts from the current master branch
 	 */
 	public function import_master() {
-		$commit = $this->api->last_commit();
+		$commit = $this->app->api()->last_commit();
 
 		if ( is_wp_error( $commit ) ) {
 			WordPress_GitHub_Sync::write_log(
@@ -259,8 +112,7 @@ class WordPress_GitHub_Sync_Controller {
 			return;
 		}
 
-		$import = new WordPress_GitHub_Sync_Import();
-		$import->run( $commit->tree->sha );
+		$this->app->import()->import_sha( $commit->tree->sha );
 	}
 
 	/**
@@ -336,31 +188,11 @@ class WordPress_GitHub_Sync_Controller {
 	 * Check if we're clear to call the api
 	 */
 	public function locked() {
-		if ( ! $this->api->oauth_token() || ! $this->api->repository() || $this->push_lock ) {
+		if ( ! $this->app->api()->oauth_token() || ! $this->app->api()->repository() || $this->push_lock ) {
 			return true;
 		}
 
 		return false;
-	}
-
-	/**
-	 * Cross-server header support
-	 * Returns an array of the request's headers
-	 */
-	public function headers() {
-		if ( function_exists( 'getallheaders' ) ) {
-			return getallheaders();
-		}
-
-		// Nginx and pre 5.4 workaround
-		// http://www.php.net/manual/en/function.getallheaders.php
-		$headers = array();
-		foreach ( $_SERVER as $name => $value ) {
-			if ( 'HTTP_' === substr( $name, 0, 5 ) ) {
-				$headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
-			}
-		}
-		return $headers;
 	}
 
 	/**
@@ -376,13 +208,6 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		return implode( ', ', $whitelist );
-	}
-
-	/**
-	 * Returns the Webhook secret
-	 */
-	public function secret() {
-		return get_option( 'wpghs_secret' );
 	}
 
 	/**

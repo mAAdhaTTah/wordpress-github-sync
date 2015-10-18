@@ -69,6 +69,34 @@ class WordPress_GitHub_Sync {
 	public $admin;
 
 	/**
+	 * Request object.
+	 *
+	 * @var WordPress_GitHub_Sync_Request
+	 */
+	protected $request;
+
+	/**
+	 * Response object.
+	 *
+	 * @var WordPress_GitHub_Sync_Response
+	 */
+	protected $response;
+
+	/**
+	 * Api object.
+	 *
+	 * @var WordPress_GitHub_Sync_Api
+	 */
+	protected $api;
+
+	/**
+	 * Import object.
+	 *
+	 * @var WordPress_GitHub_Sync_Import
+	 */
+	protected $import;
+
+	/**
 	 * Called at load time, hooks into WP core
 	 */
 	public function __construct() {
@@ -77,7 +105,8 @@ class WordPress_GitHub_Sync {
 		if ( is_admin() ) {
 			$this->admin = new WordPress_GitHub_Sync_Admin;
 		}
-		$this->controller = new WordPress_GitHub_Sync_Controller;
+
+		$this->controller = new WordPress_GitHub_Sync_Controller( $this );
 
 		register_activation_hook( __FILE__, array( $this, 'activate' ) );
 		add_action( 'admin_notices', array( $this, 'activation_notice' ) );
@@ -86,7 +115,7 @@ class WordPress_GitHub_Sync {
 
 		// Controller actions.
 		add_action( 'save_post', array( $this->controller, 'export_post' ) );
-		add_action( 'delete_post', array( $this->controller, 'delete_post_callback' ) );
+		add_action( 'delete_post', array( $this->controller, 'delete_post' ) );
 		add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( $this->controller, 'pull_posts' ) );
 		add_action( 'wpghs_export', array( $this->controller, 'export_all' ) );
 		add_action( 'wpghs_import', array( $this->controller, 'import_master' ) );
@@ -97,8 +126,8 @@ class WordPress_GitHub_Sync {
 	}
 
 	/**
-		* Init i18n files
-		*/
+	 * Init i18n files
+	 */
 	public function l10n() {
 		load_plugin_textdomain( self::$text_domain, false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' );
 	}
@@ -160,11 +189,66 @@ class WordPress_GitHub_Sync {
 	}
 
 	/**
+	 * Lazy-load the Request object.
+	 *
+	 * @return WordPress_GitHub_Sync_Request
+	 */
+	public function request() {
+		if ( ! $this->request ) {
+			$this->request = new WordPress_GitHub_Sync_Request( $this );
+		}
+
+		return $this->request;
+	}
+
+	/**
+	 * Lazy-load the Response object.
+	 *
+	 * @return WordPress_GitHub_Sync_Response
+	 */
+	public function response() {
+		if ( ! $this->response ) {
+			$this->response = new WordPress_GitHub_Sync_Response( $this );
+		}
+
+		return $this->response;
+	}
+
+	/**
+	 * Lazy-load the Api object.
+	 *
+	 * @return WordPress_GitHub_Sync_Api
+	 */
+	public function api() {
+		if ( ! $this->api ) {
+			$this->api = new WordPress_GitHub_Sync_Api();
+		}
+
+		return $this->api;
+	}
+
+	/**
+	 * Lazy-load the Import object.
+	 *
+	 * @return WordPress_GitHub_Sync_Import
+	 */
+	public function import() {
+		if ( ! $this->import ) {
+			$this->import = new WordPress_GitHub_Sync_Import( $this );
+		}
+
+		return $this->import;
+	}
+
+	/**
 	 * Print to WP_CLI if in CLI environment or
 	 * write to debug.log if WP_DEBUG is enabled
 	 * @source http://www.stumiller.me/sending-output-to-the-wordpress-debug-log/
+	 *
+	 * @param mixed $msg
+	 * @param string $write
 	 */
-	public static function write_log($msg, $write = 'line') {
+	public static function write_log( $msg, $write = 'line' ) {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			if ( is_array( $msg ) || is_object( $msg ) ) {
 				WP_CLI::print_value( $msg );

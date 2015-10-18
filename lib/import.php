@@ -6,6 +6,13 @@
 class WordPress_GitHub_Sync_Import {
 
 	/**
+	 * Application container.
+	 *
+	 * @var WordPress_GitHub_Sync
+	 */
+	protected $app;
+
+	/**
 	 * Tree object to import.
 	 *
 	 * @var WordPress_GitHub_Sync_Tree
@@ -28,8 +35,11 @@ class WordPress_GitHub_Sync_Import {
 
 	/**
 	 * Initializes a new import manager.
+	 *
+	 * @param WordPress_GitHub_Sync $app
 	 */
-	public function __construct() {
+	public function __construct( WordPress_GitHub_Sync $app ) {
+		$this->app  = $app;
 		$this->tree = new WordPress_GitHub_Sync_Tree();
 	}
 
@@ -52,11 +62,124 @@ class WordPress_GitHub_Sync_Import {
 	}
 
 	/**
+	 * Imports a payload
+	 *
+	 * @param WordPress_GitHub_Sync_Payload $payload
+	 *
+	 * @return true|WP_Error
+	 */
+	public function payload( WordPress_GitHub_Sync_Payload $payload ) {
+		$commit = $this->app->api()->get_commit( $payload->get_commit_id() );
+
+		if ( is_wp_error( $commit ) ) {
+			$msg = sprintf( __( 'Failed getting commit with error: %s', 'wordpress-github-sync' ),
+				$commit->get_error_message() );
+
+			return new WP_Error( 'api_error', $msg );
+		}
+
+		$this->import_sha( $commit->tree->sha );
+
+		$user = get_user_by( 'email', $payload->get_author_email() );
+
+		if ( ! $user ) {
+			// use the default user
+			$user = get_user_by( 'id', get_option( 'wpghs_default_user' ) );
+		}
+
+		// if we can't find a user and a default hasn't been set,
+		// we're just going to set the revision author to 0
+		update_option( '_wpghs_export_user_id', $user ? $user->ID : 0 );
+
+		global $wpdb;
+
+		if ( $updated_posts = $this->app->import()->updated_posts() ) {
+			foreach ( $updated_posts as $post_id ) {
+				$revision = wp_get_post_revision( $post_id );
+
+				if ( ! $revision ) {
+					$revision = wp_save_post_revision( $post_id );
+
+					if ( ! $revision || is_wp_error( $revision ) ) {
+						// there was a problem saving a new revision
+						continue;
+					}
+
+					// wp_save_post_revision returns the ID, whereas get_post_revision returns the whole object
+					// in order to be consistent, let's make sure we have the whole object before continuing
+					$revision = get_post( $revision );
+				}
+
+				$wpdb->update(
+					$wpdb->posts,
+					array(
+						'post_author' => (int) get_option( '_wpghs_export_user_id' ),
+					),
+					array(
+						'ID' => $revision->ID,
+					),
+					array( '%d' ),
+					array( '%d' )
+				);
+			}
+		}
+
+		// Deleting posts from a payload is the only place
+		// we need to search posts by path; another way?
+		$removed = array();
+		foreach ( $payload->get_commits() as $commit ) {
+			$removed = array_merge( $removed, $commit->removed );
+		}
+		foreach ( array_unique( $removed ) as $path ) {
+			$post = new WordPress_GitHub_Sync_Post( $path );
+			wp_delete_post( $post->id );
+		}
+
+		if ( $new_posts = $this->app->import()->new_posts() ) {
+			// disable the lock to allow exporting
+			// @todo move to semaphore
+			// $this->push_lock = false;
+
+			WordPress_GitHub_Sync::write_log(
+				sprintf(
+					__( 'Updating new posts with IDs: %s', 'wordpress-github-sync' ),
+					implode( ', ', $new_posts )
+				)
+			);
+
+			foreach ( $new_posts as $post_id ) {
+				$wpdb->update(
+					$wpdb->posts,
+					array(
+						'post_author' => (int) get_option( '_wpghs_export_user_id' ),
+					),
+					array(
+						'ID' => $post_id,
+					),
+					array( '%d' ),
+					array( '%d' )
+				);
+			}
+
+			$msg = apply_filters( 'wpghs_commit_msg_new_posts',
+					'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
+
+			$export = new WordPress_GitHub_Sync_Export( $new_posts, $msg );
+			$export->run();
+		}
+
+		$msg = __( 'Payload processed', 'wordpress-github-sync' );
+		WordPress_GitHub_Sync::write_log( $msg );
+
+		return $msg;
+	}
+
+	/**
 	 * Runs the import process for a provided sha.
 	 *
 	 * @param string $sha
 	 */
-	public function run( $sha ) {
+	public function import_sha( $sha ) {
 		$this->tree->fetch_sha( $sha );
 
 		if ( ! $this->tree->is_ready() ) {
