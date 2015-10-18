@@ -20,9 +20,9 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	/**
 	 * Current tree if retrieved, otherwise, error
 	 *
-	 * @var array|WP_Error
+	 * @var array
 	 */
-	protected $tree;
+	protected $data;
 
 	/**
 	 * Current position in the loop.
@@ -39,52 +39,23 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	protected $current;
 
 	/**
-	 * Fetches the current tree from GitHub.
+	 * Represents a commit tree.
+	 *
+	 * @param WordPress_GitHub_Sync_Api $api Api object.
+	 * @param array $tree
 	 */
-	public function __construct() {
-		$this->api  = new WordPress_GitHub_Sync_Api;
-		$this->tree = new WP_Error( 'no_tree', __( 'Tree not initialized', 'wordpress-github-sync' ) );
+	public function __construct( WordPress_GitHub_Sync_Api $api, $data ) {
+		$this->api = $api;
+		$this->data = $data;
 	}
 
 	/**
-	 * Fetch the last tree from the repository.
-	 */
-	public function fetch_last() {
-		$this->tree = $this->api->last_tree_recursive();
-	}
-
-	/**
-	 * Fetch the tree for the provided sha from the repository.
+	 * Returns the
 	 *
-	 * @param $sha
+	 * @return array
 	 */
-	public function fetch_sha( $sha ) {
-		$this->tree = $this->api->get_tree_recursive( $sha );
-	}
-
-	/**
-	 * Checks if the tree is currently ready.
-	 *
-	 * This will return false if the initial fetch of the tree
-	 * returned an error of some sort.
-	 *
-	 * @return bool
-	 */
-	public function is_ready() {
-		if ( is_wp_error( $this->tree ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Retrieves the error caused when fetching the tree.
-	 *
-	 * @return string
-	 */
-	public function last_error() {
-		return $this->tree->get_error_message();
+	public function get_data() {
+		return $this->data;
 	}
 
 	/**

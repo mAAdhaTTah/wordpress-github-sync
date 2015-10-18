@@ -21,10 +21,11 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_Base_TestCase
 	}
 
 	public function test_should_return_tree() {
-		$response = $this->api->get_tree_recursive( '123' );
+		$tree = $this->api->get_tree_recursive( '123' );
 
 		$this->assertCount( 1, $this->http_requests );
-		$this->assertCount( 2, $response );
+		$this->assertInstanceOf( 'WordPress_GitHub_Sync_tree', $tree );
+		$this->assertCount( 2, $tree->get_data() );
 	}
 
 	public function test_should_return_commit() {
@@ -64,10 +65,11 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_Base_TestCase
 	}
 
 	public function test_should_return_lastest_tree() {
-		$response = $this->api->last_tree_recursive();
+		$tree = $this->api->last_tree_recursive();
 
 		$this->assertCount( 3, $this->http_requests );
-		$this->assertCount( 2, $response );
+		$this->assertInstanceOf( 'WordPress_GitHub_Sync_tree', $tree );
+		$this->assertCount( 2, $tree->get_data() );
 	}
 
 	/**

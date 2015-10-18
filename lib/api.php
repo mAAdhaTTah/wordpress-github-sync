@@ -46,7 +46,7 @@ class WordPress_GitHub_Sync_Api {
 	 *
 	 * @param string $sha
 	 *
-	 * @return mixed
+	 * @return WordPress_GitHub_Sync_Tree|WP_Error
 	 */
 	public function get_tree_recursive( $sha ) {
 		if ( is_wp_error( $error = $this->can_call() ) ) {
@@ -54,7 +54,7 @@ class WordPress_GitHub_Sync_Api {
 		}
 
 		if ( $cache = Cache::open()->get( 'trees', $sha ) ) {
-			return $cache;
+			return new WordPress_GitHub_Sync_Tree( $this, $cache );
 		}
 
 		$data = $this->call( 'GET', $this->tree_endpoint() . '/' . $sha . '?recursive=1' );
@@ -68,7 +68,10 @@ class WordPress_GitHub_Sync_Api {
 			}
 		}
 
-		return Cache::open()->save( 'trees', $sha, array_values( $data->tree ) );
+		return new WordPress_GitHub_Sync_Tree(
+			$this,
+			Cache::open()->save( 'trees', $sha, array_values( $data->tree ) )
+		);
 	}
 
 	/**
@@ -156,6 +159,8 @@ class WordPress_GitHub_Sync_Api {
 
 	/**
 	 * Retrieves the recursive tree for the master branch
+	 *
+	 * @return WordPress_GitHub_Sync_Tree|WP_Error
 	 */
 	public function last_tree_recursive() {
 		$sha = $this->last_tree_sha();
