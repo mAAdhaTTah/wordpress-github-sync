@@ -276,7 +276,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 	}
 
 	public function test_should_fail_full_export_if_database_fails() {
-		$error = new WP_Error( 'database_failed', 'Database failed.');
+		$error = new WP_Error( 'database_failed', 'Database failed.' );
 		$this->database
 			->shouldReceive( 'all_supported' )
 			->once()
@@ -293,11 +293,11 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 
 	public function test_should_fail_full_export_if_export_fails() {
 		$posts = array();
-		$msg = 'Commit msg';
-		$error = new WP_Error( 'database_failed', 'Database failed.');
-		add_filter( 'wpghs_commit_msg_full', function() use ( $msg ) {
+		$msg   = 'Commit msg';
+		$error = new WP_Error( 'database_failed', 'Database failed.' );
+		add_filter( 'wpghs_commit_msg_full', function () use ( $msg ) {
 			return $msg;
-		});
+		} );
 		$this->database
 			->shouldReceive( 'all_supported' )
 			->once()
@@ -318,12 +318,12 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 	}
 
 	public function test_should_should_full_export() {
-		$posts = array();
-		$msg = 'Commit msg';
+		$posts   = array();
+		$msg     = 'Commit msg';
 		$success = 'Export succeeded.';
-		add_filter( 'wpghs_commit_msg_full', function() use ( $msg ) {
+		add_filter( 'wpghs_commit_msg_full', function () use ( $msg ) {
 			return $msg;
-		});
+		} );
 		$this->database
 			->shouldReceive( 'all_supported' )
 			->once()
@@ -339,6 +339,208 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->with( $success );
 
 		$result = $this->controller->export_all();
+
+		$this->assertTrue( $result );
+	}
+
+	public function test_should_fail_export_post_if_semaphore_locked() {
+		$id    = 12345;
+		$error = new WP_Error( 'semaphore_locked', 'Semaphore locked' );
+		$this->semaphore
+			->shouldReceive( 'is_open' )
+			->once()
+			->andReturn( $error );
+		$this->semaphore
+			->shouldReceive( 'lock' )
+			->never();
+		$this->semaphore
+			->shouldReceive( 'unlock' )
+			->never();
+		$this->response
+			->shouldReceive( 'log' )
+			->once()
+			->with( $error );
+
+		$result = $this->controller->export_post( $id );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_should_fail_export_post_if_database_fails() {
+		$id    = 12345;
+		$error = new WP_Error( 'database_failed', 'Database failed.' );
+		$this->database
+			->shouldReceive( 'id' )
+			->once()
+			->with( $id )
+			->andReturn( $error );
+		$this->response
+			->shouldReceive( 'log' )
+			->once()
+			->with( $error );
+
+		$result = $this->controller->export_post( $id );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_should_fail_export_post_if_export_fails() {
+		$id    = 12345;
+		$msg   = 'Commit msg';
+		$error = new WP_Error( 'database_failed', 'Database failed.' );
+		add_filter( 'wpghs_commit_msg_single', function () use ( $msg ) {
+			return $msg;
+		} );
+		$this->database
+			->shouldReceive( 'id' )
+			->once()
+			->with( $id )
+			->andReturn( $this->post );
+		$this->post
+			->shouldReceive( 'github_path' )
+			->andReturn( '' );
+		$this->export
+			->shouldReceive( 'post' )
+			->once()
+			->with( $this->post, $msg . ' - wpghs' )
+			->andReturn( $error );
+		$this->response
+			->shouldReceive( 'log' )
+			->once()
+			->with( $error );
+
+		$result = $this->controller->export_post( $id );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_should_should_export_post() {
+		$id      = 12345;
+		$msg     = 'Commit msg';
+		$success = 'Export succeeded.';
+		add_filter( 'wpghs_commit_msg_single', function () use ( $msg ) {
+			return $msg;
+		} );
+		$this->database
+			->shouldReceive( 'id' )
+			->once()
+			->with( $id )
+			->andReturn( $this->post );
+		$this->post
+			->shouldReceive( 'github_path' )
+			->andReturn( '' );
+		$this->export
+			->shouldReceive( 'post' )
+			->once()
+			->with( $this->post, $msg . ' - wpghs' )
+			->andReturn( $success );
+		$this->response
+			->shouldReceive( 'log' )
+			->once()
+			->with( $success );
+
+		$result = $this->controller->export_post( $id );
+
+		$this->assertTrue( $result );
+	}
+
+	public function test_should_fail_delete_post_if_semaphore_locked() {
+		$id    = 12345;
+		$error = new WP_Error( 'semaphore_locked', 'Semaphore locked' );
+		$this->semaphore
+			->shouldReceive( 'is_open' )
+			->once()
+			->andReturn( $error );
+		$this->semaphore
+			->shouldReceive( 'lock' )
+			->never();
+		$this->semaphore
+			->shouldReceive( 'unlock' )
+			->never();
+		$this->response
+			->shouldReceive( 'log' )
+			->once()
+			->with( $error );
+
+		$result = $this->controller->delete_post( $id );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_should_fail_delete_post_if_database_fails() {
+		$id    = 12345;
+		$error = new WP_Error( 'database_failed', 'Database failed.' );
+		$this->database
+			->shouldReceive( 'id' )
+			->once()
+			->with( $id )
+			->andReturn( $error );
+		$this->response
+			->shouldReceive( 'log' )
+			->once()
+			->with( $error );
+
+		$result = $this->controller->delete_post( $id );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_should_fail_delete_post_if_export_fails() {
+		$id    = 12345;
+		$msg   = 'Commit msg';
+		$error = new WP_Error( 'database_failed', 'Database failed.' );
+		add_filter( 'wpghs_commit_msg_delete', function () use ( $msg ) {
+			return $msg;
+		} );
+		$this->database
+			->shouldReceive( 'id' )
+			->once()
+			->with( $id )
+			->andReturn( $this->post );
+		$this->post
+			->shouldReceive( 'github_path' )
+			->andReturn( '' );
+		$this->export
+			->shouldReceive( 'delete' )
+			->once()
+			->with( $this->post, $msg . ' - wpghs' )
+			->andReturn( $error );
+		$this->response
+			->shouldReceive( 'log' )
+			->once()
+			->with( $error );
+
+		$result = $this->controller->delete_post( $id );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_should_should_delete_post() {
+		$id      = 12345;
+		$msg     = 'Commit msg';
+		$success = 'Export succeeded.';
+		add_filter( 'wpghs_commit_msg_delete', function () use ( $msg ) {
+			return $msg;
+		} );
+		$this->database
+			->shouldReceive( 'id' )
+			->once()
+			->with( $id )
+			->andReturn( $this->post );
+		$this->post
+			->shouldReceive( 'github_path' )
+			->andReturn( '' );
+		$this->export
+			->shouldReceive( 'delete' )
+			->once()
+			->with( $this->post, $msg . ' - wpghs' )
+			->andReturn( $success );
+		$this->response
+			->shouldReceive( 'log' )
+			->once()
+			->with( $success );
+
+		$result = $this->controller->delete_post( $id );
 
 		$this->assertTrue( $result );
 	}

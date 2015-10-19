@@ -65,6 +65,22 @@ class WordPress_GitHub_Sync_Database {
 	}
 
 	/**
+	 * Queries a post and returns it if it's supported.
+	 *
+	 * @param $post_id
+	 * @return WP_Error|WordPress_GitHub_Sync_Post
+	 */
+	public function id( $post_id ) {
+		$post = new WordPress_GitHub_Sync_Post( $post_id, $this->app->api() );
+
+		if ( ! $this->is_post_supported( $post ) ) {
+			return new WP_Error( 'unsupported_post', __( 'Post is not supported.', 'wordpress-github-sync' ) ); // @todo better message
+		}
+
+		return $post;
+	}
+
+	/**
 	 * Returns the list of post type permitted.
 	 *
 	 * @return array
@@ -95,5 +111,34 @@ class WordPress_GitHub_Sync_Database {
 		}
 
 		return implode( ', ', $whitelist );
+	}
+
+	/**
+	 * Verifies that both the post's status & type
+	 * are currently whitelisted
+	 *
+	 * @param  WordPress_GitHub_Sync_Post $post post to verify
+	 *
+	 * @return boolean                          true if supported, false if not
+	 */
+	protected function is_post_supported( WordPress_GitHub_Sync_Post $post ) {
+		// @todo this logic can be simplified
+		if ( wp_is_post_revision( $post->id ) || wp_is_post_autosave( $post->id ) ) {
+			return false;
+		}
+
+		if ( ! in_array( $post->status(), $this->get_whitelisted_post_statuses() ) ) {
+			return false;
+		}
+
+		if ( ! in_array( $post->type(), $this->get_whitelisted_post_types() ) ) {
+			return false;
+		}
+
+		if ( $post->has_password() ) {
+			return false;
+		}
+
+		return true;
 	}
 }
