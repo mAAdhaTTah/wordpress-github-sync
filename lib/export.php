@@ -6,43 +6,69 @@
 class WordPress_GitHub_Sync_Export {
 
 	/**
-	 * Current GitHub tree.
+	 * Application container.
 	 *
-	 * @var WordPress_GitHub_Sync_Tree
+	 * @var WordPress_GitHub_Sync
 	 */
-	protected $tree;
-
-	/**
-	 * Commit message for export.
-	 *
-	 * @var string
-	 */
-	protected $msg;
-
-	/**
-	 * Post IDs to export.
-	 *
-	 * @var array
-	 */
-	protected $ids;
+	protected $app;
 
 	/**
 	 * Initializes a new export manager.
 	 *
-	 * @param array|int $source post ID or array of post IDs
-	 * @param string $msg commit message
+	 * @param WordPress_GitHub_Sync $app
 	 */
-	public function __construct( $source, $msg ) {
-		if ( is_array( $source ) ) {
-			$this->ids = $source;
+	public function __construct( WordPress_GitHub_Sync $app ) {
+		$this->app = $app;
+	}
+
+	/**
+	 * Exports provided posts.
+	 *
+	 * @param WordPress_GitHub_Sync_Post[] $posts
+	 * @param string $msg
+	 *
+	 * @return string|WP_Error
+	 */
+	public function posts( array $posts, $msg ) {
+		$commit = $this->app->api()->last_commit();
+
+		if ( is_wp_error( $commit ) ) {
+			return $commit;
 		}
 
-		if ( is_int( $source ) ) {
-			$this->ids = array( $source );
+		$tree = $this->app->api()->get_tree_recursive( $commit->tree_sha()  );
+
+		foreach ( $posts as $post ) {
+			$tree->post_to_tree( $post );
 		}
 
-		$this->msg  = $msg;
-		$this->tree = new WordPress_GitHub_Sync_Tree();
+		$result = $tree->export( $msg );
+
+		if ( ! $result ) {
+			$this->no_change();
+
+			return new WP_Error;
+		}
+
+		if ( is_wp_error( $result ) ) {
+			$this->error( $result );
+
+			return new WP_Error;
+		}
+
+		$tree = $this->app->api()->last_tree_recursive();
+
+		if ( is_wp_error( $tree ) ) {
+			// @todo warning b/c shas aren't saved? try again?
+			return $tree;
+		}
+
+		WordPress_GitHub_Sync::write_log( __( 'Saving the shas.', 'wordpress-github-sync' ) );
+		$this->save_post_shas( $posts, $tree );
+
+		$this->success();
+
+		return true;
 	}
 
 	/**
@@ -123,12 +149,14 @@ class WordPress_GitHub_Sync_Export {
 
 	/**
 	 * Use the new tree to save sha data
-	 * for all the updated posts
+	 * for all the updated posts.
+	 *
+	 * @param WordPress_GitHub_Sync_Post[] $posts
+	 * @param WordPress_GitHub_Sync_Tree $tree
 	 */
-	public function save_post_shas() {
-		foreach ( $this->ids as $post_id ) {
-			$post = new WordPress_GitHub_Sync_Post( $post_id );
-			$blob = $this->tree->get_blob_for_path( $post->github_path() );
+	public function save_post_shas( $posts, $tree) {
+		foreach ( $posts as $post ) {
+			$blob = $tree->get_blob_for_path( $post->github_path() );
 
 			if ( $blob ) {
 				$post->set_sha( $blob->sha );
@@ -136,7 +164,7 @@ class WordPress_GitHub_Sync_Export {
 				WordPress_GitHub_Sync::write_log(
 					sprintf(
 						__( 'No sha matched for post ID %d', 'wordpress-github-sync' ),
-						$post_id
+						$post->id
 					)
 				);
 			}
