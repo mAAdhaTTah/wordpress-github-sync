@@ -253,11 +253,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$this->assertTrue( $result );
 	}
 
-	public function test_should_be_formatted_for_query() {
-		$method = new ReflectionMethod( 'WordPress_GitHub_Sync_Controller', 'format_for_query' );
-		$method->setAccessible( true );
 
-		$this->assertEquals( "'post', 'page'", $method->invoke( $this->controller, array( 'post', 'page' ) ) );
 	}
 }
 

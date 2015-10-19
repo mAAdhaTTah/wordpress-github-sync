@@ -111,6 +111,13 @@ class WordPress_GitHub_Sync {
 	protected $semaphore;
 
 	/**
+	 * Database object.
+	 *
+	 * @var WordPress_GitHub_Sync_Database
+	 */
+	protected $database;
+
+	/**
 	 * Called at load time, hooks into WP core
 	 */
 	public function __construct() {
@@ -287,6 +294,19 @@ class WordPress_GitHub_Sync {
 		}
 
 		return $this->semaphore;
+	}
+
+	/**
+	 * Lazy-load the Database object.
+	 *
+	 * @return WordPress_GitHub_Sync_Database
+	 */
+	public function database() {
+		if ( ! $this->database ) {
+			$this->database = new WordPress_GitHub_Sync_Database( $this );
+		}
+
+		return $this->database;
 	}
 
 	/**

@@ -13,13 +13,6 @@ class WordPress_GitHub_Sync_Controller {
 	public $app;
 
 	/**
-	 * Currently whitelisted post types & statuses
-	 * @var  array
-	 */
-	protected $whitelisted_post_types = array( 'post', 'page' );
-	protected $whitelisted_post_statuses = array( 'publish' );
-
-	/**
 	 * Whether any posts have changed
 	 * @var boolean
 	 */
@@ -133,22 +126,21 @@ class WordPress_GitHub_Sync_Controller {
 	 * Export all the posts in the database to GitHub
 	 */
 	public function export_all() {
-		global $wpdb;
 
 		if ( $this->app->semaphore()->is_open() ) {
 			WordPress_GitHub_Sync::write_log( __( 'Export locked. Terminating.', 'wordpress-github-sync' ) );
 			return;
 		}
 
-		$post_statuses = $this->format_for_query( $this->get_whitelisted_post_statuses() );
-		$post_types    = $this->format_for_query( $this->get_whitelisted_post_types() );
+		$result = $this->app->database()->all_supported();
 
-		$post_ids = $wpdb->get_col(
-			"SELECT ID FROM $wpdb->posts WHERE
-			post_status IN ( $post_statuses ) AND
-			post_type IN ( $post_types )"
-		);
+		if ( is_wp_error( $result ) ) {
+			$this->app->response()->log( $result );
 
+			return false;
+		}
+
+		// @todo sprintf this
 		$msg = apply_filters( 'wpghs_commit_msg_full', 'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
 
 		$export = new WordPress_GitHub_Sync_Export( $post_ids, $msg );
@@ -173,7 +165,9 @@ class WordPress_GitHub_Sync_Controller {
 			return;
 		}
 
-		$msg  = apply_filters( 'wpghs_commit_msg_single', 'Syncing ' . $post->github_path() . ' from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')', $post ) . ' - wpghs';
+		$msg = apply_filters( 'wpghs_commit_msg_single',
+				'Syncing ' . $post->github_path() . ' from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')',
+				$post ) . ' - wpghs';
 
 		$export = new WordPress_GitHub_Sync_Export( $post_id, $msg );
 		$export->run();
@@ -196,39 +190,6 @@ class WordPress_GitHub_Sync_Controller {
 
 		$export = new WordPress_GitHub_Sync_Export( $post_id, $msg );
 		$export->run( true );
-	}
-
-	/**
-	 * Formats a whitelist array for a query
-	 *
-	 * @param  array $whitelist
-	 *
-	 * @return string            Whitelist formatted for query
-	 */
-	protected function format_for_query( $whitelist ) {
-		foreach ( $whitelist as $key => $value ) {
-			$whitelist[ $key ] = "'$value'";
-		}
-
-		return implode( ', ', $whitelist );
-	}
-
-	/**
-	 * Returns the list of post type permitted.
-	 *
-	 * @return array
-	 */
-	protected function get_whitelisted_post_types() {
-		return apply_filters( 'wpghs_whitelisted_post_types', $this->whitelisted_post_types );
-	}
-
-	/**
-	 * Returns the list of post status permitted.
-	 *
-	 * @return array
-	 */
-	protected function get_whitelisted_post_statuses() {
-		return apply_filters( 'wpghs_whitelisted_post_statuses', $this->whitelisted_post_statuses );
 	}
 
 	/**
