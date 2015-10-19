@@ -23,6 +23,11 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 	protected $import;
 
 	/**
+	 * @var WordPress_GitHub_Sync_Export|Mockery\Mock
+	 */
+	protected $export;
+
+	/**
 	 * @var WordPress_GitHub_Sync_Response|Mockery\Mock
 	 */
 	protected $response;
@@ -59,6 +64,7 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 		$this->controller = Mockery::mock( 'WordPress_GitHub_Sync_Controller' );
 		$this->request    = Mockery::mock( 'WordPress_GitHub_Sync_Request' );
 		$this->import     = Mockery::mock( 'WordPress_GitHub_Sync_Import' );
+		$this->export     = Mockery::mock( 'WordPress_GitHub_Sync_Export' );
 		$this->response   = Mockery::mock( 'WordPress_GitHub_Sync_Response' );
 		$this->payload    = Mockery::mock( 'WordPress_GitHub_Sync_Payload' );
 		$this->api        = Mockery::mock( 'WordPress_GitHub_Sync_Api' );
@@ -76,6 +82,10 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 		$this->app
 			->shouldReceive( 'import' )
 			->andReturn( $this->import )
+			->byDefault();
+		$this->app
+			->shouldReceive( 'export' )
+			->andReturn( $this->export )
 			->byDefault();
 		$this->app
 			->shouldReceive( 'response' )

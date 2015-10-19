@@ -123,14 +123,18 @@ class WordPress_GitHub_Sync_Controller {
 	}
 
 	/**
-	 * Export all the posts in the database to GitHub
+	 * Export all the posts in the database to GitHub.
+	 *
+	 * @return boolean
 	 */
 	public function export_all() {
+		if ( is_wp_error( $error = $this->app->semaphore()->is_open() ) ) {
+			$this->app->response()->log( $error );
 
-		if ( $this->app->semaphore()->is_open() ) {
-			WordPress_GitHub_Sync::write_log( __( 'Export locked. Terminating.', 'wordpress-github-sync' ) );
-			return;
+			return false;
 		}
+
+		$this->app->semaphore()->lock();
 
 		$result = $this->app->database()->all_supported();
 
@@ -143,8 +147,11 @@ class WordPress_GitHub_Sync_Controller {
 		// @todo sprintf this
 		$msg = apply_filters( 'wpghs_commit_msg_full', 'Full export from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
 
-		$export = new WordPress_GitHub_Sync_Export( $post_ids, $msg );
-		$export->run();
+		$result = $this->app->export()->posts( $result, $msg );
+
+		$this->app->response()->log( $result );
+
+		return is_wp_error( $result ) ? false : true;
 	}
 
 	/**

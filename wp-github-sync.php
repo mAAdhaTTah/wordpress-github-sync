@@ -104,6 +104,13 @@ class WordPress_GitHub_Sync {
 	protected $import;
 
 	/**
+	 * Export object.
+	 *
+	 * @var WordPress_GitHub_Sync_Export
+	 */
+	protected $export;
+
+	/**
 	 * Semaphore object.
 	 *
 	 * @var WordPress_GitHub_Sync_Semaphore
@@ -281,6 +288,19 @@ class WordPress_GitHub_Sync {
 		}
 
 		return $this->import;
+	}
+
+	/**
+	 * Lazy-load the Export object.
+	 *
+	 * @return WordPress_GitHub_Sync_Export
+	 */
+	public function export() {
+		if ( ! $this->export ) {
+			$this->export = new WordPress_GitHub_Sync_Export( $this );
+		}
+
+		return $this->export;
 	}
 
 	/**
