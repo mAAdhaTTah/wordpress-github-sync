@@ -43,6 +43,10 @@ class WordPress_GitHub_Sync_Api {
 
 		$data = $this->call( 'GET', $this->tree_endpoint() . '/' . $sha . '?recursive=1' );
 
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
 		foreach ( $data->tree as $index => $thing ) {
 			// We need to remove the trees because
 			// the recursive tree includes both
