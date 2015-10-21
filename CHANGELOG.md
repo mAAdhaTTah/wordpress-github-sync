@@ -2,6 +2,10 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [1.3.3] ###
+
+* Fix api bug where API call errors weren't getting kicked up to the calling method.
+
 ### [1.3.2] ###
 
 * Fix deleting bug where posts that weren't present in the repo were being added.
@@ -50,6 +54,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
   [Keep a Changelog standards]: http://keepachangelog.com/
   [Semantic Versioning]: http://semver.org/
   [Unreleased]: https://github.com/benbalter/wordpress-github-sync
+  [1.3.3]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.3
   [1.3.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.2
   [1.3.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.1
   [1.3]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3
