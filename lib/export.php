@@ -180,4 +180,15 @@ class WordPress_GitHub_Sync_Export {
 		WordPress_GitHub_Sync::write_log( __( 'Export to GitHub completed successfully.', 'wordpress-github-sync' ), 'success' );
 	}
 
+	/**
+	 * Saves the export user to the database.
+	 *
+	 * @param $user_id
+	 *
+	 * @return bool
+	 */
+	public function set_user( $user_id ) {
+		return update_option( '_wpghs_export_user_id', (int) $user_id );
+	}
+
 }

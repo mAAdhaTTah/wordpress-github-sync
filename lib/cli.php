@@ -48,7 +48,7 @@ class WordPress_GitHub_Sync_CLI {
 			WP_CLI::error( __( 'Invalid user ID', 'wordpress-github-sync' ) );
 		}
 
-		update_option( '_wpghs_export_user_id', (int) $user_id );
+		$this->app->export()->set_user( $user_id );
 
 		if ( 'all' === $post_id ) {
 			WP_CLI::line( __( 'Starting full export to GitHub.', 'wordpress-github-sync' ) );
