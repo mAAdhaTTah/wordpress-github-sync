@@ -3,13 +3,6 @@
 class WordPress_GitHub_Sync_Commit {
 
 	/**
-	 * Api object.
-	 *
-	 * @var WordPress_GitHub_Sync_Api
-	 */
-	protected $api;
-
-	/**
 	 * Raw commit data.
 	 *
 	 * @var stdClass
@@ -17,14 +10,37 @@ class WordPress_GitHub_Sync_Commit {
 	protected $data;
 
 	/**
+	 * Commit tree.
+	 *
+	 * @var WordPress_GitHub_Sync_Tree
+	 */
+	protected $tree;
+
+	/**
+	 * Commit message.
+	 *
+	 * @var string
+	 */
+	protected $message;
+
+	/**
+	 * Commit's tree sha.
+	 *
+	 * @var string
+	 */
+	protected $tree_sha;
+
+	/**
 	 * Instantiates a new Commit object.
 	 *
-	 * @param WordPress_GitHub_Sync_Api $api
-	 * @param stdClass $data
+	 * @param stdClass $data Raq commit data.
 	 */
-	public function __construct( WordPress_GitHub_Sync_Api $api, $data ) {
-		$this->api = $api;
+	public function __construct( stdClass $data ) {
 		$this->data = $data;
+
+		$this->message = $this->data->message ?: '';
+		$this->sha = $this->data->sha ?: '';
+		$this->tree_sha = $this->data->tree->sha ?: '';
 	}
 
 	/**
@@ -37,7 +53,7 @@ class WordPress_GitHub_Sync_Commit {
 	 * @return bool
 	 */
 	public function already_synced() {
-		if ( 'wpghs' === substr( $this->data->message, -5 ) ) {
+		if ( 'wpghs' === substr( $this->message, -5 ) ) {
 			true;
 		}
 
@@ -50,7 +66,7 @@ class WordPress_GitHub_Sync_Commit {
 	 * @return string
 	 */
 	public function message() {
-		return $this->data->message ?: '';
+		return $this->message;
 	}
 
 	/**
@@ -59,7 +75,7 @@ class WordPress_GitHub_Sync_Commit {
 	 * @return string
 	 */
 	public function sha() {
-		return $this->data->sha ?: '';
+		return $this->sha;
 	}
 
 	/**
@@ -68,6 +84,24 @@ class WordPress_GitHub_Sync_Commit {
 	 * @return string
 	 */
 	public function tree_sha() {
-		return $this->data->tree->sha ?: '';
+		return $this->tree_sha;
+	}
+
+	/**
+	 * Return's the commit's tree.
+	 *
+	 * @return WordPress_GitHub_Sync_Tree
+	 */
+	public function tree() {
+		return $this->tree;
+	}
+
+	/**
+	 * Set the commit's tree.
+	 *
+	 * @param WordPress_GitHub_Sync_Tree $tree New tree for commit.
+	 */
+	public function set_tree( WordPress_GitHub_Sync_Tree $tree ) {
+		$this->tree = $tree;
 	}
 }

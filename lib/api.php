@@ -86,11 +86,10 @@ class WordPress_GitHub_Sync_Api {
 		}
 
 		if ( $cache = Cache::open()->get( 'commits', $sha ) ) {
-			return new WordPress_GitHub_Sync_Commit( $this, $cache );
+			return new WordPress_GitHub_Sync_Commit( $cache );
 		}
 
 		return new WordPress_GitHub_Sync_Commit(
-			$this,
 			Cache::open()->save( 'commits', $sha, $this->call( 'GET', $this->commit_endpoint() . '/' . $sha ) )
 		);
 	}
