@@ -156,7 +156,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 *
 	 * @param string $path
 	 *
-	 * @return bool|stdClass
+	 * @return bool|WordPress_GitHub_Sync_Blob
 	 */
 	public function get_blob_for_path( $path ) {
 		foreach ( $this->data as $blob ) {
@@ -164,47 +164,12 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 			// (i.e. post updated in middle mass export)
 			// solution?
 			if ( $path === $blob->path ) {
+				// @todo this is a stdClass; should be Blob
 				return $blob;
 			}
 		}
 
 		return false;
-	}
-
-	/**
-	 * Exports the tree as a new commit with a provided commit message.
-	 *
-	 * @param string $msg
-	 *
-	 * @return bool|WP_Error false if unchanged, true if success, WP_Error if error
-	 */
-	public function export( $msg ) {
-		if ( ! $this->changed ) {
-			return false;
-		}
-
-		WordPress_GitHub_Sync::write_log( __( 'Creating the tree.', 'wordpress-github-sync' ) );
-		$tree = $this->api->create_tree( array_values( $this->data ) );
-
-		if ( is_wp_error( $tree ) ) {
-			return $tree;
-		}
-
-		WordPress_GitHub_Sync::write_log( __( 'Creating the commit.', 'wordpress-github-sync' ) );
-		$commit = $this->api->create_commit( $tree->sha, $msg );
-
-		if ( is_wp_error( $commit ) ) {
-			return $commit;
-		}
-
-		WordPress_GitHub_Sync::write_log( __( 'Setting the master branch to our new commit.', 'wordpress-github-sync' ) );
-		$ref = $this->api->set_ref( $commit->sha );
-
-		if ( is_wp_error( $ref ) ) {
-			return $ref;
-		}
-
-		return true;
 	}
 
 	/**
@@ -319,5 +284,23 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 */
 	public function rewind() {
 		$this->position = 0;
+	}
+
+	/**
+	 * Returns whether the tree has changed.
+	 *
+	 * @return bool
+	 */
+	public function is_changed() {
+		return $this->changed;
+	}
+
+	/**
+	 * Formats the tree for an API call body.
+	 *
+	 * @return array
+	 */
+	public function to_body() {
+		return array( 'tree' => $this->data );
 	}
 }

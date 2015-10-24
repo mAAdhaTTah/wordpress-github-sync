@@ -32,7 +32,7 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 		$commit = $this->api->get_commit( '123' );
 
 		$this->assertCount( 1, $this->http_requests );
-		$this->assertEquals( "added readme, because im a good github citizen\n", $commit->message());
+		$this->assertEquals( "added readme, because im a good github citizen\n", $commit->message() );
 		$this->assertEquals( '7638417db6d59f3c431d3e1f261cc637155684cd', $commit->sha() );
 	}
 
@@ -44,14 +44,18 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_create_tree() {
-		$response = $this->api->create_tree( array() );
+		$this->tree
+			->shouldReceive( 'to_body' )
+			->once()
+			->andReturn( array( 'tree' => array() ) );
+		$response = $this->api->create_tree( $this->tree );
 
 		$this->assertCount( 1, $this->http_requests );
 		$this->assertEquals( 'cd8274d15fa3ae2ab983129fb037999f264ba9a7', $response->sha );
 	}
 
 	public function test_should_create_commit() {
-		$response = $this->api->create_commit( '1234', 'New Commit' );
+		$response = $this->api->create_commit_by_sha( '1234', 'New Commit' );
 
 		$this->assertCount( 2, $this->http_requests );
 		$this->assertEquals( '7638417db6d59f3c431d3e1f261cc637155684cd', $response->sha );
@@ -81,7 +85,7 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 			$this->assertTrue( false, "Didn't call the correct host" );
 		}
 
-		$url = explode( '/',  substr( $url, 11 ) );
+		$url = explode( '/', substr( $url, 11 ) );
 
 		if ( 'repos' !== $url[0] ) {
 			$this->assertTrue( false, "Didn't call the repos endpoint" );

@@ -96,16 +96,56 @@ class WordPress_GitHub_Sync_Api {
 	}
 
 	/**
+	 * Add a new commit to the master branch.
+	 *
+	 * @param WordPress_GitHub_Sync_Commit $commit
+	 *
+	 * @return bool|mixed|WordPress_GitHub_Sync_Commit|WP_Error
+	 */
+	public function create_commit( WordPress_GitHub_Sync_Commit $commit ) {
+		if ( ! $commit->tree()->is_changed() ) {
+			return new WP_Error(
+				'no_commit',
+				__(
+					'There were no changes, so no additional commit was added.',
+					'wordpress-github-sync'
+				)
+			);
+		}
+
+//		WordPress_GitHub_Sync::write_log( __( 'Creating the tree.', 'wordpress-github-sync' ) );
+		$tree = $this->create_tree( $commit->tree() );
+
+		if ( is_wp_error( $tree ) ) {
+			return $tree;
+		}
+
+//		WordPress_GitHub_Sync::write_log( __( 'Creating the commit.', 'wordpress-github-sync' ) );
+		$commit = $this->create_commit_by_sha( $tree->sha, $commit->message() );
+
+		if ( is_wp_error( $commit ) ) {
+			return $commit;
+		}
+
+//		WordPress_GitHub_Sync::write_log( __( 'Setting the master branch to our new commit.', 'wordpress-github-sync' ) );
+		$ref = $this->set_ref( $commit->sha );
+
+		if ( is_wp_error( $ref ) ) {
+			return $ref;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Create the tree by a set of blob ids.
 	 *
-	 * @param array $tree
+	 * @param WordPress_GitHub_Sync_Tree $tree
 	 *
-	 * @return mixed
+	 * @return stdClass|WP_Error
 	 */
-	public function create_tree( $tree ) {
-		$body = array( 'tree' => $tree );
-
-		return $this->call( 'POST', $this->tree_endpoint(), $body );
+	public function create_tree( WordPress_GitHub_Sync_Tree $tree ) {
+		return $this->call( 'POST', $this->tree_endpoint(), $tree->to_body() );
 	}
 
 	/**
@@ -116,7 +156,7 @@ class WordPress_GitHub_Sync_Api {
 	 *
 	 * @return mixed
 	 */
-	public function create_commit( $sha, $msg ) {
+	public function create_commit_by_sha( $sha, $msg ) {
 		$parent_sha = $this->last_commit_sha();
 
 		if ( is_wp_error( $parent_sha ) ) {
