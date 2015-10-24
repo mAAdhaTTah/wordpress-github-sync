@@ -13,165 +13,46 @@ class WordPress_GitHub_Sync_Import {
 	protected $app;
 
 	/**
-	 * Post IDs for posts imported from GitHub.
-	 *
-	 * @var int[]
-	 */
-	protected $new_posts = array();
-
-	/**
-	 * Posts that needs their revision author set.
-	 *
-	 * @var int[]
-	 */
-	protected $updated_posts;
-
-	/**
 	 * Initializes a new import manager.
 	 *
 	 * @param WordPress_GitHub_Sync $app
 	 */
 	public function __construct( WordPress_GitHub_Sync $app ) {
-		$this->app  = $app;
+		$this->app = $app;
 	}
 
 	/**
-	 * Returns the IDs of newly added posts.
-	 *
-	 * @return int[]
-	 */
-	public function new_posts() {
-		return $this->new_posts;
-	}
-
-	/**
-	 * Returns the newly added posts.
-	 *
-	 * @return int[]
-	 */
-	public function updated_posts() {
-		return $this->updated_posts;
-	}
-
-	/**
-	 * Imports a payload
+	 * Imports a payload.
 	 *
 	 * @param WordPress_GitHub_Sync_Payload $payload
 	 *
-	 * @return true|WP_Error
+	 * @return string|WP_Error
 	 */
 	public function payload( WordPress_GitHub_Sync_Payload $payload ) {
 		$commit = $this->app->api()->get_commit( $payload->get_commit_id() );
 
 		if ( is_wp_error( $commit ) ) {
-			return new WP_Error(
-				'api_error',
-				sprintf(
-					__( 'Failed getting commit with error: %s', 'wordpress-github-sync' ),
-					$commit->get_error_message()
-				)
-			);
+			return $commit;
 		}
 
 		$this->commit( $commit );
 
-		$user = get_user_by( 'email', $payload->get_author_email() );
-
-		if ( ! $user ) {
-			// use the default user
-			$user = get_user_by( 'id', get_option( 'wpghs_default_user' ) );
-		}
-
-		// if we can't find a user and a default hasn't been set,
-		// we're just going to set the revision author to 0
-		update_option( '_wpghs_export_user_id', $user ? $user->ID : 0 );
-
-		global $wpdb;
-
-		if ( $updated_posts = $this->updated_posts() ) {
-			foreach ( $updated_posts as $post_id ) {
-				$revision = wp_get_post_revision( $post_id );
-
-				if ( ! $revision ) {
-					$revision = wp_save_post_revision( $post_id );
-
-					if ( ! $revision || is_wp_error( $revision ) ) {
-						// there was a problem saving a new revision
-						continue;
-					}
-
-					// wp_save_post_revision returns the ID, whereas get_post_revision returns the whole object
-					// in order to be consistent, let's make sure we have the whole object before continuing
-					$revision = get_post( $revision );
-				}
-
-				$wpdb->update(
-					$wpdb->posts,
-					array(
-						'post_author' => (int) get_option( '_wpghs_export_user_id' ),
-					),
-					array(
-						'ID' => $revision->ID,
-					),
-					array( '%d' ),
-					array( '%d' )
-				);
-			}
-		}
-
-		// Deleting posts from a payload is the only place
-		// we need to search posts by path; another way?
 		$removed = array();
 		foreach ( $payload->get_commits() as $commit ) {
 			$removed = array_merge( $removed, $commit->removed );
 		}
 		foreach ( array_unique( $removed ) as $path ) {
-			$post = new WordPress_GitHub_Sync_Post( $path, $this->app->api() );
-			wp_delete_post( $post->id );
+			$this->app->database()->delete_post_path( $path );
 		}
 
-		if ( $new_posts = $this->app->import()->new_posts() ) {
-			// disable the lock to allow exporting
-			// @todo move to semaphore
-			// $this->push_lock = false;
-
-			WordPress_GitHub_Sync::write_log(
-				sprintf(
-					__( 'Updating new posts with IDs: %s', 'wordpress-github-sync' ),
-					implode( ', ', $new_posts )
-				)
-			);
-
-			foreach ( $new_posts as $post_id ) {
-				$wpdb->update(
-					$wpdb->posts,
-					array(
-						'post_author' => (int) get_option( '_wpghs_export_user_id' ),
-					),
-					array(
-						'ID' => $post_id,
-					),
-					array( '%d' ),
-					array( '%d' )
-				);
-			}
-
-			$msg = apply_filters( 'wpghs_commit_msg_new_posts', 'Updating new posts from WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')' ) . ' - wpghs';
-
-			$export = new WordPress_GitHub_Sync_Export( $new_posts, $msg );
-			$export->run();
-		}
-
-		$msg = __( 'Payload processed', 'wordpress-github-sync' );
-		WordPress_GitHub_Sync::write_log( $msg );
-
-		return $msg;
+		return __( 'Payload processed', 'wordpress-github-sync' );
 	}
 
 	/**
 	 * Imports a provided commit into the database.
 	 *
 	 * @param WordPress_GitHub_Sync_Commit $commit
+	 *
 	 * @return string|WP_Error
 	 */
 	public function commit( WordPress_GitHub_Sync_Commit $commit ) {
@@ -181,43 +62,46 @@ class WordPress_GitHub_Sync_Import {
 			return $tree;
 		}
 
+		$posts = array();
+
 		foreach ( $tree as $blob ) {
-			$this->import_blob( $blob );
+			$posts[] = $this->blob_to_post( $blob );
 		}
 
-		return sprintf(
-			__( 'Successfully imported commit %s.', 'wordpress-github-sync' ),
-			$commit->message()
-		);
+		// Filter now, because we can't tell what's new after we've saved.
+		$new = $this->filter_new( $posts );
+
+		$this->app->database()->save_posts( $posts, $commit->author_email() );
+
+		if ( $new ) {
+			$this->app->export()->posts(
+				$new,
+				apply_filters(
+					'wpghs_commit_msg_new_posts',
+					sprintf(
+						'Updating new posts from WordPress at %s (%s)',
+						site_url(),
+						get_bloginfo( 'name' )
+					)
+				) . ' - wpghs'
+			);
+		}
+
+		return $posts;
 	}
 
 	/**
 	 * Imports a single blob content into matching post.
 	 *
-	 * @param stdClass $blob
+	 * @param WordPress_GitHub_Sync_Blob $blob
+	 *
+	 * @return WordPress_GitHub_Sync_Post
 	 */
-	protected function import_blob( $blob ) {
-		// Break out meta, if present
-		preg_match( '/(^---(.*?)---$)?(.*)/ms', $blob->content, $matches );
+	protected function blob_to_post( WordPress_GitHub_Sync_Blob $blob ) {
+		$args = array( 'post_content' => $blob->content_import() );
+		$meta = $blob->meta();
 
-		$body = array_pop( $matches );
-
-		if ( 3 === count( $matches ) ) {
-			$meta = cyps_load( $matches[2] );
-			if ( isset( $meta['permalink'] ) ) {
-				$meta['permalink'] = str_replace( home_url(), '', get_permalink( $meta['permalink'] ) );
-			}
-		} else {
-			$meta = array();
-		}
-
-		if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
-			$body = wpmarkdown_markdown_to_html( $body );
-		}
-
-		$args = array( 'post_content' => apply_filters( 'wpghs_content_import', $body ) );
-
-		if ( ! empty( $meta ) ) {
+		if ( $meta ) {
 			if ( array_key_exists( 'layout', $meta ) ) {
 				$args['post_type'] = $meta['layout'];
 				unset( $meta['layout'] );
@@ -239,27 +123,30 @@ class WordPress_GitHub_Sync_Import {
 			}
 		}
 
-		$post_id = ! isset( $args['ID'] ) ? wp_insert_post( $args ) : wp_update_post( $args );
+		$meta['_sha'] = $blob->sha();
 
-		/** @var WordPress_GitHub_Sync_Post $post */
-		$post = new WordPress_GitHub_Sync_Post( $post_id, $this->app->api() );
-		$post->set_sha( $blob->sha );
+		$post = new WordPress_GitHub_Sync_Post( $args, $this->app->api() );
+		$post->set_meta( $meta );
 
-		foreach ( $meta as $key => $value ) {
-			update_post_meta( $post_id, $key, $value );
+		return $post;
+	}
+
+	/**
+	 * Filters an array of WPGHS_Posts to return only the new posts.
+	 *
+	 * @param WordPress_GitHub_Sync_Post[] $posts
+	 *
+	 * @return WordPress_GitHub_Sync_Post[]
+	 */
+	protected function filter_new( $posts ) {
+		$new = array();
+
+		foreach ( $posts as $post ) {
+			if ( $post->is_new() ) {
+				$new[] = $post;
+			}
 		}
 
-		WordPress_GitHub_Sync::write_log(
-			sprintf(
-				__( 'Updated blob %s', 'wordpress-github-sync' ),
-				$blob->sha
-			)
-		);
-
-		$this->updated_posts[] = $post_id;
-
-		if ( ! isset( $args['ID'] ) ) {
-			$this->new_posts[] = $post_id;
-		}
+		return $new;
 	}
 }

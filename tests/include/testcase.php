@@ -62,6 +62,16 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 	 */
 	protected $post;
 
+	/**
+	 * @var WordPress_GitHub_Sync_Tree|Mockery\Mock
+	 */
+	protected $tree;
+
+	/**
+	 * @var WordPress_GitHub_Sync_Blob|Mockery\Mock
+	 */
+	protected $blob;
+
 	public function setUp() {
 		parent::setUp();
 
@@ -77,6 +87,8 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 		$this->semaphore  = Mockery::mock( 'WordPress_GitHub_Sync_Semaphore' );
 		$this->database   = Mockery::mock( 'WordPress_GitHub_Sync_Database' );
 		$this->post       = Mockery::mock( 'WordPress_GitHub_Sync_Post' );
+		$this->tree       = Mockery::mock( 'WordPress_GitHub_Sync_Tree' );
+		$this->blob       = Mockery::mock( 'WordPress_GitHub_Sync_Blob' );
 
 		global $wpghs;
 		$wpghs = $this->app;
@@ -108,6 +120,10 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 		$this->app
 			->shouldReceive( 'database' )
 			->andReturn( $this->database )
+			->byDefault();
+		$this->app
+			->shouldReceive( 'blob' )
+			->andReturn( $this->blob )
 			->byDefault();
 	}
 }
