@@ -17,96 +17,62 @@ class WordPress_GitHub_Sync_Post {
 	public $id = 0;
 
 	/**
-	 * Path to the file
-	 * @var string
-	 */
-	public $path;
-
-	/**
 	 * Post object
 	 * @var WP_Post
 	 */
 	public $post;
 
 	/**
+	 * Post args.
+	 *
+	 * @var array
+	 */
+	protected $args;
+
+	/**
+	 * Post meta.
+	 *
+	 * @var array
+	 */
+	protected $meta;
+
+	/**
+	 * Whether the post has been saved.
+	 *
+	 * @var bool
+	 */
+	protected $new = true;
+
+	/**
 	 * Instantiates a new Post object
 	 *
-	 * @param int|string $id_or_path either a postID (WordPress) or a path to a file (GitHub)
+	 * @param int|array $id_or_args either a post ID or an array of arguments.
+	 * @param WordPress_GitHub_Sync_Api $api
+	 *
+	 * @todo remove database operations from this method
 	 */
-	public function __construct( $id_or_path, WordPress_GitHub_Sync_Api $api ) {
+	public function __construct( $id_or_args, WordPress_GitHub_Sync_Api $api ) {
 		$this->api = $api;
 
-		if ( is_numeric( $id_or_path ) ) {
-			$this->id = $id_or_path;
-		} else {
-			$this->path = $id_or_path;
-			$this->id = $this->id_from_path();
+		if ( is_numeric( $id_or_args ) ) {
+			$this->id = (int) $id_or_args;
+			$this->post = get_post( $this->id );
+			$this->new = false;
 		}
 
-		$this->post = get_post( $this->id );
-	}
+		if ( is_array( $id_or_args ) ) {
+			$this->args = $id_or_args;
 
-	/**
-	 * Parse the various parts of a filename from a path
-	 *
-	 * @todo - CUSTOM FORMAT SUPPORT
-	 */
-	public function parts_from_path() {
-		$directory = trim( $this->github_directory(), '/' );
+			if ( isset( $this->args['ID'] ) ) {
+				$this->post = get_post( $this->args['ID'] );
 
-		if ( 'post' === $this->type() ) {
-			$pattern = sprintf( '/%s\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $directory );
-		} else {
-			$pattern = sprintf( '/%s\/(.*)\.md/', $directory );
+				if ( $this->post ) {
+					$this->id = $this->post->ID;
+				}
+
+				$this->new = false;
+			}
 		}
-
-		preg_match( $pattern, $this->path, $matches );
-		return $matches;
-	}
-
-	/**
-	 * Extract's the post's title from its path
-	 */
-	public function title_from_path() {
-		$matches = $this->parts_from_path();
-		if ( 'post' === $this->type() ) {
-			return $matches[4];
-		}
-
-		return $matches[1];
-	}
-
-	/**
-	 * Extract's the post's date from its path
-	 */
-	public function date_from_path() {
-		$matches = $this->parts_from_path();
-		return $matches[1] . '-' . $matches[2] . '-' . $matches[3] . '00:00:00';
-	}
-
-	/**
-	 * Determines the post's WordPress ID from its GitHub path
-	 * Creates the WordPress post if it does not exist
-	 */
-	public function id_from_path() {
-		global $wpdb;
-
-		$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wpghs_github_path' AND meta_value = '$this->path'" );
-
-		if ( ! $id ) {
-			$title = $this->title_from_path();
-			$id = $wpdb->get_var( "SELECT ID FROM $wpdb->posts WHERE post_name = '$title'" );
-		}
-
-		if ( ! $id ) {
-			$id = wp_insert_post( array(
-					'post_name' => $this->title_from_path(),
-					'post_date' => $this->date_from_path()
-				)
-			);
-		}
-
-		return $id;
 	}
 
 	/**
@@ -306,7 +272,7 @@ class WordPress_GitHub_Sync_Post {
 		}
 
 		// if the sha still doesn't exist, then it's empty
-		if ( ! $sha ) {
+		if ( ! $sha || is_wp_error( $sha ) ) {
 			$sha = '';
 		}
 
@@ -351,5 +317,50 @@ class WordPress_GitHub_Sync_Post {
 		}
 
 		return apply_filters( 'wpghs_post_meta', $meta, $this );
+	}
+
+	/**
+	 * Returns whether the Post has been saved in the DB yet.
+	 *
+	 * @return bool
+	 */
+	public function is_new() {
+		return $this->new;
+	}
+
+	/**
+	 * Sets the Post's meta.
+	 *
+	 * @param array $meta
+	 */
+	public function set_meta( $meta ) {
+		$this->meta = $meta;
+	}
+
+	/**
+	 * Returns the Post's arguments.
+	 *
+	 * @return array
+	 */
+	public function get_args() {
+		return $this->args;
+	}
+
+	/**
+	 * Returns the Post's meta.
+	 *
+	 * @return array
+	 */
+	public function get_meta() {
+		return $this->meta;
+	}
+
+	/**
+	 * Sets the Post's WP_Post object.
+	 *
+	 * @param WP_Post $post
+	 */
+	public function set_post( WP_Post $post ) {
+		$this->post = $post;
 	}
 }
