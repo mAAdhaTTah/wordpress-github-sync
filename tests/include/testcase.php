@@ -126,4 +126,8 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 			->andReturn( $this->blob )
 			->byDefault();
 	}
+
+	public function tearDown() {
+		Mockery::close();
+	}
 }

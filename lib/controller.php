@@ -126,6 +126,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		$result = $this->app->export()->posts( $result, $msg );
 
+		$this->app->semaphore()->unlock();
 		$this->app->response()->log( $result );
 
 		return is_wp_error( $result ) ? false : true;
