@@ -34,7 +34,7 @@ if ( ! function_exists( 'get_the_github_view_link' ) && file_exists( $path ) ) {
 	require_once $path;
 }
 
-$wpghs = new WordPress_GitHub_Sync;
+add_action( 'plugins_loaded', array( new WordPress_GitHub_Sync, 'boot' ) );
 
 class WordPress_GitHub_Sync {
 
@@ -136,6 +136,15 @@ class WordPress_GitHub_Sync {
 
 		$this->controller = new WordPress_GitHub_Sync_Controller( $this );
 
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::add_command( 'wpghs', $this->cli() );
+		}
+	}
+
+	/**
+	 * Attaches the plugin's hooks into WordPress.
+	 */
+	public function boot() {
 		register_activation_hook( __FILE__, array( $this, 'activate' ) );
 		add_action( 'admin_notices', array( $this, 'activation_notice' ) );
 
@@ -147,10 +156,6 @@ class WordPress_GitHub_Sync {
 		add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( $this->controller, 'pull_posts' ) );
 		add_action( 'wpghs_export', array( $this->controller, 'export_all' ) );
 		add_action( 'wpghs_import', array( $this->controller, 'import_master' ) );
-
-		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			WP_CLI::add_command( 'wpghs', $this->cli() );
-		}
 	}
 
 	/**

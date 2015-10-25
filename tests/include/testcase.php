@@ -90,8 +90,7 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 		$this->tree       = Mockery::mock( 'WordPress_GitHub_Sync_Tree' );
 		$this->blob       = Mockery::mock( 'WordPress_GitHub_Sync_Blob' );
 
-		global $wpghs;
-		$wpghs = $this->app;
+		WordPress_GitHub_Sync::$instance = $this->app;
 
 		$this->app
 			->shouldReceive( 'request' )

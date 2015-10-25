@@ -13,8 +13,8 @@ class WordPress_GitHub_Sync_Helpers_Test extends WordPress_GitHub_Sync_TestCase 
 		$post       = $this->factory->post->create_and_get();
 		$this->post = new WordPress_GitHub_Sync_Post( $post->ID, $this->api );
 		$this->api
-			->shouldReceive('repository')
-			->andReturn('owner/repo');
+			->shouldReceive( 'repository' )
+			->andReturn( 'owner/repo' );
 	}
 
 	public function test_should_return_global_post_view_url() {
