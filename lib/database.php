@@ -37,7 +37,7 @@ class WordPress_GitHub_Sync_Database {
 	 *
 	 * @return WordPress_GitHub_Sync_Post[]|WP_Error
 	 */
-	public function all_supported() {
+	public function fetch_all_supported() {
 		global $wpdb;
 
 		$post_statuses = $this->format_for_query( $this->get_whitelisted_post_statuses() );
@@ -68,13 +68,23 @@ class WordPress_GitHub_Sync_Database {
 	 * Queries a post and returns it if it's supported.
 	 *
 	 * @param $post_id
+	 *
 	 * @return WP_Error|WordPress_GitHub_Sync_Post
 	 */
-	public function id( $post_id ) {
+	public function fetch_by_id( $post_id ) {
 		$post = new WordPress_GitHub_Sync_Post( $post_id, $this->app->api() );
 
 		if ( ! $this->is_post_supported( $post ) ) {
-			return new WP_Error( 'unsupported_post', __( 'Post is not supported.', 'wordpress-github-sync' ) ); // @todo better message
+			return new WP_Error(
+				'unsupported_post',
+				sprintf(
+					__(
+						'Post ID %s is not supported by WPGHS. See wiki to find out how to add support.',
+						'wordpress-github-sync'
+					),
+					$post_id
+				)
+			);
 		}
 
 		return $post;

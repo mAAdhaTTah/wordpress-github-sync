@@ -278,7 +278,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 	public function test_should_fail_full_export_if_database_fails() {
 		$error = new WP_Error( 'database_failed', 'Database failed.' );
 		$this->database
-			->shouldReceive( 'all_supported' )
+			->shouldReceive( 'fetch_all_supported' )
 			->once()
 			->andReturn( $error );
 		$this->response
@@ -299,7 +299,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			return $msg;
 		} );
 		$this->database
-			->shouldReceive( 'all_supported' )
+			->shouldReceive( 'fetch_all_supported' )
 			->once()
 			->andReturn( $posts );
 		$this->export
@@ -325,7 +325,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			return $msg;
 		} );
 		$this->database
-			->shouldReceive( 'all_supported' )
+			->shouldReceive( 'fetch_all_supported' )
 			->once()
 			->andReturn( $posts );
 		$this->export
@@ -370,7 +370,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$id    = 12345;
 		$error = new WP_Error( 'database_failed', 'Database failed.' );
 		$this->database
-			->shouldReceive( 'id' )
+			->shouldReceive( 'fetch_by_id' )
 			->once()
 			->with( $id )
 			->andReturn( $error );
@@ -392,7 +392,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			return $msg;
 		} );
 		$this->database
-			->shouldReceive( 'id' )
+			->shouldReceive( 'fetch_by_id' )
 			->once()
 			->with( $id )
 			->andReturn( $this->post );
@@ -422,7 +422,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			return $msg;
 		} );
 		$this->database
-			->shouldReceive( 'id' )
+			->shouldReceive( 'fetch_by_id' )
 			->once()
 			->with( $id )
 			->andReturn( $this->post );
@@ -471,7 +471,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$id    = 12345;
 		$error = new WP_Error( 'database_failed', 'Database failed.' );
 		$this->database
-			->shouldReceive( 'id' )
+			->shouldReceive( 'fetch_by_id' )
 			->once()
 			->with( $id )
 			->andReturn( $error );
@@ -493,7 +493,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			return $msg;
 		} );
 		$this->database
-			->shouldReceive( 'id' )
+			->shouldReceive( 'fetch_by_id' )
 			->once()
 			->with( $id )
 			->andReturn( $this->post );
@@ -523,7 +523,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			return $msg;
 		} );
 		$this->database
-			->shouldReceive( 'id' )
+			->shouldReceive( 'fetch_by_id' )
 			->once()
 			->with( $id )
 			->andReturn( $this->post );

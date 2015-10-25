@@ -112,7 +112,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		$this->app->semaphore()->lock();
 
-		$result = $this->app->database()->all_supported();
+		$result = $this->app->database()->fetch_all_supported();
 
 		if ( is_wp_error( $result ) ) {
 			$this->app->semaphore()->unlock();
@@ -159,7 +159,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		$this->app->semaphore()->lock();
 
-		$post = $this->app->database()->id( $post_id );
+		$post = $this->app->database()->fetch_by_id( $post_id );
 
 		if ( is_wp_error( $post ) ) {
 			$this->app->semaphore()->unlock();
@@ -196,7 +196,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		$this->app->semaphore()->lock();
 
-		$post = $this->app->database()->id( $post_id );
+		$post = $this->app->database()->fetch_by_id( $post_id );
 
 		if ( is_wp_error( $post ) ) {
 			$this->app->semaphore()->unlock();
