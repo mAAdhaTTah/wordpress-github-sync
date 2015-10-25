@@ -335,6 +335,17 @@ class WordPress_GitHub_Sync {
 	}
 
 	/**
+	 * Lazy-load the Cache object.
+	 *
+	 * @todo load like a normal object.
+	 *
+	 * @return WordPress_GitHub_Sync_Cache
+	 */
+	public function cache() {
+		return WordPress_GitHub_Sync_Cache::open();
+	}
+
+	/**
 	 * Print to WP_CLI if in CLI environment or
 	 * write to debug.log if WP_DEBUG is enabled
 	 * @source http://www.stumiller.me/sending-output-to-the-wordpress-debug-log/

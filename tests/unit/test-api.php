@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @group api
+ */
 class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 
 	public function setUp() {
@@ -9,7 +12,23 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 		update_option( 'wpghs_oauth_token', 'the-token' );
 		update_option( 'wpghs_host', 'github.api' );
 		$this->http_responder = array( $this, 'mock_github_api' );
-		$this->api = new WordPress_GitHub_Sync_Api( $this->app );
+		$this->api            = new WordPress_GitHub_Sync_Api( $this->app );
+		$this->api_cache
+			->shouldReceive( 'get' )
+			->andReturn( false )
+			->byDefault();
+		$this->api_cache
+			->shouldReceive( 'save' )
+			->with(
+				Mockery::anyOf( 'blobs', 'commits', 'trees' ),
+				Mockery::any(),
+				Mockery::any()
+			)->andReturnUsing( function() {
+				$args = func_get_args();
+
+				return array_pop($args);
+			} )
+			->byDefault();
 	}
 
 	public function test_should_return_blob() {
@@ -37,6 +56,9 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_return_master_reference() {
+		$this->api_cache
+			->shouldReceive( 'get' )
+			->never();
 		$response = $this->api->last_commit_sha();
 
 		$this->assertCount( 1, $this->http_requests );
@@ -44,6 +66,9 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_create_tree() {
+		$this->api_cache
+			->shouldReceive( 'get' )
+			->never();
 		$this->tree
 			->shouldReceive( 'to_body' )
 			->once()
@@ -55,6 +80,9 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_create_commit() {
+		$this->api_cache
+			->shouldReceive( 'get' )
+			->never();
 		$response = $this->api->create_commit_by_sha( '1234', 'New Commit' );
 
 		$this->assertCount( 2, $this->http_requests );
@@ -62,6 +90,9 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_update_master_reference() {
+		$this->api_cache
+			->shouldReceive( 'get' )
+			->never();
 		$response = $this->api->set_ref( '123' );
 
 		$this->assertCount( 1, $this->http_requests );
@@ -72,7 +103,7 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 		$tree = $this->api->last_tree_recursive();
 
 		$this->assertCount( 3, $this->http_requests );
-		$this->assertInstanceOf( 'WordPress_GitHub_Sync_tree', $tree );
+		$this->assertInstanceOf( 'WordPress_GitHub_Sync_Tree', $tree );
 		$this->assertCount( 2, $tree->get_data() );
 	}
 
@@ -106,13 +137,13 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 
 	public function mock_get_requests( $api, $endpoint ) {
 		$get = array(
-			'git/blobs' => array( 'body' => '{"content": "Content of the blob","encoding": "utf-8","url": "https://api.github.com/repos/octocat/example/git/blobs/3a0f86fb8db8eea7ccbb9a95f325ddbedfb25e15","sha": "3a0f86fb8db8eea7ccbb9a95f325ddbedfb25e15","size": 100}' ),
-			'git/trees' => array( 'body' => '{"sha": "fc6274d15fa3ae2ab983129fb037999f264ba9a7","url": "https://api.github.com/repos/person/repo/git/trees/fc6274d15fa3ae2ab983129fb037999f264ba9a7","tree": [{"path": "README.md","mode": "100644","type": "blob","sha": "fc6274d15fa3ae2ab983129fb037999f264ba9a7","size": 526,"url": "https://api.github.com/repos/person/repo/git/blobs/fc6274d15fa3ae2ab983129fb037999f264ba9a7"},{"path": "subdir","mode": "040000","type": "tree","sha": "fc6274d15fa3ae2ab983129fb037999f264ba9a7","url": "https://api.github.com/repos/person/repo/git/trees/fc6274d15fa3ae2ab983129fb037999f264ba9a7"},{"path": "subdir/README.md","mode": "100644","type": "blob","sha": "fc6274d15fa3ae2ab983129fb037999f264ba9a7","size": 2227357,"url": "https://api.github.com/repos/person/repo/git/blobs/fc6274d15fa3ae2ab983129fb037999f264ba9a7"}],"truncated": false}' ),
+			'git/blobs'   => array( 'body' => '{"content": "Content of the blob","encoding": "utf-8","url": "https://api.github.com/repos/octocat/example/git/blobs/3a0f86fb8db8eea7ccbb9a95f325ddbedfb25e15","sha": "3a0f86fb8db8eea7ccbb9a95f325ddbedfb25e15","size": 100}' ),
+			'git/trees'   => array( 'body' => '{"sha": "fc6274d15fa3ae2ab983129fb037999f264ba9a7","url": "https://api.github.com/repos/person/repo/git/trees/fc6274d15fa3ae2ab983129fb037999f264ba9a7","tree": [{"path": "README.md","mode": "100644","type": "blob","sha": "fc6274d15fa3ae2ab983129fb037999f264ba9a7","size": 526,"url": "https://api.github.com/repos/person/repo/git/blobs/fc6274d15fa3ae2ab983129fb037999f264ba9a7"},{"path": "subdir","mode": "040000","type": "tree","sha": "fc6274d15fa3ae2ab983129fb037999f264ba9a7","url": "https://api.github.com/repos/person/repo/git/trees/fc6274d15fa3ae2ab983129fb037999f264ba9a7"},{"path": "subdir/README.md","mode": "100644","type": "blob","sha": "fc6274d15fa3ae2ab983129fb037999f264ba9a7","size": 2227357,"url": "https://api.github.com/repos/person/repo/git/blobs/fc6274d15fa3ae2ab983129fb037999f264ba9a7"}],"truncated": false}' ),
 			'git/commits' => array( 'body' => '{"sha":"7638417db6d59f3c431d3e1f261cc637155684cd","url":"https://api.github.com/repos/octocat/Hello-World/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd","author":{"date":"2010-04-10T14:10:01-07:00","name":"ScottChacon","email":"schacon@gmail.com"},"committer":{"date":"2010-04-10T14:10:01-07:00","name":"ScottChacon","email":"schacon@gmail.com"},"message":"added readme, because im a good github citizen\n","tree":{"url":"https://api.github.com/repos/octocat/Hello-World/git/trees/691272480426f78a0138979dd3ce63b77f706feb","sha":"691272480426f78a0138979dd3ce63b77f706feb"},"parents":[{"url":"https://api.github.com/repos/octocat/Hello-World/git/commits/1acc419d4d6a9ce985db7be48c6349a0475975b5","sha":"1acc419d4d6a9ce985db7be48c6349a0475975b5"}]}' ),
-			'git/refs' => array( 'body' => '{"ref":"refs/heads/featureA","url":"https://api.github.com/repos/octocat/Hello-World/git/refs/heads/featureA","object":{"type":"commit","sha":"aa218f56b14c9653891f9e74264a383fa43fefbd","url":"https://api.github.com/repos/octocat/Hello-World/git/commits/aa218f56b14c9653891f9e74264a383fa43fefbd"}}' ),
+			'git/refs'    => array( 'body' => '{"ref":"refs/heads/featureA","url":"https://api.github.com/repos/octocat/Hello-World/git/refs/heads/featureA","object":{"type":"commit","sha":"aa218f56b14c9653891f9e74264a383fa43fefbd","url":"https://api.github.com/repos/octocat/Hello-World/git/commits/aa218f56b14c9653891f9e74264a383fa43fefbd"}}' ),
 		);
 
-		$response = $get[ $api . '/' . $endpoint ];
+		$response            = $get[ $api . '/' . $endpoint ];
 		$response['headers'] = array( 'status' => '200 OK' );
 
 		return $response;
@@ -120,9 +151,9 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 
 	public function mock_post_requests( $api, $endpoint, $body ) {
 		$post = array(
-			'git/trees' => array( 'body' => '{"sha": "cd8274d15fa3ae2ab983129fb037999f264ba9a7","url": "https://api.github.com/repos/octocat/Hello-World/trees/cd8274d15fa3ae2ab983129fb037999f264ba9a7","tree": [{"path": "file.rb","mode": "100644","type": "blob","size": 132,"sha": "7c258a9869f33c1e1e1f74fbb32f07c86cb5a75b","url": "https://api.github.com/repos/octocat/Hello-World/git/blobs/7c258a9869f33c1e1e1f74fbb32f07c86cb5a75b"}]}' ),
+			'git/trees'   => array( 'body' => '{"sha": "cd8274d15fa3ae2ab983129fb037999f264ba9a7","url": "https://api.github.com/repos/octocat/Hello-World/trees/cd8274d15fa3ae2ab983129fb037999f264ba9a7","tree": [{"path": "file.rb","mode": "100644","type": "blob","size": 132,"sha": "7c258a9869f33c1e1e1f74fbb32f07c86cb5a75b","url": "https://api.github.com/repos/octocat/Hello-World/git/blobs/7c258a9869f33c1e1e1f74fbb32f07c86cb5a75b"}]}' ),
 			'git/commits' => array( 'body' => '{"sha":"7638417db6d59f3c431d3e1f261cc637155684cd","url":"https://api.github.com/repos/octocat/Hello-World/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd","author":{"date":"2010-04-10T14:10:01-07:00","name":"ScottChacon","email":"schacon@gmail.com"},"committer":{"date":"2010-04-10T14:10:01-07:00","name":"ScottChacon","email":"schacon@gmail.com"},"message":"added readme, because im a good github citizen\n","tree":{"url":"https://api.github.com/repos/octocat/Hello-World/git/trees/691272480426f78a0138979dd3ce63b77f706feb","sha":"691272480426f78a0138979dd3ce63b77f706feb"},"parents":[{"url":"https://api.github.com/repos/octocat/Hello-World/git/commits/1acc419d4d6a9ce985db7be48c6349a0475975b5","sha":"1acc419d4d6a9ce985db7be48c6349a0475975b5"}]}' ),
-			'git/refs' => array( 'body' => '{"ref":"refs/heads/featureA","url":"https://api.github.com/repos/octocat/Hello-World/git/refs/heads/featureA","object":{"type":"commit","sha":"aa218f56b14c9653891f9e74264a383fa43fefbd","url":"https://api.github.com/repos/octocat/Hello-World/git/commits/aa218f56b14c9653891f9e74264a383fa43fefbd"}}' ),
+			'git/refs'    => array( 'body' => '{"ref":"refs/heads/featureA","url":"https://api.github.com/repos/octocat/Hello-World/git/refs/heads/featureA","object":{"type":"commit","sha":"aa218f56b14c9653891f9e74264a383fa43fefbd","url":"https://api.github.com/repos/octocat/Hello-World/git/commits/aa218f56b14c9653891f9e74264a383fa43fefbd"}}' ),
 		);
 
 		if ( 'trees' === $endpoint ) {
@@ -140,7 +171,7 @@ class WordPress_GitHub_Sync_Api_Test extends WordPress_GitHub_Sync_TestCase {
 			$this->assertObjectHasAttribute( 'sha', json_decode( $body ) );
 		}
 
-		$response = $post[ $api . '/' . $endpoint ];
+		$response            = $post[ $api . '/' . $endpoint ];
 		$response['headers'] = array( 'status' => '201 CREATED' );
 
 		return $response;

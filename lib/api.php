@@ -34,11 +34,11 @@ class WordPress_GitHub_Sync_Api {
 			return $error;
 		}
 
-		if ( $cache = Cache::open()->get( 'blobs', $sha ) ) {
+		if ( $cache = $this->app->cache()->get( 'blobs', $sha ) ) {
 			return $cache;
 		}
 
-		return Cache::open()->save( 'blobs', $sha, $this->call( 'GET', $this->blob_endpoint() . '/' . $sha ) );
+		return $this->app->cache()->save( 'blobs', $sha, $this->call( 'GET', $this->blob_endpoint() . '/' . $sha ) );
 	}
 
 	/**
@@ -53,7 +53,7 @@ class WordPress_GitHub_Sync_Api {
 			return $error;
 		}
 
-		if ( $cache = Cache::open()->get( 'trees', $sha ) ) {
+		if ( $cache = $this->app->cache()->get( 'trees', $sha ) ) {
 			return new WordPress_GitHub_Sync_Tree( $this, $cache );
 		}
 
@@ -70,7 +70,7 @@ class WordPress_GitHub_Sync_Api {
 
 		return new WordPress_GitHub_Sync_Tree(
 			$this,
-			Cache::open()->save( 'trees', $sha, array_values( $data->tree ) )
+			$this->app->cache()->save( 'trees', $sha, array_values( $data->tree ) )
 		);
 	}
 
@@ -85,12 +85,12 @@ class WordPress_GitHub_Sync_Api {
 			return $error;
 		}
 
-		if ( $cache = Cache::open()->get( 'commits', $sha ) ) {
+		if ( $cache = $this->app->cache()->get( 'commits', $sha ) ) {
 			return new WordPress_GitHub_Sync_Commit( $cache );
 		}
 
 		return new WordPress_GitHub_Sync_Commit(
-			Cache::open()->save( 'commits', $sha, $this->call( 'GET', $this->commit_endpoint() . '/' . $sha ) )
+			$this->app->cache()->save( 'commits', $sha, $this->call( 'GET', $this->commit_endpoint() . '/' . $sha ) )
 		);
 	}
 
