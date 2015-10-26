@@ -42,7 +42,7 @@ class WordPress_GitHub_Sync_Import {
 			$removed = array_merge( $removed, $commit->removed );
 		}
 		foreach ( array_unique( $removed ) as $path ) {
-			$this->app->database()->delete_post_path( $path );
+			$this->app->database()->delete_post_by_path( $path );
 		}
 
 		return __( 'Payload processed', 'wordpress-github-sync' );

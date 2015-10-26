@@ -79,7 +79,7 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( array( $payload_commit ) );
 		$this->database
-			->shouldReceive( 'delete_post_path' )
+			->shouldReceive( 'delete_post_by_path' )
 			->with( $path )
 			->once();
 
