@@ -8,6 +8,7 @@ class WordPress_GitHub_Sync_Database_Test extends WordPress_GitHub_Sync_TestCase
 	public function setUp() {
 		parent::setUp();
 		$this->database = new WordPress_GitHub_Sync_Database( $this->app );
+		register_post_type( 'gistpen', array() );
 	}
 
 	public function test_should_return_error_if_no_post_found() {
