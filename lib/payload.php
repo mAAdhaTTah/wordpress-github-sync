@@ -35,7 +35,8 @@ class WordPress_GitHub_Sync_Payload {
 	public function should_import() {
 		// @todo how do we get this without importing the whole api object just for this?
 		if ( strtolower( $this->data->repository->full_name ) !== strtolower( $this->app->api()->repository() ) ) {
-			return new WP_Error( 'invalid_repo',
+			return new WP_Error(
+				'invalid_repo',
 				sprintf(
 					__( '%s is an invalid repository.', 'wordpress-github-sync' ),
 					strtolower( $this->data->repository->full_name )

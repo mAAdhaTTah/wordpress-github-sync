@@ -3,6 +3,11 @@
 abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 
 	/**
+	 * @var string
+	 */
+	protected $data_dir;
+
+	/**
 	 * @var WordPress_GitHub_Sync|Mockery\Mock
 	 */
 	protected $app;
@@ -79,6 +84,8 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 
 	public function setUp() {
 		parent::setUp();
+
+		$this->data_dir = dirname( __DIR__ ) . '/data/';
 
 		$this->app        = Mockery::mock( 'WordPress_GitHub_Sync' );
 		$this->controller = Mockery::mock( 'WordPress_GitHub_Sync_Controller' );
