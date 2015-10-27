@@ -33,7 +33,7 @@ class WordPress_GitHub_Sync_Request {
 	public function is_secret_valid() {
 		$headers = $this->headers();
 
-		$this->raw_data = file_get_contents( 'php://input' );
+		$this->raw_data = $this->read_raw_data();
 
 		// validate secret
 		$hash = hash_hmac( 'sha1', $this->raw_data, $this->secret() );
@@ -75,6 +75,15 @@ class WordPress_GitHub_Sync_Request {
 		}
 
 		return $headers;
+	}
+
+	/**
+	 * Reads the raw data from STDIN.
+	 *
+	 * @return string
+	 */
+	protected function read_raw_data() {
+		return file_get_contents( 'php://input' );
 	}
 
 	/**
