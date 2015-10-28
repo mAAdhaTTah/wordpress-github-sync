@@ -25,12 +25,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 	}
 
 	public function test_should_fail_pull_if_semaphore_locked() {
-		$error = new WP_Error( 'semaphore_locked', 'Semaphore locked' );
-
 		$this->semaphore
 			->shouldReceive( 'is_open' )
 			->once()
-			->andReturn( $error );
+			->andReturn( false );
 		$this->semaphore
 			->shouldReceive( 'lock' )
 			->never();
@@ -40,7 +38,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$this->response
 			->shouldReceive( 'error' )
 			->once()
-			->with( $error )
+			->with( Mockery::type( 'WP_Error' ) )
 			->andReturn( false );
 
 		$result = $this->controller->pull_posts();
@@ -156,7 +154,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$this->semaphore
 			->shouldReceive( 'is_open' )
 			->once()
-			->andReturn( $error );
+			->andReturn( false );
 		$this->semaphore
 			->shouldReceive( 'lock' )
 			->never();
@@ -166,7 +164,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$this->response
 			->shouldReceive( 'error' )
 			->once()
-			->with( $error )
+			->with( Mockery::type( 'WP_Error' ) )
 			->andReturn( false );
 
 		$result = $this->controller->import_master();
@@ -254,11 +252,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 	}
 
 	public function test_should_fail_full_export_if_semaphore_locked() {
-		$error = new WP_Error( 'semaphore_locked', 'Semaphore locked' );
 		$this->semaphore
 			->shouldReceive( 'is_open' )
 			->once()
-			->andReturn( $error );
+			->andReturn( false );
 		$this->semaphore
 			->shouldReceive( 'lock' )
 			->never();
@@ -268,7 +265,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$this->response
 			->shouldReceive( 'log' )
 			->once()
-			->with( $error );
+			->with( Mockery::type( 'WP_Error' ) );
 
 		$result = $this->controller->export_all();
 
@@ -345,11 +342,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 
 	public function test_should_fail_export_post_if_semaphore_locked() {
 		$id    = 12345;
-		$error = new WP_Error( 'semaphore_locked', 'Semaphore locked' );
 		$this->semaphore
 			->shouldReceive( 'is_open' )
 			->once()
-			->andReturn( $error );
+			->andReturn( false );
 		$this->semaphore
 			->shouldReceive( 'lock' )
 			->never();
@@ -359,7 +355,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$this->response
 			->shouldReceive( 'log' )
 			->once()
-			->with( $error );
+			->with( Mockery::type( 'WP_Error' ) );
 
 		$result = $this->controller->export_post( $id );
 
@@ -446,11 +442,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 
 	public function test_should_fail_delete_post_if_semaphore_locked() {
 		$id    = 12345;
-		$error = new WP_Error( 'semaphore_locked', 'Semaphore locked' );
 		$this->semaphore
 			->shouldReceive( 'is_open' )
 			->once()
-			->andReturn( $error );
+			->andReturn( false );
 		$this->semaphore
 			->shouldReceive( 'lock' )
 			->never();
@@ -460,7 +455,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$this->response
 			->shouldReceive( 'log' )
 			->once()
-			->with( $error );
+			->with( Mockery::type( 'WP_Error' ) );
 
 		$result = $this->controller->delete_post( $id );
 

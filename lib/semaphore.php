@@ -3,26 +3,19 @@
 class WordPress_GitHub_Sync_Semaphore {
 
 	/**
-	 * Application container.
-	 *
-	 * @var WordPress_GitHub_Sync
+	 * Sempahore's option key.
 	 */
-	protected $app;
+	const OPTION = 'wpghs_semaphore_lock';
 
 	/**
-	 * Locked when receiving payload
-	 * @var boolean
+	 * Option key when semaphore is locked.
 	 */
-	public $push_lock = false;
+	const LOCKED = 'yes';
 
 	/**
-	 * Instantiates a new Semaphore object.
-	 *
-	 * @param WordPress_GitHub_Sync $app
+	 * Option key when semaphore is unlocked.
 	 */
-	public function __construct( WordPress_GitHub_Sync $app ) {
-		$this->app = $app;
-	}
+	const UNLOCKED = 'no';
 
 	/**
 	 * Checks if the Semaphore is open.
@@ -30,18 +23,11 @@ class WordPress_GitHub_Sync_Semaphore {
 	 * Fails to report it's open if the the Api class can't make a call
 	 * or the push lock has been enabled.
 	 *
-	 * @return true|WP_Error
+	 * @return bool
 	 */
 	public function is_open() {
-		if ( is_wp_error( $error = $this->app->api()->can_call() ) ) {
-			return $error;
-		}
-
-		if ( $this->push_lock ) {
-			return new WP_Error(
-				'semaphore_locked',
-				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
-			);
+		if ( self::LOCKED === get_option( self::OPTION ) ) {
+			return false;
 		}
 
 		return true;
@@ -51,13 +37,13 @@ class WordPress_GitHub_Sync_Semaphore {
 	 * Enables the push lock.
 	 */
 	public function lock() {
-		$this->push_lock = true;
+		update_option( self::OPTION, self::LOCKED );
 	}
 
 	/**
 	 * Disables the push lock.
 	 */
 	public function unlock() {
-		$this->push_lock = false;
+		update_option( self::OPTION, self::UNLOCKED );
 	}
 }

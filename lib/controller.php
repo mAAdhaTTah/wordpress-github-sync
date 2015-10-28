@@ -29,8 +29,11 @@ class WordPress_GitHub_Sync_Controller {
 	 * @return boolean
 	 */
 	public function pull_posts() {
-		if ( is_wp_error( $error = $this->app->semaphore()->is_open() ) ) {
-			return $this->app->response()->error( $error );
+		if ( ! $this->app->semaphore()->is_open() ) {
+			return $this->app->response()->error( new WP_Error(
+				'semaphore_locked',
+				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
+			) );
 		}
 
 		$this->app->semaphore()->lock();
@@ -66,8 +69,11 @@ class WordPress_GitHub_Sync_Controller {
 	 * @return boolean
 	 */
 	public function import_master() {
-		if ( is_wp_error( $error = $this->app->semaphore()->is_open() ) ) {
-			return $this->app->response()->error( $error );
+		if ( ! $this->app->semaphore()->is_open() ) {
+			return $this->app->response()->error( new WP_Error(
+				'semaphore_locked',
+				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
+			) );
 		}
 
 		$this->app->semaphore()->lock();
@@ -104,8 +110,11 @@ class WordPress_GitHub_Sync_Controller {
 	 * @return boolean
 	 */
 	public function export_all() {
-		if ( is_wp_error( $error = $this->app->semaphore()->is_open() ) ) {
-			$this->app->response()->log( $error );
+		if ( ! $this->app->semaphore()->is_open() ) {
+			$this->app->response()->log( new WP_Error(
+				'semaphore_locked',
+				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
+			) );
 
 			return false;
 		}
@@ -148,11 +157,15 @@ class WordPress_GitHub_Sync_Controller {
 	 * Called on the save_post hook.
 	 *
 	 * @param int $post_id Post ID
+	 *
 	 * @return boolean
 	 */
 	public function export_post( $post_id ) {
-		if ( is_wp_error( $error = $this->app->semaphore()->is_open() ) ) {
-			$this->app->response()->log( $error );
+		if ( ! $this->app->semaphore()->is_open() ) {
+			$this->app->response()->log( new WP_Error(
+				'semaphore_locked',
+				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
+			) );
 
 			return false;
 		}
@@ -185,11 +198,15 @@ class WordPress_GitHub_Sync_Controller {
 	 * Called the delete_post hook.
 	 *
 	 * @param int $post_id Post ID
+	 *
 	 * @return boolean
 	 */
 	public function delete_post( $post_id ) {
-		if ( is_wp_error( $error = $this->app->semaphore()->is_open() ) ) {
-			$this->app->response()->log( $error );
+		if ( ! $this->app->semaphore()->is_open() ) {
+			$this->app->response()->log( new WP_Error(
+				'semaphore_locked',
+				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
+			) );
 
 			return false;
 		}

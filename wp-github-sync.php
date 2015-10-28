@@ -315,7 +315,7 @@ class WordPress_GitHub_Sync {
 	 */
 	public function semaphore() {
 		if ( ! $this->semaphore ) {
-			$this->semaphore = new WordPress_GitHub_Sync_Semaphore( $this );
+			$this->semaphore = new WordPress_GitHub_Sync_Semaphore;
 		}
 
 		return $this->semaphore;
