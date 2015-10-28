@@ -149,8 +149,6 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 	}
 
 	public function test_should_fail_full_import_if_semaphore_locked() {
-		$error = new WP_Error( 'semaphore_locked', 'Semaphore locked' );
-
 		$this->semaphore
 			->shouldReceive( 'is_open' )
 			->once()
@@ -179,9 +177,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->once()
 			->andReturn( $error );
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'error' )
+			->once()
 			->with( $error )
-			->once();
+			->andReturn( false );
 
 		$result = $this->controller->import_master();
 
@@ -198,8 +197,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->once()
 			->andReturn( true );
 		$this->response
-			->shouldReceive( 'log' )
-			->once();
+			->shouldReceive( 'error' )
+			->once()
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->import_master();
 
@@ -221,8 +222,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->with( $this->commit )
 			->andReturn( $error );
 		$this->response
-			->shouldReceive( 'log' )
-			->once();
+			->shouldReceive( 'error' )
+			->once()
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->import_master();
 
@@ -230,6 +233,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 	}
 
 	public function test_should_import_commit() {
+		$msg = 'Success';
 		$this->api
 			->shouldReceive( 'last_commit' )
 			->once()
@@ -241,10 +245,12 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 		$this->import
 			->shouldReceive( 'commit' )
 			->with( $this->commit )
-			->andReturn( true );
+			->andReturn( $msg );
 		$this->response
-			->shouldReceive( 'log' )
-			->once();
+			->shouldReceive( 'success' )
+			->once()
+			->with( $msg )
+			->andReturn( true );
 
 		$result = $this->controller->import_master();
 
@@ -263,9 +269,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->shouldReceive( 'unlock' )
 			->never();
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'error' )
 			->once()
-			->with( Mockery::type( 'WP_Error' ) );
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->export_all();
 
@@ -279,9 +286,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->once()
 			->andReturn( $error );
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'error' )
 			->once()
-			->with( $error );
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->export_all();
 
@@ -305,9 +313,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->with( $posts, $msg . ' - wpghs' )
 			->andReturn( $error );
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'error' )
 			->once()
-			->with( $error );
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->export_all();
 
@@ -331,9 +340,9 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->with( $posts, $msg . ' - wpghs' )
 			->andReturn( $success );
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'success' )
 			->once()
-			->with( $success );
+			->andReturn( true );
 
 		$result = $this->controller->export_all();
 
@@ -341,7 +350,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 	}
 
 	public function test_should_fail_export_post_if_semaphore_locked() {
-		$id    = 12345;
+		$id = 12345;
 		$this->semaphore
 			->shouldReceive( 'is_open' )
 			->once()
@@ -353,9 +362,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->shouldReceive( 'unlock' )
 			->never();
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'error' )
 			->once()
-			->with( Mockery::type( 'WP_Error' ) );
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->export_post( $id );
 
@@ -371,9 +381,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->with( $id )
 			->andReturn( $error );
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'error' )
 			->once()
-			->with( $error );
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->export_post( $id );
 
@@ -401,9 +412,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->with( $this->post, $msg . ' - wpghs' )
 			->andReturn( $error );
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'error' )
 			->once()
-			->with( $error );
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->export_post( $id );
 
@@ -431,9 +443,9 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->with( $this->post, $msg . ' - wpghs' )
 			->andReturn( $success );
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'success' )
 			->once()
-			->with( $success );
+			->andReturn( true );
 
 		$result = $this->controller->export_post( $id );
 
@@ -441,7 +453,7 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 	}
 
 	public function test_should_fail_delete_post_if_semaphore_locked() {
-		$id    = 12345;
+		$id = 12345;
 		$this->semaphore
 			->shouldReceive( 'is_open' )
 			->once()
@@ -453,9 +465,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->shouldReceive( 'unlock' )
 			->never();
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'error' )
 			->once()
-			->with( Mockery::type( 'WP_Error' ) );
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->delete_post( $id );
 
@@ -471,9 +484,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->with( $id )
 			->andReturn( $error );
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'error' )
 			->once()
-			->with( $error );
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->delete_post( $id );
 
@@ -501,9 +515,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->with( $this->post, $msg . ' - wpghs' )
 			->andReturn( $error );
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'error' )
 			->once()
-			->with( $error );
+			->with( Mockery::type( 'WP_Error' ) )
+			->andReturn( false );
 
 		$result = $this->controller->delete_post( $id );
 
@@ -531,9 +546,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->with( $this->post, $msg . ' - wpghs' )
 			->andReturn( $success );
 		$this->response
-			->shouldReceive( 'log' )
+			->shouldReceive( 'success' )
 			->once()
-			->with( $success );
+			->with( $success )
+			->andReturn( true );
 
 		$result = $this->controller->delete_post( $id );
 

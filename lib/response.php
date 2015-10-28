@@ -20,13 +20,16 @@ class WordPress_GitHub_Sync_Response {
 	 * Writes to the log and returns the error response.
 	 *
 	 * @param WP_Error $error
+	 *
 	 * @return false
 	 */
 	public function error( WP_Error $error ) {
 		$this->log( $error );
 
 		// @todo back-compat this, only 4.1+ works
-		wp_send_json_error( $error );
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			wp_send_json_error( $error );
+		}
 
 		return false;
 	}
@@ -34,13 +37,16 @@ class WordPress_GitHub_Sync_Response {
 	/**
 	 * Writes to the log and returns the success response.
 	 *
-	 * @param string $result
+	 * @param string $success
+	 *
 	 * @return true
 	 */
-	public function success( $result ) {
-		$this->log( $result );
+	public function success( $success ) {
+		$this->log( $success );
 
-		wp_send_json_success( $result );
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			wp_send_json_success( $success );
+		}
 
 		return true;
 	}
@@ -52,7 +58,7 @@ class WordPress_GitHub_Sync_Response {
 	 *
 	 * @param string|WP_Error $msg Message to log.
 	 */
-	public function log( $msg ) {
+	protected function log( $msg ) {
 		if ( is_wp_error( $msg ) ) {
 			$msg = $msg->get_error_message();
 		}

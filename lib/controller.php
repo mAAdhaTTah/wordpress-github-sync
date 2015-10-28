@@ -82,26 +82,25 @@ class WordPress_GitHub_Sync_Controller {
 
 		if ( is_wp_error( $commit ) ) {
 			$this->app->semaphore()->unlock();
-			$this->app->response()->log( $commit );
 
-			return false;
+			return $this->app->response()->error( $commit );
 		}
 
 		if ( $commit->already_synced() ) {
 			$this->app->semaphore()->unlock();
-			$this->app->response()->log(
+
+			return $this->app->response()->error(
 				new WP_Error( 'commit_synced', __( 'Already synced this commit.', 'wordpress-github-sync' ) )
 			);
-
-			return false;
 		}
 
 		$result = $this->app->import()->commit( $commit );
 
 		$this->app->semaphore()->unlock();
-		$this->app->response()->log( $result );
 
-		return is_wp_error( $result ) ? false : true;
+		return is_wp_error( $result ) ?
+			$this->app->response()->error( $result ) :
+			$this->app->response()->success( $result );
 	}
 
 	/**
@@ -111,12 +110,10 @@ class WordPress_GitHub_Sync_Controller {
 	 */
 	public function export_all() {
 		if ( ! $this->app->semaphore()->is_open() ) {
-			$this->app->response()->log( new WP_Error(
+			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
 				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
 			) );
-
-			return false;
 		}
 
 		$this->app->semaphore()->lock();
@@ -125,9 +122,8 @@ class WordPress_GitHub_Sync_Controller {
 
 		if ( is_wp_error( $result ) ) {
 			$this->app->semaphore()->unlock();
-			$this->app->response()->log( $result );
 
-			return false;
+			return $this->app->response()->error( $result );
 		}
 
 		// @todo sprintf this
@@ -136,18 +132,17 @@ class WordPress_GitHub_Sync_Controller {
 		$result = $this->app->export()->posts( $result, $msg );
 
 		$this->app->semaphore()->unlock();
-		$this->app->response()->log( $result );
 
 		// Maybe move option updating out of this class/upgrade message display?
 		if ( is_wp_error( $result ) ) {
 			update_option( '_wpghs_export_error', $result->get_error_message() );
 
-			return false;
+			return $this->app->response()->error( $result );
 		} else {
 			update_option( '_wpghs_export_complete', 'yes' );
 			update_option( '_wpghs_fully_exported', 'yes' );
 
-			return true;
+			return $this->app->response()->success( $result );
 		}
 	}
 
@@ -162,12 +157,10 @@ class WordPress_GitHub_Sync_Controller {
 	 */
 	public function export_post( $post_id ) {
 		if ( ! $this->app->semaphore()->is_open() ) {
-			$this->app->response()->log( new WP_Error(
+			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
 				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
 			) );
-
-			return false;
 		}
 
 		$this->app->semaphore()->lock();
@@ -176,9 +169,8 @@ class WordPress_GitHub_Sync_Controller {
 
 		if ( is_wp_error( $post ) ) {
 			$this->app->semaphore()->unlock();
-			$this->app->response()->log( $post );
 
-			return false;
+			return $this->app->response()->error( $post );
 		}
 
 		// @todo sprintf this
@@ -187,9 +179,10 @@ class WordPress_GitHub_Sync_Controller {
 		$result = $this->app->export()->post( $post, $msg );
 
 		$this->app->semaphore()->unlock();
-		$this->app->response()->log( $result );
 
-		return is_wp_error( $result ) ? false : true;
+		return is_wp_error( $result ) ?
+			$this->app->response()->error( $result ) :
+			$this->app->response()->success( $result );
 	}
 
 	/**
@@ -203,12 +196,10 @@ class WordPress_GitHub_Sync_Controller {
 	 */
 	public function delete_post( $post_id ) {
 		if ( ! $this->app->semaphore()->is_open() ) {
-			$this->app->response()->log( new WP_Error(
+			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
 				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
 			) );
-
-			return false;
 		}
 
 		$this->app->semaphore()->lock();
@@ -217,9 +208,8 @@ class WordPress_GitHub_Sync_Controller {
 
 		if ( is_wp_error( $post ) ) {
 			$this->app->semaphore()->unlock();
-			$this->app->response()->log( $post );
 
-			return false;
+			return $this->app->response()->error( $post );
 		}
 
 		$msg  = apply_filters( 'wpghs_commit_msg_delete', 'Deleting ' . $post->github_path() . ' via WordPress at ' . site_url() . ' (' . get_bloginfo( 'name' ) . ')', $post ) . ' - wpghs';
@@ -227,8 +217,10 @@ class WordPress_GitHub_Sync_Controller {
 		$result = $this->app->export()->delete( $post, $msg );
 
 		$this->app->semaphore()->unlock();
-		$this->app->response()->log( $result );
 
-		return is_wp_error( $result ) ? false : true;
+
+		return is_wp_error( $result ) ?
+			$this->app->response()->error( $result ) :
+			$this->app->response()->success( $result );
 	}
 }
