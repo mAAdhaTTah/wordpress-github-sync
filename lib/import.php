@@ -107,6 +107,7 @@ class WordPress_GitHub_Sync_Import {
 		}
 
 		$args = array( 'post_content' => apply_filters( 'wpghs_content_import', $body ) );
+		$meta = apply_filters( 'wpghs_meta_import', $meta );
 
 		if ( ! empty( $meta ) ) {
 			if ( array_key_exists( 'layout', $meta ) ) {
