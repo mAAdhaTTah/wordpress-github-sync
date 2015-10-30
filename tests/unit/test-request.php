@@ -28,8 +28,7 @@ class WordPress_GitHub_Sync_Request_Test extends WordPress_GitHub_Sync_TestCase 
 	public function test_should_return_error_if_header_invalid() {
 		$this->set_auth_header( hash_hmac( 'sha1', file_get_contents( $this->data_dir . 'payload-valid.json' ), 'wrong-secret' ) );
 
-		$this->assertInstanceOf( 'WP_Error', $error = $this->request->is_secret_valid() );
-		$this->assertEquals( 'invalid_headers', $error->get_error_code() );
+		$this->assertFalse( $this->request->is_secret_valid() );
 	}
 
 	public function test_should_return_true_if_header_valid() {

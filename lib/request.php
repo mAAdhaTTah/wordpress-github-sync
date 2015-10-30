@@ -38,7 +38,7 @@ class WordPress_GitHub_Sync_Request {
 		// validate secret
 		$hash = hash_hmac( 'sha1', $this->raw_data, $this->secret() );
 		if ( 'sha1=' . $hash !== $headers['X-Hub-Signature'] ) {
-			return new WP_Error( 'invalid_headers', __( 'Failed to validate secret.', 'wordpress-github-sync' ) );
+			return false;
 		}
 
 		return true;

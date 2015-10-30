@@ -35,13 +35,7 @@ class WordPress_GitHub_Sync_Payload {
 	public function should_import() {
 		// @todo how do we get this without importing the whole api object just for this?
 		if ( strtolower( $this->data->repository->full_name ) !== strtolower( $this->app->api()->repository() ) ) {
-			return new WP_Error(
-				'invalid_repo',
-				sprintf(
-					__( '%s is an invalid repository.', 'wordpress-github-sync' ),
-					strtolower( $this->data->repository->full_name )
-				)
-			);
+			return false;
 		}
 
 		// The last term in the ref is the branch name.
@@ -85,5 +79,14 @@ class WordPress_GitHub_Sync_Payload {
 	 */
 	public function get_commits() {
 		return $this->data->commits;
+	}
+
+	/**
+	 * Returns the repository's full name.
+	 *
+	 * @return string
+	 */
+	public function get_repository_name() {
+		return $this->data->repository->full_name;
 	}
 }
