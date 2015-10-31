@@ -2,7 +2,7 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
-### [Unreleased] ###
+### [1.3.4] ###
 
 * Add German translation (props @lsinger).
 * Update folder names to default to untranslated. 
@@ -59,6 +59,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
   [Keep a Changelog standards]: http://keepachangelog.com/
   [Semantic Versioning]: http://semver.org/
   [Unreleased]: https://github.com/benbalter/wordpress-github-sync
+  [1.3.4]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.4
   [1.3.3]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.3
   [1.3.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.2
   [1.3.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.1
