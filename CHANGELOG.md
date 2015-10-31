@@ -5,6 +5,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 ### [Unreleased] ###
 
 * Add German translation (props @lsinger).
+* Update folder names to default to untranslated. 
 
 ### [1.3.3] ###
 
