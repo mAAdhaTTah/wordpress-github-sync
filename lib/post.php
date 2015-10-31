@@ -196,6 +196,8 @@ class WordPress_GitHub_Sync_Post {
 			return apply_filters( 'wpghs_directory_unpublished', '_drafts/', $this );
 		}
 
+		$name = '';
+
 		switch ( $this->type() ) {
 			case 'post':
 				$name = 'posts';
@@ -206,18 +208,20 @@ class WordPress_GitHub_Sync_Post {
 			default:
 				$obj = get_post_type_object( $this->type() );
 
-				if ( ! $obj ) {
-					return '';
+				if ( $obj ) {
+					$name = strtolower( $obj->labels->name );
 				}
 
-				$name = strtolower( $obj->labels->name );
-
 				if ( ! $name ) {
-					return '';
+					$name = '';
 				}
 		}
 
-		return apply_filters( 'wpghs_directory_published', '_' . $name . '/', $this );
+		if ( $name ) {
+			$name = '_' . $name . '/';
+		}
+
+		return apply_filters( 'wpghs_directory_published', $name, $this );
 	}
 
 	/**
