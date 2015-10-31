@@ -29,52 +29,82 @@ class WordPress_GitHub_Sync_Import {
 	 * @return string|WP_Error
 	 */
 	public function payload( WordPress_GitHub_Sync_Payload $payload ) {
-		$commit = $this->app->api()->get_commit( $payload->get_commit_id() );
+		/** @var false|WP_Error $error */
+		$error = false;
 
-		if ( is_wp_error( $commit ) ) {
-			return $commit;
+		$result = $this->commit( $this->app->api()->get_commit( $payload->get_commit_id() ) );
+
+		if ( is_wp_error( $result ) ) {
+			$error = $result;
 		}
-
-		$this->commit( $commit );
 
 		$removed = array();
 		foreach ( $payload->get_commits() as $commit ) {
 			$removed = array_merge( $removed, $commit->removed );
 		}
 		foreach ( array_unique( $removed ) as $path ) {
-			$this->app->database()->delete_post_by_path( $path );
+			$result = $this->app->database()->delete_post_by_path( $path );
+
+			if ( is_wp_error( $result ) ) {
+				if ( $error ) {
+					$error->add( $result->get_error_code(), $result->get_error_message() );
+				} else {
+					$error = $result;
+				}
+			}
+		}
+
+		if ( $error ) {
+			return $error;
 		}
 
 		return __( 'Payload processed', 'wordpress-github-sync' );
 	}
 
 	/**
-	 * Imports a provided commit into the database.
-	 *
-	 * @param WordPress_GitHub_Sync_Commit $commit
+	 * Imports the latest commit on the master branch.
 	 *
 	 * @return string|WP_Error
 	 */
-	public function commit( WordPress_GitHub_Sync_Commit $commit ) {
-		$tree = $this->app->api()->get_tree_recursive( $commit->tree_sha() );
+	public function master() {
+		return $this->commit( $this->app->api()->last_commit() );
+	}
 
-		if ( is_wp_error( $tree ) ) {
-			return $tree;
+	/**
+	 * Imports a provided commit into the database.
+	 *
+	 * @param WordPress_GitHub_Sync_Commit|WP_Error $commit
+	 *
+	 * @return string|WP_Error
+	 */
+	protected function commit( $commit ) {
+		if ( is_wp_error( $commit ) ) {
+			return $commit;
+		}
+
+		if ( $commit->already_synced() ) {
+			return new WP_Error( 'commit_synced', __( 'Already synced this commit.', 'wordpress-github-sync' ) );
 		}
 
 		$posts = array();
+		$new   = array();
 
-		foreach ( $tree as $blob ) {
-			$posts[] = $this->blob_to_post( $blob );
+		foreach ( $commit->get_tree() as $blob ) {
+			$posts[] = $post = $this->blob_to_post( $blob );
+
+			if ( $post->is_new() ) {
+				$new[] = $post;
+			}
 		}
 
-		// Filter now, because we can't tell what's new after we've saved.
-		$new = $this->filter_new( $posts );
+		$result = $this->app->database()->save_posts( $posts, $commit->author_email() );
 
-		$this->app->database()->save_posts( $posts, $commit->author_email() );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
 
 		if ( $new ) {
-			$this->app->export()->posts(
+			$result = $this->app->export()->posts(
 				$new,
 				apply_filters(
 					'wpghs_commit_msg_new_posts',
@@ -85,6 +115,10 @@ class WordPress_GitHub_Sync_Import {
 					)
 				) . ' - wpghs'
 			);
+
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
 		}
 
 		return $posts;
@@ -129,24 +163,5 @@ class WordPress_GitHub_Sync_Import {
 		$post->set_meta( $meta );
 
 		return $post;
-	}
-
-	/**
-	 * Filters an array of WPGHS_Posts to return only the new posts.
-	 *
-	 * @param WordPress_GitHub_Sync_Post[] $posts
-	 *
-	 * @return WordPress_GitHub_Sync_Post[]
-	 */
-	protected function filter_new( $posts ) {
-		$new = array();
-
-		foreach ( $posts as $post ) {
-			if ( $post->is_new() ) {
-				$new[] = $post;
-			}
-		}
-
-		return $new;
 	}
 }

@@ -44,6 +44,7 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			->with( $this->sha )
 			->once()
 			->andReturn( $error );
+		$this->set_payload_expectations();
 
 		$this->assertEquals( $error, $this->import->payload( $this->payload ) );
 	}
@@ -66,39 +67,37 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			->with( $this->sha )
 			->once()
 			->andReturn( $this->commit );
-		$this->commit
-			->shouldReceive( 'tree_sha' )
-			->once()
-			->andReturn( $this->sha );
 		$this->set_blob_expectations();
-		$path                    = '_post/2015-10-24-post-to-delete.md';
-		$payload_commit          = new stdClass;
-		$payload_commit->removed = array( $path );
-		$this->payload
-			->shouldReceive( 'get_commits' )
-			->once()
-			->andReturn( array( $payload_commit ) );
-		$this->database
-			->shouldReceive( 'delete_post_by_path' )
-			->with( $path )
-			->once();
+		$this->api
+			->shouldReceive( 'last_commit' )
+			->never();
+		$this->set_payload_expectations();
 
 		$this->assertEquals( 'Payload processed', $this->import->payload( $this->payload ) );
 	}
 
-	public function test_should_fail_commit_import_if_api_fails() {
+	public function test_should_fail_master_import_if_api_fails() {
 		$error = new WP_Error( 'api_failed', 'Api failed.' );
-		$this->commit
-			->shouldReceive( 'tree_sha' )
-			->once()
-			->andReturn( $this->sha );
 		$this->api
-			->shouldReceive( 'get_tree_recursive' )
-			->with( $this->sha )
+			->shouldReceive( 'last_commit' )
 			->once()
 			->andReturn( $error );
 
-		$this->assertEquals( $error, $this->import->commit( $this->commit ) );
+		$this->assertEquals( $error, $this->import->master() );
+	}
+
+	public function test_should_fail_master_import_if_commit_synced() {
+		$this->api
+			->shouldReceive( 'last_commit' )
+			->once()
+			->andReturn( $this->commit );
+		$this->commit
+			->shouldReceive( 'already_synced' )
+			->once()
+			->andReturn( true );
+
+		$this->assertInstanceOf( 'WP_Error', $error = $this->import->master() );
+		$this->assertEquals( 'commit_synced', $error->get_error_code() );
 	}
 
 	public function test_should_save_new_post_with_empty_meta() {
@@ -110,10 +109,6 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 		$this->post_args    = array(
 			'post_content' => $this->blob_content,
 		);
-		$this->commit
-			->shouldReceive( 'tree_sha' )
-			->once()
-			->andReturn( $this->sha );
 
 		$this->validate_meta();
 	}
@@ -130,10 +125,6 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			'post_content' => $this->blob_content,
 			'post_type'    => 'custom_type',
 		);
-		$this->commit
-			->shouldReceive( 'tree_sha' )
-			->once()
-			->andReturn( $this->sha );
 
 		$this->validate_meta();
 	}
@@ -150,10 +141,6 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			'post_content' => $this->blob_content,
 			'post_status'  => 'publish',
 		);
-		$this->commit
-			->shouldReceive( 'tree_sha' )
-			->once()
-			->andReturn( $this->sha );
 
 		$this->validate_meta();
 	}
@@ -170,10 +157,6 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			'post_content' => $this->blob_content,
 			'post_title'   => 'Post title',
 		);
-		$this->commit
-			->shouldReceive( 'tree_sha' )
-			->once()
-			->andReturn( $this->sha );
 
 		$this->validate_meta();
 	}
@@ -190,10 +173,6 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			'post_content' => $this->blob_content,
 			'ID'           => 1,
 		);
-		$this->commit
-			->shouldReceive( 'tree_sha' )
-			->once()
-			->andReturn( $this->sha );
 
 		$this->validate_meta();
 	}
@@ -210,10 +189,6 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 		$this->post_args    = array(
 			'post_content' => $this->blob_content,
 		);
-		$this->commit
-			->shouldReceive( 'tree_sha' )
-			->once()
-			->andReturn( $this->sha );
 
 		$this->validate_meta();
 	}
@@ -221,7 +196,7 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 	public function validate_meta() {
 		$this->set_blob_expectations();
 
-		$posts = $this->import->commit( $this->commit );
+		$posts = $this->import->master();
 		$this->assertCount( 1, $posts );
 
 		$post = array_pop( $posts );
@@ -234,9 +209,16 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 		$email = 'mAAdhaTTah@github';
 		$tree  = array( $this->blob );
 		$this->api
-			->shouldReceive( 'get_tree_recursive' )
-			->with( $this->sha )
+			->shouldReceive( 'last_commit' )
 			->once()
+			->andReturn( $this->commit )
+			->byDefault();
+		$this->commit
+			->shouldReceive( 'already_synced' )
+			->once()
+			->andReturn( false );
+		$this->commit
+			->shouldReceive( 'get_tree' )
 			->andReturn( $tree );
 		$this->blob
 			->shouldReceive( 'content_import' )
@@ -283,5 +265,19 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 
 				} ), $msg . ' - wpghs' );
 		}
+	}
+
+	protected function set_payload_expectations() {
+		$path                    = '_post/2015-10-24-post-to-delete.md';
+		$payload_commit          = new stdClass;
+		$payload_commit->removed = array( $path );
+		$this->payload
+			->shouldReceive( 'get_commits' )
+			->once()
+			->andReturn( array( $payload_commit ) );
+		$this->database
+			->shouldReceive( 'delete_post_by_path' )
+			->with( $path )
+			->once();
 	}
 }
