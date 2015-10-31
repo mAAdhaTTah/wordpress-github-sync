@@ -49,5 +49,43 @@ class WordPress_GitHub_Sync_Post_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'https://github.com/owner/repo/edit/master/_posts/' . get_the_date( 'Y-m-d-', $this->id ) . $this->post->post_name . '.md', $post->github_edit_url() );
 	}
+
+	public function test_should_export_unpublished_to_drafts_folder() {
+		$id   = $this->factory->post->create( array( 'post_status' => 'draft' ) );
+		$post = new WordPress_GitHub_Sync_Post( $id );
+
+		$this->assertEquals( '_drafts/', $post->github_directory() );
+	}
+
+	public function test_should_export_published_post_to_posts_folder() {
+		$id   = $this->factory->post->create();
+		$post = new WordPress_GitHub_Sync_Post( $id );
+
+		$this->assertEquals( '_posts/', $post->github_directory() );
+	}
+
+	public function test_should_export_published_page_to_pages_folder() {
+		$id   = $this->factory->post->create( array( 'post_type' => 'page' ) );
+		$post = new WordPress_GitHub_Sync_Post( $id );
+
+		$this->assertEquals( '_pages/', $post->github_directory() );
+	}
+
+	public function test_should_export_published_unknown_post_type_to_root() {
+		$id   = $this->factory->post->create( array( 'post_type' => 'unknown' ) );
+		$post = new WordPress_GitHub_Sync_Post( $id );
+
+		$this->assertEquals( '', $post->github_directory() );
+	}
+
+	public function test_should_export_published_post_type_to_plural_folder() {
+		register_post_type( 'widget', array(
+			'labels' => array( 'name' => 'Widgets' ),
+		) );
+		$id   = $this->factory->post->create( array( 'post_type' => 'widget' ) );
+		$post = new WordPress_GitHub_Sync_Post( $id );
+
+		$this->assertEquals( '_widgets/', $post->github_directory() );
+	}
 }
 
