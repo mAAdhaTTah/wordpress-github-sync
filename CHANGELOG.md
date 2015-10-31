@@ -2,6 +2,10 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [Unreleased] ###
+
+* Add German translation (props @lsinger).
+
 ### [1.3.3] ###
 
 * Fix api bug where API call errors weren't getting kicked up to the calling method.
