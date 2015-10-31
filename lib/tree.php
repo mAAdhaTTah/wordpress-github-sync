@@ -67,6 +67,7 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 *
 	 * @param WordPress_GitHub_Sync_Post $post
 	 * @param bool $remove
+	 * @todo split into post_{to/from}_tree instead of param toggle; easier to understand
 	 */
 	public function post_to_tree( $post, $remove = false ) {
 		$match = false;
