@@ -38,14 +38,14 @@ class WordPress_GitHub_Sync_Export {
 			return $posts;
 		}
 
-		$master = $this->app->api()->last_commit();
+		$master = $this->app->api()->fetch()->master();
 
 		if ( is_wp_error( $master ) ) {
 			return $master;
 		}
 
 		foreach ( $posts as $post ) {
-			$master->tree()->post_to_tree( $post );
+			$master->tree()->add_post_to_tree( $post );
 		}
 
 		$master->set_message(
@@ -59,7 +59,7 @@ class WordPress_GitHub_Sync_Export {
 			) . ' - wpghs'
 		);
 
-		$result = $this->app->api()->create_commit( $master );
+		$result = $this->app->api()->persist()->commit( $master );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -82,13 +82,13 @@ class WordPress_GitHub_Sync_Export {
 			return $post;
 		}
 
-		$master = $this->app->api()->last_commit();
+		$master = $this->app->api()->fetch()->master();
 
 		if ( is_wp_error( $master ) ) {
 			return $master;
 		}
 
-		$master->tree()->post_to_tree( $post );
+		$master->tree()->add_post_to_tree( $post );
 		$master->set_message(
 			apply_filters(
 				'wpghs_commit_msg_single',
@@ -102,7 +102,7 @@ class WordPress_GitHub_Sync_Export {
 			) . ' - wpghs'
 		);
 
-		$result = $this->app->api()->create_commit( $master );
+		$result = $this->app->api()->persist()->commit( $master );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -125,13 +125,13 @@ class WordPress_GitHub_Sync_Export {
 			return $post;
 		}
 
-		$master = $this->app->api()->last_commit();
+		$master = $this->app->api()->fetch()->master();
 
 		if ( is_wp_error( $master ) ) {
 			return $master;
 		}
 
-		$master->tree()->post_to_tree( $post, true );
+		$master->tree()->add_post_to_tree( $post, true );
 		$master->set_message(
 			apply_filters(
 				'wpghs_commit_msg_delete',
@@ -145,7 +145,7 @@ class WordPress_GitHub_Sync_Export {
 			) . ' - wpghs'
 		);
 
-		$result = $this->app->api()->create_commit( $master );
+		$result = $this->app->api()->persist()->commit( $master );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -164,11 +164,11 @@ class WordPress_GitHub_Sync_Export {
 	 * @return string|WP_Error
 	 */
 	protected function update_shas( array $posts ) {
-		$master   = $this->app->api()->last_commit();
+		$master   = $this->app->api()->fetch()->master();
 		$attempts = 1;
 
 		while ( is_wp_error( $master ) && $attempts < 5 ) {
-			$master = $this->app->api()->last_commit();
+			$master = $this->app->api()->fetch()->master();
 			$attempts++;
 		}
 

@@ -34,8 +34,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'fetch_all_supported' )
 			->once()
 			->andReturn( array( $this->post ) );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $error );
 
@@ -52,8 +52,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'fetch_all_supported' )
 			->once()
 			->andReturn( array( $this->post ) );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$this->commit
@@ -61,15 +61,15 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( $this->tree );
 		$this->tree
-			->shouldReceive( 'post_to_tree' )
+			->shouldReceive( 'add_post_to_tree' )
 			->once()
 			->with( $this->post );
 		$this->commit
 			->shouldReceive( 'set_message' )
 			->once()
 			->with( $msg . ' - wpghs' );
-		$this->api
-			->shouldReceive( 'create_commit' )
+		$this->persist
+			->shouldReceive( 'commit' )
 			->with( $this->commit )
 			->once()
 			->andReturn( $error );
@@ -87,8 +87,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'fetch_all_supported' )
 			->once()
 			->andReturn( array( $this->post ) );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$this->commit
@@ -96,20 +96,20 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( $this->tree );
 		$this->tree
-			->shouldReceive( 'post_to_tree' )
+			->shouldReceive( 'add_post_to_tree' )
 			->once()
 			->with( $this->post );
 		$this->commit
 			->shouldReceive( 'set_message' )
 			->once()
 			->with( $msg . ' - wpghs' );
-		$this->api
-			->shouldReceive( 'create_commit' )
+		$this->persist
+			->shouldReceive( 'commit' )
 			->with( $this->commit )
 			->once()
 			->andReturn( 'Success' );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->times( 5 )
 			->andReturn( $error );
 
@@ -125,8 +125,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'fetch_all_supported' )
 			->once()
 			->andReturn( array( $this->post ) );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$this->commit
@@ -134,20 +134,20 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->twice()
 			->andReturn( $this->tree );
 		$this->tree
-			->shouldReceive( 'post_to_tree' )
+			->shouldReceive( 'add_post_to_tree' )
 			->once()
 			->with( $this->post );
 		$this->commit
 			->shouldReceive( 'set_message' )
 			->once()
 			->with( $msg . ' - wpghs' );
-		$this->api
-			->shouldReceive( 'create_commit' )
+		$this->persist
+			->shouldReceive( 'commit' )
 			->with( $this->commit )
 			->once()
 			->andReturn( 'Success' );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$path = '_posts/2015-10-25-github-path.md';
@@ -193,8 +193,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->with( $id )
 			->once()
 			->andReturn( $this->post );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $error );
 
@@ -213,8 +213,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->with( $id )
 			->once()
 			->andReturn( $this->post );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$this->commit
@@ -222,7 +222,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( $this->tree );
 		$this->tree
-			->shouldReceive( 'post_to_tree' )
+			->shouldReceive( 'add_post_to_tree' )
 			->once()
 			->with( $this->post );
 		$this->commit
@@ -234,8 +234,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'github_path' )
 			->once()
 			->andReturn( $path );
-		$this->api
-			->shouldReceive( 'create_commit' )
+		$this->persist
+			->shouldReceive( 'commit' )
 			->with( $this->commit )
 			->once()
 			->andReturn( $error );
@@ -255,8 +255,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->with( $id )
 			->once()
 			->andReturn( $this->post );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$this->commit
@@ -264,7 +264,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( $this->tree );
 		$this->tree
-			->shouldReceive( 'post_to_tree' )
+			->shouldReceive( 'add_post_to_tree' )
 			->once()
 			->with( $this->post );
 		$this->commit
@@ -276,13 +276,13 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'github_path' )
 			->once()
 			->andReturn( $path );
-		$this->api
-			->shouldReceive( 'create_commit' )
+		$this->persist
+			->shouldReceive( 'commit' )
 			->with( $this->commit )
 			->once()
 			->andReturn( 'Success' );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->times( 5 )
 			->andReturn( $error );
 
@@ -300,8 +300,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->with( $id )
 			->once()
 			->andReturn( $this->post );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$this->commit
@@ -309,20 +309,20 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->twice()
 			->andReturn( $this->tree );
 		$this->tree
-			->shouldReceive( 'post_to_tree' )
+			->shouldReceive( 'add_post_to_tree' )
 			->once()
 			->with( $this->post );
 		$this->commit
 			->shouldReceive( 'set_message' )
 			->once()
 			->with( $msg . ' - wpghs' );
-		$this->api
-			->shouldReceive( 'create_commit' )
+		$this->persist
+			->shouldReceive( 'commit' )
 			->with( $this->commit )
 			->once()
 			->andReturn( 'Success' );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$sha  = '1234567890qwertyuiop';
@@ -368,8 +368,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->with( $id )
 			->once()
 			->andReturn( $this->post );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $error );
 
@@ -388,8 +388,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->with( $id )
 			->once()
 			->andReturn( $this->post );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$this->commit
@@ -397,7 +397,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( $this->tree );
 		$this->tree
-			->shouldReceive( 'post_to_tree' )
+			->shouldReceive( 'add_post_to_tree' )
 			->once()
 			->with( $this->post, true );
 		$this->commit
@@ -409,8 +409,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'github_path' )
 			->once()
 			->andReturn( $path );
-		$this->api
-			->shouldReceive( 'create_commit' )
+		$this->persist
+			->shouldReceive( 'commit' )
 			->with( $this->commit )
 			->once()
 			->andReturn( $error );
@@ -429,8 +429,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->with( $id )
 			->once()
 			->andReturn( $this->post );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$this->commit
@@ -438,7 +438,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( $this->tree );
 		$this->tree
-			->shouldReceive( 'post_to_tree' )
+			->shouldReceive( 'add_post_to_tree' )
 			->once()
 			->with( $this->post, true );
 		$path = '_posts/2015-10-25-github-path.md';
@@ -450,8 +450,8 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'set_message' )
 			->once()
 			->with( $msg . ' - wpghs' );
-		$this->api
-			->shouldReceive( 'create_commit' )
+		$this->persist
+			->shouldReceive( 'commit' )
 			->with( $this->commit )
 			->once()
 			->andReturn( 'Success' );

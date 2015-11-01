@@ -32,7 +32,7 @@ class WordPress_GitHub_Sync_Import {
 		/** @var false|WP_Error $error */
 		$error = false;
 
-		$result = $this->commit( $this->app->api()->get_commit( $payload->get_commit_id() ) );
+		$result = $this->commit( $this->app->api()->fetch()->commit( $payload->get_commit_id() ) );
 
 		if ( is_wp_error( $result ) ) {
 			$error = $result;
@@ -67,7 +67,7 @@ class WordPress_GitHub_Sync_Import {
 	 * @return string|WP_Error
 	 */
 	public function master() {
-		return $this->commit( $this->app->api()->last_commit() );
+		return $this->commit( $this->app->api()->fetch()->master() );
 	}
 
 	/**
@@ -89,7 +89,7 @@ class WordPress_GitHub_Sync_Import {
 		$posts = array();
 		$new   = array();
 
-		foreach ( $commit->get_tree() as $blob ) {
+		foreach ( $commit->tree() as $blob ) {
 			$posts[] = $post = $this->blob_to_post( $blob );
 
 			if ( $post->is_new() ) {

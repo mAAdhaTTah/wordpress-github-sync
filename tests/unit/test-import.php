@@ -39,8 +39,8 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'get_commit_id' )
 			->once()
 			->andReturn( $this->sha );
-		$this->api
-			->shouldReceive( 'get_commit' )
+		$this->fetch
+			->shouldReceive( 'commit' )
 			->with( $this->sha )
 			->once()
 			->andReturn( $error );
@@ -62,14 +62,14 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'get_commit_id' )
 			->once()
 			->andReturn( $this->sha );
-		$this->api
-			->shouldReceive( 'get_commit' )
+		$this->fetch
+			->shouldReceive( 'commit' )
 			->with( $this->sha )
 			->once()
 			->andReturn( $this->commit );
 		$this->set_blob_expectations();
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->never();
 		$this->set_payload_expectations();
 
@@ -78,8 +78,8 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 
 	public function test_should_fail_master_import_if_api_fails() {
 		$error = new WP_Error( 'api_failed', 'Api failed.' );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $error );
 
@@ -87,8 +87,8 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_fail_master_import_if_commit_synced() {
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit );
 		$this->commit
@@ -208,8 +208,8 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 	protected function set_blob_expectations() {
 		$email = 'mAAdhaTTah@github';
 		$tree  = array( $this->blob );
-		$this->api
-			->shouldReceive( 'last_commit' )
+		$this->fetch
+			->shouldReceive( 'master' )
 			->once()
 			->andReturn( $this->commit )
 			->byDefault();
@@ -218,7 +218,7 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( false );
 		$this->commit
-			->shouldReceive( 'get_tree' )
+			->shouldReceive( 'tree' )
 			->andReturn( $tree );
 		$this->blob
 			->shouldReceive( 'content_import' )

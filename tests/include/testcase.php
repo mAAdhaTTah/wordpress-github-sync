@@ -82,6 +82,16 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 	 */
 	protected $api_cache;
 
+	/**
+	 * @var WordPress_GitHub_Sync_Fetch_Client|Mockery\Mock
+	 */
+	protected $fetch;
+
+	/**
+	 * @var WordPress_GitHub_Sync_Persist_Client|Mockery\Mock
+	 */
+	protected $persist;
+
 	public function setUp() {
 		parent::setUp();
 
@@ -102,6 +112,8 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 		$this->tree       = Mockery::mock( 'WordPress_GitHub_Sync_Tree' );
 		$this->blob       = Mockery::mock( 'WordPress_GitHub_Sync_Blob' );
 		$this->api_cache  = Mockery::mock( 'WordPress_GitHub_Sync_Cache' );
+		$this->fetch      = Mockery::mock( 'WordPress_GitHub_Sync_Fetch_Client' );
+		$this->persist    = Mockery::mock( 'WordPress_GitHub_Sync_Persist_Client' );
 
 		WordPress_GitHub_Sync::$instance = $this->app;
 
@@ -140,6 +152,14 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 		$this->app
 			->shouldReceive( 'cache' )
 			->andReturn( $this->api_cache )
+			->byDefault();
+		$this->api
+			->shouldReceive( 'fetch' )
+			->andReturn( $this->fetch )
+			->byDefault();
+		$this->api
+			->shouldReceive( 'persist' )
+			->andReturn( $this->persist )
 			->byDefault();
 	}
 
