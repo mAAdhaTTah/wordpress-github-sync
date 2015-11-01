@@ -345,4 +345,16 @@ class WordPress_GitHub_Sync_Database {
 			$post_id
 		);
 	}
+
+	/**
+	 * Update the provided post's blob sha.
+	 *
+	 * @param WordPress_GitHub_Sync_Post $post
+	 * @param string $sha
+	 *
+	 * @return bool|int
+	 */
+	public function set_post_sha( $post, $sha ) {
+		return update_post_meta( $post->id, '_sha', $sha );
+	}
 }

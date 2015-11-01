@@ -365,4 +365,14 @@ class WordPress_GitHub_Sync_Database_Test extends WordPress_GitHub_Sync_TestCase
 		$this->assertContains( 'Successfully deleted post ID', $result );
 		$this->assertEquals( 'trash', get_post( $post_id )->post_status );
 	}
+
+	public function test_should_update_post_sha() {
+		$post_id = $this->factory->post->create();
+		$post    = new WordPress_GitHub_Sync_Post( $post_id, $this->api );
+		$sha     = '1234567890qwertyuiop';
+
+		$this->database->set_post_sha( $post, $sha );
+
+		$this->assertSame( $sha, get_post_meta( $post_id, '_sha', true ) );
+	}
 }
