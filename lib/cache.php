@@ -7,6 +7,8 @@ class WordPress_GitHub_Sync_Cache {
 
 	/**
 	 * Endpoint types to cache.
+	 *
+	 * @var array
 	 */
 	protected $blobs = array();
 	protected $trees = array();
@@ -35,11 +37,96 @@ class WordPress_GitHub_Sync_Cache {
 	 * and delete the data we left behind, since it was large and we're no longer
 	 * using it.
 	 */
-	protected function __construct() {
+	public function __construct() {
 		// clear out previously saved information
 		if ( get_option( '_wpghs_api_cache' ) ) {
 			delete_option( '_wpghs_api_cache' );
 		}
+	}
+
+	/**
+	 * Fetch commit from cache by sha.
+	 *
+	 * @param $sha
+	 *
+	 * @return false|WordPress_GitHub_Sync_Commit
+	 */
+	public function fetch_commit( $sha ) {
+		$commit = $this->get( 'commits', $sha );
+
+		if ( $commit instanceof WordPress_GitHub_Sync_Commit ) {
+			return $commit;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Save commit to cache by sha.
+	 *
+	 * @param string $sha
+	 * @param WordPress_GitHub_Sync_Commit $commit
+	 *
+	 * @return WordPress_GitHub_Sync_Commit
+	 */
+	public function set_commit( $sha, WordPress_GitHub_Sync_Commit $commit ) {
+		return $this->save( 'commits', $sha, $commit, 0 );
+	}
+
+	/**
+	 * Fetch tree from cache by sha.
+	 *
+	 * @param string $sha
+	 *
+	 * @return false|WordPress_GitHub_Sync_Tree
+	 */
+	public function fetch_tree( $sha ) {
+		$tree = $this->get( 'trees', $sha );
+
+		if ( $tree instanceof WordPress_GitHub_Sync_Tree ) {
+			return $tree;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param string $sha
+	 * @param WordPress_GitHub_Sync_Tree $tree
+	 *
+	 * @return WordPress_GitHub_Sync_Tree
+	 */
+	public function set_tree( $sha, WordPress_GitHub_Sync_Tree $tree ) {
+		return $this->save( 'trees', $sha, $tree, DAY_IN_SECONDS * 3 );
+	}
+
+	/**
+	 * Fetch tree from cache by sha.
+	 *
+	 * @param string $sha
+	 *
+	 * @return false|WordPress_GitHub_Sync_Blob
+	 */
+	public function fetch_blob( $sha ) {
+		$blob = $this->get( 'blobs', $sha );
+
+		if ( $blob instanceof WordPress_GitHub_Sync_Blob ) {
+			return $blob;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Saves a blob into the cache.
+	 *
+	 * @param string $sha
+	 * @param WordPress_GitHub_Sync_Blob $blob
+	 *
+	 * @return WordPress_GitHub_Sync_Blob
+	 */
+	public function set_blob( $sha, WordPress_GitHub_Sync_Blob $blob ) {
+		return $this->save( 'blobs', $sha, $blob, 3 * DAY_IN_SECONDS );
 	}
 
 	/**
@@ -50,15 +137,13 @@ class WordPress_GitHub_Sync_Cache {
 	 *
 	 * @return stdClass|false response object if cached, false if not
 	 */
-	public function get( $type, $sha ) {
+	protected function get( $type, $sha ) {
 		if ( isset( $this->{$type}[ $sha ] ) ) {
 			return $this->{$type}[ $sha ];
 		}
 
 		if ( $data = get_transient( $this->cache_id( $type, $sha ) ) ) {
-			$this->{$type}[ $sha ] = $data;
-
-			return $data;
+			return $this->{$type}[ $sha ] = $data;
 		}
 
 		return false;
@@ -73,10 +158,10 @@ class WordPress_GitHub_Sync_Cache {
 	 *
 	 * @return mixed
 	 */
-	public function save( $type, $sha, $data ) {
+	protected function save( $type, $sha, $data, $time ) {
 		$this->{$type}[ $sha ] = $data;
 
-		set_transient( $this->cache_id( $type, $sha ), $data );
+		set_transient( $this->cache_id( $type, $sha ), $data, $time );
 
 		return $data;
 	}
@@ -91,19 +176,5 @@ class WordPress_GitHub_Sync_Cache {
 	 */
 	protected function cache_id( $type, $sha ) {
 		return '_wpghs_' . $type . '_' . $sha;
-	}
-
-	/**
-	 * Initializes or retrieves the cache object.
-	 *
-	 * @return self
-	 */
-	public static function open() {
-
-		if ( null == self::$instance ) {
-			self::$instance = new self;
-		}
-
-		return self::$instance;
 	}
 }

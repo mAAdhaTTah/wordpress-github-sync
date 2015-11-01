@@ -125,6 +125,13 @@ class WordPress_GitHub_Sync {
 	protected $database;
 
 	/**
+	 * Cache object.
+	 *
+	 * @var WordPress_GitHub_Sync_Cache
+	 */
+	protected $cache;
+
+	/**
 	 * Called at load time, hooks into WP core
 	 */
 	public function __construct() {
@@ -337,12 +344,14 @@ class WordPress_GitHub_Sync {
 	/**
 	 * Lazy-load the Cache object.
 	 *
-	 * @todo load like a normal object.
-	 *
 	 * @return WordPress_GitHub_Sync_Cache
 	 */
 	public function cache() {
-		return WordPress_GitHub_Sync_Cache::open();
+		if ( ! $this->cache ) {
+			$this->cache = new WordPress_GitHub_Sync_Cache;
+		}
+
+		return $this->cache;
 	}
 
 	/**
