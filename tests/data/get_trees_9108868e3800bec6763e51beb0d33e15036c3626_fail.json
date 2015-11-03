@@ -1,0 +1,4 @@
+{
+  "message": "Invalid object requested. SHA must identify a commit or a tree.",
+  "documentation_url": "https://developer.github.com/v3/git/trees/#get-a-tree"
+}

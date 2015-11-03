@@ -78,6 +78,62 @@ abstract class WordPress_GitHub_Sync_Base_Client_Test extends WordPress_GitHub_S
 		return static::$responses[ $endpoint ];
 	}
 
+	protected function set_get_refs_heads_master( $succeed ) {
+		$this->set_endpoint(
+			function ( $request ) {
+				if ( '[]' !== $request['body'] ) {
+					return false;
+				}
+
+				return true;
+			}, $succeed ? '200 OK' : '404 Not Found', $succeed
+		);
+	}
+
+	protected function set_get_commits( $succeed ) {
+		$this->set_endpoint(
+			function ( $request ) {
+				if ( '[]' !== $request['body'] ) {
+					return false;
+				}
+
+				return true;
+			}, $succeed ? '200 OK' : '404 Not Found', $succeed, 'db2510854e6aeab68ead26b48328b19f4bdf926e'
+		);
+	}
+
+	protected function set_get_trees( $succeed ) {
+		$this->set_endpoint(
+			function ( $request ) {
+				if ( '[]' !== $request['body'] ) {
+					return false;
+				}
+
+				return true;
+			}, $succeed ? '200 OK' : '422 Unprocessable Entity', $succeed, '9108868e3800bec6763e51beb0d33e15036c3626'
+		);
+	}
+
+	protected function set_get_blobs( $succeed ) {
+		$shas = array(
+			'9fa5c7537f8582b71028ff34b8c20dfd0f3b2a25',
+			'8d9b2e6fd93761211dc03abd71f4a9189d680fd0',
+			'2d73165945b0ccbe4932f1363457986b0ed49f19',
+		);
+
+		foreach ( $shas as $sha ) {
+			$this->set_endpoint(
+				function ( $request ) {
+					if ( '[]' !== $request['body'] ) {
+						return false;
+					}
+
+					return true;
+				}, $succeed ? '200 OK' : '404 Not Found', $succeed, $sha
+			);
+		}
+	}
+
 	private function set_endpoint( $validation, $status, $succeed, $sha = '' ) {
 		list( , $caller ) = debug_backtrace( false );
 		$endpoint = substr( $caller['function'], 4 ) . ( $sha ? "_$sha" : '' );

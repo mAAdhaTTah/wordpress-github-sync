@@ -10,6 +10,20 @@ class WordPress_GitHub_Sync_Commit {
 	protected $data;
 
 	/**
+	 * Commit sha.
+	 *
+	 * @var string
+	 */
+	protected $sha;
+
+	/**
+	 * Commit message.
+	 *
+	 * @var string
+	 */
+	protected $message = '';
+
+	/**
 	 * Commit tree.
 	 *
 	 * @var WordPress_GitHub_Sync_Tree
@@ -17,30 +31,42 @@ class WordPress_GitHub_Sync_Commit {
 	protected $tree;
 
 	/**
-	 * Commit message.
+	 * Commit api url.
 	 *
 	 * @var string
 	 */
-	protected $message;
+	protected $url;
 
 	/**
-	 * Commit's tree sha.
+	 * Commit author.
 	 *
-	 * @var string
+	 * @var stdClass
 	 */
-	protected $tree_sha;
+	protected $author;
+
+	/**
+	 * Commit committer.
+	 *
+	 * @var stdClass
+	 */
+	protected $committer;
+
+	/**
+	 * Commit parents.
+	 *
+	 * @var stdClass[]
+	 */
+	protected $parents;
 
 	/**
 	 * Instantiates a new Commit object.
 	 *
-	 * @param stdClass $data Raq commit data.
+	 * @param stdClass $data Raw commit data.
 	 */
 	public function __construct( stdClass $data ) {
 		$this->data = $data;
 
-		$this->message = $this->data->message ?: '';
-		$this->sha = $this->data->sha ?: '';
-		$this->tree_sha = $this->data->tree->sha ?: '';
+		$this->interpret_data();
 	}
 
 	/**
@@ -61,15 +87,6 @@ class WordPress_GitHub_Sync_Commit {
 	}
 
 	/**
-	 * Returns the commit message, if set.
-	 *
-	 * @return string
-	 */
-	public function message() {
-		return $this->message;
-	}
-
-	/**
 	 * Returns the commit sha.
 	 *
 	 * @return string
@@ -79,12 +96,74 @@ class WordPress_GitHub_Sync_Commit {
 	}
 
 	/**
+	 * Return the commit's API url.
+	 *
+	 * @return string
+	 */
+	public function url() {
+		return $this->url;
+	}
+
+	/**
+	 * Return the commit author.
+	 *
+	 * @return stdClass
+	 */
+	public function author() {
+		return $this->author;
+	}
+
+	/**
+	 * Return the commit committer.
+	 *
+	 * @return stdClass
+	 */
+	public function committer() {
+		return $this->committer;
+	}
+
+	/**
+	 * Returns the commit message, if set.
+	 *
+	 * @return string
+	 */
+	public function message() {
+		return $this->message;
+	}
+
+	/**
+	 * Set's the commit message;
+	 *
+	 * @param string $message
+	 *
+	 * @return $this
+	 */
+	public function set_message( $message ) {
+		$this->message = (string) $message;
+
+		return $this;
+	}
+
+	/**
+	 * Return the commit parents.
+	 *
+	 * @return stdClass[]
+	 */
+	public function parents() {
+		return $this->parents;
+	}
+
+	/**
 	 * Returns the commit's tree's sha.
 	 *
 	 * @return string
 	 */
 	public function tree_sha() {
-		return $this->tree_sha;
+		if ( $this->tree ) {
+			return $this->tree->sha();
+		}
+
+		return $this->data->tree->sha;
 	}
 
 	/**
@@ -103,5 +182,17 @@ class WordPress_GitHub_Sync_Commit {
 	 */
 	public function set_tree( WordPress_GitHub_Sync_Tree $tree ) {
 		$this->tree = $tree;
+	}
+
+	/**
+	 * Interprets the raw data object into commit properties.
+	 */
+	protected function interpret_data() {
+		$this->sha = $this->data->sha ?: '';
+		$this->url = $this->data->url ?: '';
+		$this->author = $this->data->author ?: new stdClass;
+		$this->committer = $this->data->committer ?: new stdClass;
+		$this->message = $this->data->message ?: '';
+		$this->parents = $this->data->parents ?: array();
 	}
 }

@@ -31,6 +31,20 @@ class WordPress_GitHub_Sync_Blob {
 	protected $sha;
 
 	/**
+	 * Blob path.
+	 *
+	 * @var string
+	 */
+	protected $path;
+
+	/**
+	 * Whether the blob has frontmatter.
+	 *
+	 * @var boolean
+	 */
+	protected $frontmatter = false;
+
+	/**
 	 * Instantiates a new Blob object.
 	 *
 	 * @param $data
@@ -87,15 +101,53 @@ class WordPress_GitHub_Sync_Blob {
 	}
 
 	/**
+	 * Return's the blob path.
+	 *
+	 * @return string
+	 */
+	public function path() {
+		return $this->path;
+	}
+
+	/**
+	 * Updates the blob's path.
+	 *
+	 * @param string $path
+	 *
+	 * @return WordPress_GitHub_Sync_Blob
+	 */
+	public function set_path( $path ) {
+		$this->path = (string) $path;
+
+		return $this;
+	}
+
+	/**
+	 * Whether the blob has frontmatter.
+	 *
+	 * @return bool
+	 */
+	public function has_frontmatter() {
+		return $this->frontmatter;
+	}
+
+	/**
 	 * Interprets the blob's data into properties.
 	 */
 	protected function interpret_data() {
-		// Break out meta, if present
-		preg_match( '/(^---(.*?)---$)?(.*)/ms', $this->data->content, $matches );
+		$content = trim( $this->data->content );
 
-		$content = array_pop( $matches );
+		if ( 'base64' === $this->data->encoding ) {
+			$content = base64_decode( $content );
+		}
 
-		if ( 3 === count( $matches ) ) {
+		if ( '---' === substr( $content, 0, 3 ) ) {
+			$this->frontmatter = true;
+
+			// Break out meta, if present
+			preg_match( '/(^---(.*?)---$)?(.*)/ms', $content, $matches );
+			$content = array_pop( $matches );
+
 			$meta = cyps_load( $matches[2] );
 			if ( isset( $meta['permalink'] ) ) {
 				$meta['permalink'] = str_replace( home_url(), '', get_permalink( $meta['permalink'] ) );

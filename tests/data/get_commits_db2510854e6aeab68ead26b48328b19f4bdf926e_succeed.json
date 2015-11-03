@@ -1,0 +1,27 @@
+{
+  "sha": "7497c0574b9430ff5e5521b4572b7452ea36a056",
+  "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/commits/7497c0574b9430ff5e5521b4572b7452ea36a056",
+  "html_url": "https://github.com/wpghstest/wpghs-test/commit/7497c0574b9430ff5e5521b4572b7452ea36a056",
+  "author": {
+    "name": "test",
+    "email": "test@test.com",
+    "date": "2015-11-02T00:36:54Z"
+  },
+  "committer": {
+    "name": "test",
+    "email": "test@test.com",
+    "date": "2015-11-02T00:36:54Z"
+  },
+  "tree": {
+    "sha": "9108868e3800bec6763e51beb0d33e15036c3626",
+    "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/trees/9108868e3800bec6763e51beb0d33e15036c3626"
+  },
+  "message": "Initial full site export - wpghs",
+  "parents": [
+    {
+      "sha": "db2510854e6aeab68ead26b48328b19f4bdf926e",
+      "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/commits/db2510854e6aeab68ead26b48328b19f4bdf926e",
+      "html_url": "https://github.com/wpghstest/wpghs-test/commit/db2510854e6aeab68ead26b48328b19f4bdf926e"
+    }
+  ]
+}

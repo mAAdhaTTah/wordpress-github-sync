@@ -13,16 +13,25 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	protected $changed = false;
 
 	/**
-	 * @var WordPress_GitHub_Sync_Api
-	 */
-	protected $api;
-
-	/**
 	 * Current tree if retrieved, otherwise, error
 	 *
-	 * @var array
+	 * @var stdClass
 	 */
 	protected $data;
+
+	/**
+	 * Blobs keyed by path.
+	 *
+	 * @var array<string $path, WordPress_GitHub_Sync_Blob $blob>
+	 */
+	protected $paths;
+
+	/**
+	 * Blobs keyed by sha.
+	 *
+	 * @var array<string $sha, WordPress_GitHub_Sync_Blob $blob>
+	 */
+	protected $shas;
 
 	/**
 	 * Current position in the loop.
@@ -41,21 +50,70 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	/**
 	 * Represents a commit tree.
 	 *
-	 * @param WordPress_GitHub_Sync_Api $api Api object.
-	 * @param array $data
+	 * @param stdClass $data
 	 */
-	public function __construct( WordPress_GitHub_Sync_Api $api, $data ) {
-		$this->api = $api;
+	public function __construct( stdClass $data ) {
 		$this->data = $data;
+
+		$this->sha = $this->data->sha;
 	}
 
 	/**
-	 * Returns the
+	 * Returns the tree's raw data.
 	 *
 	 * @return array
 	 */
 	public function get_data() {
 		return $this->data;
+	}
+
+	/**
+	 * Return's the tree's sha.
+	 *
+	 * @return string
+	 */
+	public function sha() {
+		return $this->sha;
+	}
+
+	/**
+	 * Returns the tree's blobs.
+	 *
+	 * @return WordPress_GitHub_Sync_Blob[]
+	 */
+	public function blobs() {
+		return array_values( $this->paths );
+	}
+
+	/**
+	 * Sets the tree's blobs to the provided array of blobs.
+	 *
+	 * @param WordPress_GitHub_Sync_Blob[] $blobs
+	 *
+	 * @return $this
+	 */
+	public function set_blobs( array $blobs ) {
+		$this->paths = array();
+		$this->shas  = array();
+
+		foreach ( $blobs as $blob ) {
+			$this->add_blob( $blob );
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Adds the provided blob to the tree.
+	 *
+	 * @param WordPress_GitHub_Sync_Blob $blob
+	 *
+	 * @return $this
+	 */
+	public function add_blob( WordPress_GitHub_Sync_Blob $blob ) {
+		$this->paths[ $blob->path() ] = $this->shas[ $blob->sha() ] = $blob;
+
+		return $this;
 	}
 
 	/**
@@ -67,9 +125,10 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 *
 	 * @param WordPress_GitHub_Sync_Post $post
 	 * @param bool $remove
+	 *
 	 * @todo split into post_{to/from}_tree instead of param toggle; easier to understand
 	 */
-	public function post_to_tree( $post, $remove = false ) {
+	public function add_post_to_tree( $post, $remove = false ) {
 		$match = false;
 
 		foreach ( $this->data as $index => $blob ) {
@@ -160,24 +219,14 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 * @return bool|WordPress_GitHub_Sync_Blob
 	 */
 	public function get_blob_for_path( $path ) {
-		foreach ( $this->data as $blob ) {
-			// this might be a problem if the filename changed since it was set
-			// (i.e. post updated in middle mass export)
-			// solution?
-			if ( $path === $blob->path ) {
-				// @todo this is a stdClass; should be Blob
-				return $blob;
-			}
-		}
-
-		return false;
+		return isset( $this->paths[ $path ] ) ? $this->paths[ $path ] : false;
 	}
 
 	/**
 	 * Return the current element.
 	 *
 	 * @link http://php.net/manual/en/iterator.current.php
-	 * @return stdClass
+	 * @return WordPress_GitHub_Sync_Blob
 	 */
 	public function current() {
 		return $this->current;
@@ -215,61 +264,50 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	public function valid() {
 		global $wpdb;
 
-		while ( isset( $this->data[ $this->position ] ) ) {
-			$blob = $this->data[ $this->position ];
+		$blobs = $this->blobs();
+
+		while ( isset( $blobs[ $this->position ] ) ) {
+			$blob = $blobs[ $this->position ];
 
 			// Skip the repo's readme
-			if ( 'readme' === strtolower( substr( $blob->path, 0, 6 ) ) ) {
-				WordPress_GitHub_Sync::write_log( __( 'Skipping README', 'wordpress-github-sync' ) );
+			if ( 'readme' === strtolower( substr( $blob->path(), 0, 6 ) ) ) {
+//				WordPress_GitHub_Sync::write_log( __( 'Skipping README', 'wordpress-github-sync' ) );
 				$this->next();
 
 				continue;
 			}
 
 			// If the blob sha already matches a post, then move on
-			$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_sha' AND meta_value = '$blob->sha'" );
+			// @todo this doesn't belong here
+			$id = $wpdb->get_var(
+				"SELECT post_id FROM $wpdb->postmeta
+				WHERE meta_key = '_sha' AND meta_value = '{$blob->sha()}'"
+			);
+
 			if ( $id ) {
-				WordPress_GitHub_Sync::write_log(
-					sprintf(
-						__( 'Already synced blob %s', 'wordpress-github-sync' ),
-						$blob->path
-					)
-				);
+//				WordPress_GitHub_Sync::write_log(
+//					sprintf(
+//						__( 'Already synced blob %s', 'wordpress-github-sync' ),
+//						$blob->path()
+//					)
+//				);
 				$this->next();
 
 				continue;
 			}
 
-			$blob = $this->api->get_blob( $blob->sha );
-
-			if ( is_wp_error( $blob ) ) {
-				WordPress_GitHub_Sync::write_log(
-					sprintf(
-						__( 'Failed getting blob with error: %s', 'wordpress-github-sync' ),
-						$blob->get_error_message()
-					)
-				);
+			if ( ! $blob->has_frontmatter() ) {
+//				WordPress_GitHub_Sync::write_log(
+//					sprintf(
+//						__( 'No front matter on blob %s', 'wordpress-github-sync' ),
+//						$blob->path()
+//					)
+//				);
 				$this->next();
 
 				continue;
 			}
 
-			$content = base64_decode( $blob->content );
-
-			// If it doesn't have YAML frontmatter, then move on
-			if ( '---' !== substr( $content, 0, 3 ) ) {
-				WordPress_GitHub_Sync::write_log(
-					sprintf(
-						__( 'No front matter on blob %s', 'wordpress-github-sync' ),
-						$blob->sha
-					)
-				);
-				$this->next();
-
-				continue;
-			}
-
-			$blob->content = $content;
 			$this->current = $blob;
 
 			return true;
