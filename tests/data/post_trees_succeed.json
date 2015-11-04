@@ -1,0 +1,29 @@
+{
+  "sha": "c0d2cb90b51826096c826b61a0e74d2c973d7ad8",
+  "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/trees/c0d2cb90b51826096c826b61a0e74d2c973d7ad8",
+  "tree": [
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9fa5c7537f8582b71028ff34b8c20dfd0f3b2a25",
+      "size": 13,
+      "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/blobs/9fa5c7537f8582b71028ff34b8c20dfd0f3b2a25"
+    },
+    {
+      "path": "_pages",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a746b810e70d76d961116501dcb689f481b76c2c",
+      "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/trees/a746b810e70d76d961116501dcb689f481b76c2c"
+    },
+    {
+      "path": "_posts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "168aff0ee6be2ffa50b34e55859c38a6b511aaad",
+      "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/trees/168aff0ee6be2ffa50b34e55859c38a6b511aaad"
+    }
+  ],
+  "truncated": false
+}

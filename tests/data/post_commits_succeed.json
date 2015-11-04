@@ -1,0 +1,27 @@
+{
+  "sha": "ff2b3d42e86fa7e38c7b7886f490ae54b431f524",
+  "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/commits/ff2b3d42e86fa7e38c7b7886f490ae54b431f524",
+  "html_url": "https://github.com/wpghstest/wpghs-test/commit/ff2b3d42e86fa7e38c7b7886f490ae54b431f524",
+  "author": {
+    "name": "James DiGioia",
+    "email": "jamesorodig@gmail.com",
+    "date": "2015-11-04T04:45:10Z"
+  },
+  "committer": {
+    "name": "James DiGioia",
+    "email": "jamesorodig@gmail.com",
+    "date": "2015-11-04T04:45:10Z"
+  },
+  "tree": {
+    "sha": "c0d2cb90b51826096c826b61a0e74d2c973d7ad8",
+    "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/trees/c0d2cb90b51826096c826b61a0e74d2c973d7ad8"
+  },
+  "message": "New commit via paw.",
+  "parents": [
+    {
+      "sha": "7497c0574b9430ff5e5521b4572b7452ea36a056",
+      "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/commits/7497c0574b9430ff5e5521b4572b7452ea36a056",
+      "html_url": "https://github.com/wpghstest/wpghs-test/commit/7497c0574b9430ff5e5521b4572b7452ea36a056"
+    }
+  ]
+}

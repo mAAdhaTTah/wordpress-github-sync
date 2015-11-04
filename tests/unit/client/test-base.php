@@ -134,6 +134,94 @@ abstract class WordPress_GitHub_Sync_Base_Client_Test extends WordPress_GitHub_S
 		}
 	}
 
+	protected function set_post_trees( $succeed ) {
+		$this->set_endpoint(
+			function ( $request ) {
+				$body = json_decode( $request['body'], true );
+
+				if ( ! isset( $body['tree'] ) ) {
+					return false;
+				}
+
+				if ( 1 !== count( $body['tree'] ) ) {
+					return false;
+				}
+
+				$blob = reset( $body['tree'] );
+
+				if (
+					! isset( $blob['path'] ) ||
+					! isset( $blob['type'] ) ||
+					! isset( $blob['content'] ) ||
+					! isset( $blob['mode'] )
+				) {
+					return false;
+				}
+
+				return true;
+			},
+			$succeed ? '201 Created' : '404 Not Found',
+			$succeed
+		);
+	}
+
+	protected function set_post_commits( $succeed, $anonymous = true ) {
+		$this->set_endpoint(
+			function ( $request ) use ( $anonymous ) {
+				$body = json_decode( $request['body'], true );
+
+				if (
+					! isset( $body['tree'] ) ||
+					! isset( $body['message'] ) ||
+					! isset( $body['parents'] ) ||
+					! isset( $body['author'] )
+				) {
+					return false;
+				}
+
+				if ( 1 !== count( $body['parents'] ) ) {
+					return false;
+				}
+
+				if ( ! $anonymous ) {
+					if (
+						'James DiGioia' !== $body['author']['name'] ||
+						'jamesorodig@gmail.com' !== $body['author']['email']
+					) {
+						return false;
+					}
+				} else {
+					if (
+						'Anonymous' !== $body['author']['name'] ||
+						'anonymous@users.noreply.github.com' !== $body['author']['email']
+					) {
+						return false;
+					}
+				}
+
+				return true;
+			},
+			$succeed ? '201 Created' : '404 Not Found',
+			$succeed
+		);
+	}
+
+	protected function set_patch_refs_heads_master( $succeed ) {
+		$this->set_endpoint(
+			function ( $request ) {
+				$body = json_decode( $request['body'], true );
+
+				if ( ! isset( $body['sha'] ) ) {
+					return false;
+				}
+
+				return true;
+			},
+			$succeed ? '201 Created' : '404 Not Found',
+			$succeed
+		);
+	}
+
 	private function set_endpoint( $validation, $status, $succeed, $sha = '' ) {
 		list( , $caller ) = debug_backtrace( false );
 		$endpoint = substr( $caller['function'], 4 ) . ( $sha ? "_$sha" : '' );
