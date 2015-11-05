@@ -30,8 +30,9 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 			return $tree;
 		}
 
+		$commit->tree()->set_sha( $tree->sha );
 //		WordPress_GitHub_Sync::write_log( __( 'Creating the commit.', 'wordpress-github-sync' ) );
-		$commit = $this->create_commit_by_sha( $tree->sha, $commit->sha(), $commit->message() );
+		$commit = $this->create_commit( $commit );
 
 		if ( is_wp_error( $commit ) ) {
 			return $commit;
@@ -48,6 +49,17 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 	}
 
 	/**
+	 * Create the tree by a set of blob ids.
+	 *
+	 * @param WordPress_GitHub_Sync_Tree $tree
+	 *
+	 * @return stdClass|WP_Error
+	 */
+	protected function create_tree( WordPress_GitHub_Sync_Tree $tree ) {
+		return $this->call( 'POST', $this->tree_endpoint(), $tree->to_body() );
+	}
+
+	/**
 	 * Create the commit from tree sha
 	 *
 	 * @param string $sha shasum for the tree for this commit
@@ -55,13 +67,12 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 	 *
 	 * @return mixed
 	 */
-	protected function create_commit_by_sha( $sha, $parent_sha, $msg ) {
-		$body = array(
-			'message' => $msg,
-			'author'  => $this->export_user(),
-			'tree'    => $sha,
-			'parents' => array( $parent_sha ),
-		);
+	protected function create_commit( WordPress_GitHub_Sync_Commit $commit ) {
+		$body = $commit->to_body();
+
+		if ( $author = $this->export_user() ) {
+			$body['author'] = $author;
+		}
 
 		return $this->call( 'POST', $this->commit_endpoint(), $body );
 	}
@@ -74,22 +85,7 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 	 * @return mixed
 	 */
 	protected function set_ref( $sha ) {
-		$body = array(
-			'sha' => $sha,
-		);
-
-		return $this->call( 'PATCH', $this->reference_endpoint(), $body );
-	}
-
-	/**
-	 * Create the tree by a set of blob ids.
-	 *
-	 * @param WordPress_GitHub_Sync_Tree $tree
-	 *
-	 * @return stdClass|WP_Error
-	 */
-	protected function create_tree( WordPress_GitHub_Sync_Tree $tree ) {
-		return $this->call( 'POST', $this->tree_endpoint(), $tree->to_body() );
+		return $this->call( 'PATCH', $this->reference_endpoint(), array( 'sha' => $sha ) );
 	}
 
 	/**
@@ -97,7 +93,7 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 	 *
 	 * @return array
 	 */
-	public function export_user() {
+	protected function export_user() {
 		// @todo constant/abstract out?
 		if ( $user_id = (int) get_option( '_wpghs_export_user_id' ) ) {
 			delete_option( '_wpghs_export_user_id' );

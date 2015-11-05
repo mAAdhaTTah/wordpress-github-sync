@@ -1,5 +1,4 @@
 <?php
-use WordPress_GitHub_Sync_Base_Client as Base;
 
 /**
  * @group api
@@ -71,14 +70,18 @@ class WordPress_GitHub_Sync_Persist_Client_Test extends WordPress_GitHub_Sync_Ba
 					)
 				)
 			);
-		$this->commit
-			->shouldReceive( 'sha' )
+		$this->tree
+			->shouldReceive( 'set_sha' )
 			->once()
-			->andReturn( '1234567890qwertyuiop' );
+			->with( 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8' );
 		$this->commit
-			->shouldReceive( 'message' )
+			->shouldReceive( 'to_body' )
 			->once()
-			->andReturn( 'Commit message' );
+			->andReturn( array(
+				'tree'    => 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8',
+				'message' => 'Commit message',
+				'parents' => array( 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8' )
+			) );
 		$this->set_post_trees( true );
 		$this->set_post_commits( false );
 
@@ -106,14 +109,18 @@ class WordPress_GitHub_Sync_Persist_Client_Test extends WordPress_GitHub_Sync_Ba
 					)
 				)
 			);
-		$this->commit
-			->shouldReceive( 'sha' )
+		$this->tree
+			->shouldReceive( 'set_sha' )
 			->once()
-			->andReturn( '1234567890qwertyuiop' );
+			->with( 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8' );
 		$this->commit
-			->shouldReceive( 'message' )
+			->shouldReceive( 'to_body' )
 			->once()
-			->andReturn( 'Commit message' );
+			->andReturn( array(
+				'tree'    => 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8',
+				'message' => 'Commit message',
+				'parents' => array( 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8' )
+			) );
 		$this->set_post_trees( true );
 		$this->set_post_commits( true );
 		$this->set_patch_refs_heads_master( false );
@@ -142,14 +149,18 @@ class WordPress_GitHub_Sync_Persist_Client_Test extends WordPress_GitHub_Sync_Ba
 					)
 				)
 			);
-		$this->commit
-			->shouldReceive( 'sha' )
+		$this->tree
+			->shouldReceive( 'set_sha' )
 			->once()
-			->andReturn( '1234567890qwertyuiop' );
+			->with( 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8' );
 		$this->commit
-			->shouldReceive( 'message' )
+			->shouldReceive( 'to_body' )
 			->once()
-			->andReturn( 'Commit message' );
+			->andReturn( array(
+				'tree'    => 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8',
+				'message' => 'Commit message',
+				'parents' => array( 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8' )
+			) );
 		$this->set_post_trees( true );
 		$this->set_post_commits( true );
 		$this->set_patch_refs_heads_master( true );
@@ -177,14 +188,18 @@ class WordPress_GitHub_Sync_Persist_Client_Test extends WordPress_GitHub_Sync_Ba
 					)
 				)
 			);
-		$this->commit
-			->shouldReceive( 'sha' )
+		$this->tree
+			->shouldReceive( 'set_sha' )
 			->once()
-			->andReturn( '1234567890qwertyuiop' );
+			->with( 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8' );
 		$this->commit
-			->shouldReceive( 'message' )
+			->shouldReceive( 'to_body' )
 			->once()
-			->andReturn( 'Commit message' );
+			->andReturn( array(
+				'tree'    => 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8',
+				'message' => 'Commit message',
+				'parents' => array( 'c0d2cb90b51826096c826b61a0e74d2c973d7ad8' )
+			) );
 		$this->set_post_trees( true );
 		update_option( '_wpghs_export_user_id', $this->factory->user->create( array(
 			'display_name' => 'James DiGioia',
