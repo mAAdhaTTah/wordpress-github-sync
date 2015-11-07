@@ -262,7 +262,7 @@ class WordPress_GitHub_Sync_Post {
 		if ( ! $sha && 'yes' === get_option( '_wpghs_fully_exported' ) ) {
 
 			// @todo could we eliminate this by calling down the full tree and searching it
-			$data = $this->api->remote_contents( $this );
+			$data = $this->api->fetch()->remote_contents( $this );
 
 			if ( ! is_wp_error( $data ) ) {
 				update_post_meta( $this->id, '_sha', $data->sha );

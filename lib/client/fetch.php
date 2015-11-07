@@ -51,6 +51,19 @@ class WordPress_GitHub_Sync_Fetch_Client extends WordPress_GitHub_Sync_Base_Clie
 	}
 
 	/**
+	 * Calls the content API to get the post's contents and metadata
+	 *
+	 * Returns Object the response from the API
+	 *
+	 * @param WordPress_GitHub_Sync_Post $post 
+	 *
+	 * @return mixed
+	 */
+	public function remote_contents( $post ) {
+		return $this->call( 'GET', $this->content_endpoint() . $post->github_path() );
+	}
+
+	/**
 	 * Retrieves a tree by sha recursively from the GitHub API
 	 *
 	 * @param string $sha Commit sha to retrieve tree from.
