@@ -77,6 +77,19 @@ class WordPress_GitHub_Sync_Tree {
 	}
 
 	/**
+	 * Updates the tree's sha.
+	 *
+	 * @param string $sha
+	 *
+	 * @return $this
+	 */
+	public function set_sha( $sha ) {
+		$this->sha = $sha;
+
+		return $this;
+	}
+
+	/**
 	 * Returns the tree's url.
 	 *
 	 * @return string

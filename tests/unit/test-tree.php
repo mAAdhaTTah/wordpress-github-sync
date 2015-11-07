@@ -29,6 +29,15 @@ class WordPress_GitHub_Sync_Tree_Test extends WordPress_GitHub_Sync_TestCase {
 		$this->assertEmpty( $tree->blobs() );
 	}
 
+	public function test_should_set_sha() {
+		$sha = '1234567890qwertyuiop';
+		$tree = new WordPress_GitHub_Sync_Tree( new stdClass );
+
+		$tree->set_sha( $sha );
+
+		$this->assertSame( $sha, $tree->sha() );
+	}
+
 	public function test_should_set_array_of_blobs() {
 		$this->blob
 			->shouldReceive( 'path' )
