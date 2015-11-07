@@ -12,7 +12,7 @@ class WordPress_GitHub_Sync_Helpers_Test extends WordPress_GitHub_Sync_TestCase 
 		parent::setUp();
 		$post       = $this->factory->post->create_and_get();
 		$this->post = new WordPress_GitHub_Sync_Post( $post->ID, $this->api );
-		$this->api
+		$this->fetch
 			->shouldReceive( 'repository' )
 			->andReturn( 'owner/repo' );
 	}

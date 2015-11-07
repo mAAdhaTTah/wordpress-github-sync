@@ -18,9 +18,9 @@ class WordPress_GitHub_Sync_Post_Test extends WordPress_GitHub_Sync_TestCase {
 		$this->id   = $this->factory->post->create();
 		$this->post = get_post( $this->id );
 
-		$this->api
-			->shouldReceive('repository')
-			->andReturn('owner/repo');
+		$this->fetch
+			->shouldReceive( 'repository' )
+			->andReturn( 'owner/repo' );
 	}
 
 	public function test_should_return_correct_directory() {
@@ -56,28 +56,28 @@ class WordPress_GitHub_Sync_Post_Test extends WordPress_GitHub_Sync_TestCase {
 
 	public function test_should_export_unpublished_to_drafts_folder() {
 		$id   = $this->factory->post->create( array( 'post_status' => 'draft' ) );
-		$post = new WordPress_GitHub_Sync_Post( $id );
+		$post = new WordPress_GitHub_Sync_Post( $id, $this->api );
 
 		$this->assertEquals( '_drafts/', $post->github_directory() );
 	}
 
 	public function test_should_export_published_post_to_posts_folder() {
 		$id   = $this->factory->post->create();
-		$post = new WordPress_GitHub_Sync_Post( $id );
+		$post = new WordPress_GitHub_Sync_Post( $id, $this->api );
 
 		$this->assertEquals( '_posts/', $post->github_directory() );
 	}
 
 	public function test_should_export_published_page_to_pages_folder() {
 		$id   = $this->factory->post->create( array( 'post_type' => 'page' ) );
-		$post = new WordPress_GitHub_Sync_Post( $id );
+		$post = new WordPress_GitHub_Sync_Post( $id, $this->api );
 
 		$this->assertEquals( '_pages/', $post->github_directory() );
 	}
 
 	public function test_should_export_published_unknown_post_type_to_root() {
 		$id   = $this->factory->post->create( array( 'post_type' => 'unknown' ) );
-		$post = new WordPress_GitHub_Sync_Post( $id );
+		$post = new WordPress_GitHub_Sync_Post( $id, $this->api );
 
 		$this->assertEquals( '', $post->github_directory() );
 	}
@@ -87,7 +87,7 @@ class WordPress_GitHub_Sync_Post_Test extends WordPress_GitHub_Sync_TestCase {
 			'labels' => array( 'name' => 'Widgets' ),
 		) );
 		$id   = $this->factory->post->create( array( 'post_type' => 'widget' ) );
-		$post = new WordPress_GitHub_Sync_Post( $id );
+		$post = new WordPress_GitHub_Sync_Post( $id, $this->api );
 
 		$this->assertEquals( '_widgets/', $post->github_directory() );
 	}

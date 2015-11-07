@@ -7,7 +7,7 @@ class WordPress_GitHub_Sync_Payload_Test extends WordPress_GitHub_Sync_TestCase 
 
 	public function setUp() {
 		parent::setUp();
-		$this->api
+		$this->fetch
 			->shouldReceive( 'repository' )
 			->once()
 			->andReturn( 'owner/repo' )
