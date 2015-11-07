@@ -11,21 +11,23 @@ class WordPress_GitHub_Sync_Commit_Test extends WordPress_GitHub_Sync_Base_Clien
 	}
 
 	public function test_should_interpret_data() {
-		$data            = new stdClass;
-		$data->sha       = '1234567890qwertyuiop';
-		$data->url       = 'https://api.github.com/path/to/endpoint';
-		$data->author    = new stdClass;
-		$data->committer = new stdClass;
-		$data->message   = 'Commit message';
-		$data->parents   = array( '0987654321poiuytrewq' );
-		$data->tree      = new stdClass;
-		$data->tree->sha = 'zxcvbnmasdfghjklpoiuytrewq1234567876543';
+		$data                = new stdClass;
+		$data->sha           = '1234567890qwertyuiop';
+		$data->url           = 'https://api.github.com/path/to/endpoint';
+		$data->author        = new stdClass;
+		$data->author->email = 'jamesorodig@gmail.com';
+		$data->committer     = new stdClass;
+		$data->message       = 'Commit message';
+		$data->parents       = array( '0987654321poiuytrewq' );
+		$data->tree          = new stdClass;
+		$data->tree->sha     = 'zxcvbnmasdfghjklpoiuytrewq1234567876543';
 
 		$commit = new WordPress_GitHub_Sync_Commit( $data );
 
 		$this->assertSame( $data->sha, $commit->sha() );
 		$this->assertSame( $data->url, $commit->url() );
 		$this->assertSame( $data->author, $commit->author() );
+		$this->assertSame( $data->author->email, $commit->author_email() );
 		$this->assertSame( $data->committer, $commit->committer() );
 		$this->assertSame( $data->message, $commit->message() );
 		$this->assertSame( $data->parents, $commit->parents() );
@@ -44,6 +46,7 @@ class WordPress_GitHub_Sync_Commit_Test extends WordPress_GitHub_Sync_Base_Clien
 		$this->assertSame( '', $commit->sha() );
 		$this->assertSame( '', $commit->url() );
 		$this->assertFalse( $commit->author() );
+		$this->assertSame( '', $commit->author_email() );
 		$this->assertFalse( $commit->committer() );
 		$this->assertSame( '', $commit->message() );
 		$this->assertEmpty( $commit->parents() );

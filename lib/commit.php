@@ -97,6 +97,19 @@ class WordPress_GitHub_Sync_Commit {
 	}
 
 	/**
+	 * Return's the commit author's email.
+	 *
+	 * @return string
+	 */
+	public function author_email() {
+		if ( isset( $this->author->email ) ) {
+			return $this->author->email;
+		}
+
+		return '';
+	}
+
+	/**
 	 * Set's the commit author.
 	 *
 	 * @param stdClass $author
