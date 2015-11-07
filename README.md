@@ -1,9 +1,9 @@
 # WordPress <--> GitHub Sync #
-**Contributors:** benbalter, JamesDiGioia  
+**Contributors:** JamesDiGioia, benbalter   
 **Tags:** github, git, version control, content, collaboration, publishing  
 **Requires at least:** 3.9  
 **Tested up to:** 4.3.1  
-**Stable tag:** 1.3.2  
+**Stable tag:** 1.3.4  
 **License:** GPLv2  
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -11,7 +11,7 @@
 
 *A WordPress plugin to sync content with a GitHub repository (or Jekyll site)*
 
-[![Build Status](https://travis-ci.org/benbalter/wordpress-github-sync.svg)](https://travis-ci.org/benbalter/wordpress-github-sync)
+[![Build Status](https://travis-ci.org/mAAdhaTTah/wordpress-github-sync.svg?branch=master)](https://travis-ci.org/benbalter/wordpress-github-sync)
 
 Ever wish you could collaboratively author content for your WordPress site (or expose change history publicly and accept pull requests from your readers)?
 
