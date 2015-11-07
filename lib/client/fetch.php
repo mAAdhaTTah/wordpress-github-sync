@@ -107,7 +107,7 @@ class WordPress_GitHub_Sync_Fetch_Client extends WordPress_GitHub_Sync_Base_Clie
 	/**
 	 * Retrieves the blob data for a given sha
 	 *
-	 * @param stdClass $sha
+	 * @param stdClass $blob
 	 *
 	 * @return WordPress_GitHub_Sync_Blob|WP_Error
 	 */

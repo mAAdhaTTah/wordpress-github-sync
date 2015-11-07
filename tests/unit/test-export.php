@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @group managers
+ */
 class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 
 	/**
@@ -174,7 +177,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_fail_update_export_if_database_fails() {
-		$id = 123456789;
+		$id    = 123456789;
 		$error = new WP_Error( 'db_fail', 'Database failed.' );
 		$this->database
 			->shouldReceive( 'fetch_by_id' )
@@ -186,7 +189,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_fail_update_export_if_cant_get_last_commit() {
-		$id = 123456789;
+		$id    = 123456789;
 		$error = new WP_Error( 'api_fail', 'API failed.' );
 		$this->database
 			->shouldReceive( 'fetch_by_id' )
@@ -202,7 +205,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_fail_update_export_if_cant_create_new_commit() {
-		$id = 123456789;
+		$id    = 123456789;
 		$error = new WP_Error( 'api_fail', 'API failed.' );
 		$msg   = 'Commit message';
 		add_filter( 'wpghs_commit_msg_single', function () use ( $msg ) {
@@ -244,7 +247,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_fail_update_export_if_cant_retrieve_new_commit() {
-		$id = 123456789;
+		$id    = 123456789;
 		$error = new WP_Error( 'api_fail', 'API failed.' );
 		$msg   = 'Commit message';
 		add_filter( 'wpghs_commit_msg_single', function () use ( $msg ) {
@@ -290,7 +293,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_successfully_update_export() {
-		$id = 123456789;
+		$id  = 123456789;
 		$msg = 'Commit message';
 		add_filter( 'wpghs_commit_msg_single', function () use ( $msg ) {
 			return $msg;
@@ -348,8 +351,140 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 		$this->assertEquals( 'Export to GitHub completed successfully.', $this->export->update( $id ) );
 	}
 
+	public function test_should_fail_export_new_posts_if_cant_get_last_commit() {
+		$error = new WP_Error( 'api_fail', 'API failed.' );
+		$this->fetch
+				->shouldReceive( 'master' )
+				->once()
+				->andReturn( $error );
+
+		$this->assertEquals( $error, $this->export->new_posts( array( $this->post ) ) );
+	}
+
+	public function test_should_fail_export_new_posts_if_cant_create_new_commit() {
+		$error = new WP_Error( 'api_fail', 'API failed.' );
+		$msg   = 'Commit message';
+		add_filter( 'wpghs_commit_msg_new_posts', function () use ( $msg ) {
+			return $msg;
+		} );
+		$this->fetch
+				->shouldReceive( 'master' )
+				->once()
+				->andReturn( $this->commit );
+		$this->commit
+				->shouldReceive( 'tree' )
+				->once()
+				->andReturn( $this->tree );
+		$this->tree
+				->shouldReceive( 'add_post_to_tree' )
+				->once()
+				->with( $this->post );
+		$this->commit
+				->shouldReceive( 'set_message' )
+				->once()
+				->with( $msg . ' - wpghs' );
+		$path = '_posts/2015-10-25-github-path.md';
+		$this->persist
+				->shouldReceive( 'commit' )
+				->with( $this->commit )
+				->once()
+				->andReturn( $error );
+
+		$this->assertEquals( $error, $this->export->new_posts( array( $this->post ) ) );
+	}
+
+	public function test_should_fail_export_new_posts_if_cant_retrieve_new_commit() {
+		$error = new WP_Error( 'api_fail', 'API failed.' );
+		$msg   = 'Commit message';
+		add_filter( 'wpghs_commit_msg_new_posts', function () use ( $msg ) {
+			return $msg;
+		} );
+		$this->fetch
+				->shouldReceive( 'master' )
+				->once()
+				->andReturn( $this->commit );
+		$this->commit
+				->shouldReceive( 'tree' )
+				->once()
+				->andReturn( $this->tree );
+		$this->tree
+				->shouldReceive( 'add_post_to_tree' )
+				->once()
+				->with( $this->post );
+		$this->commit
+				->shouldReceive( 'set_message' )
+				->once()
+				->with( $msg . ' - wpghs' );
+		$path = '_posts/2015-10-25-github-path.md';
+		$this->persist
+				->shouldReceive( 'commit' )
+				->with( $this->commit )
+				->once()
+				->andReturn( 'Success' );
+		$this->fetch
+				->shouldReceive( 'master' )
+				->times( 5 )
+				->andReturn( $error );
+
+		$this->assertEquals( $error, $this->export->new_posts( array( $this->post ) ) );
+	}
+
+	public function test_should_successfully_export_new_posts() {
+		$id  = 123456789;
+		$msg = 'Commit message';
+		add_filter( 'wpghs_commit_msg_new_posts', function () use ( $msg ) {
+			return $msg;
+		} );
+		$this->fetch
+				->shouldReceive( 'master' )
+				->once()
+				->andReturn( $this->commit );
+		$this->commit
+				->shouldReceive( 'tree' )
+				->twice()
+				->andReturn( $this->tree );
+		$this->tree
+				->shouldReceive( 'add_post_to_tree' )
+				->once()
+				->with( $this->post );
+		$this->commit
+				->shouldReceive( 'set_message' )
+				->once()
+				->with( $msg . ' - wpghs' );
+		$this->persist
+				->shouldReceive( 'commit' )
+				->with( $this->commit )
+				->once()
+				->andReturn( 'Success' );
+		$this->fetch
+				->shouldReceive( 'master' )
+				->once()
+				->andReturn( $this->commit );
+		$sha  = '1234567890qwertyuiop';
+		$path = '_posts/2015-10-25-github-path.md';
+		$this->post
+				->shouldReceive( 'github_path' )
+				->once()
+				->andReturn( $path );
+		$this->tree
+				->shouldReceive( 'get_blob_by_path' )
+				->with( $path )
+				->once()
+				->andReturn( $this->blob );
+		$this->blob
+				->shouldReceive( 'sha' )
+				->once()
+				->andReturn( $sha );
+		$this->database
+				->shouldReceive( 'set_post_sha' )
+				->with( $this->post, $sha )
+				->once();
+
+		$this->assertEquals( 'Export to GitHub completed successfully.', $this->export->new_posts( array( $this->post ) ) );
+	}
+
 	public function test_should_fail_delete_export_if_database_fails() {
-		$id = 123456789;
+		$id    = 123456789;
 		$error = new WP_Error( 'db_fail', 'Database failed.' );
 		$this->database
 			->shouldReceive( 'fetch_by_id' )
@@ -361,7 +496,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_fail_delete_export_if_cant_get_last_commit() {
-		$id = 123456789;
+		$id    = 123456789;
 		$error = new WP_Error( 'api_fail', 'API failed.' );
 		$this->database
 			->shouldReceive( 'fetch_by_id' )
@@ -377,7 +512,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_fail_delete_export_if_cant_create_new_commit() {
-		$id = 123456789;
+		$id    = 123456789;
 		$error = new WP_Error( 'api_fail', 'API failed.' );
 		$msg   = 'Commit message';
 		add_filter( 'wpghs_commit_msg_delete', function () use ( $msg ) {
@@ -397,9 +532,9 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( $this->tree );
 		$this->tree
-			->shouldReceive( 'add_post_to_tree' )
+			->shouldReceive( 'remove_post_from_tree' )
 			->once()
-			->with( $this->post, true );
+			->with( $this->post );
 		$this->commit
 			->shouldReceive( 'set_message' )
 			->once()
@@ -419,7 +554,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_successfully_delete_export() {
-		$id = 123456789;
+		$id  = 123456789;
 		$msg = 'Commit message';
 		add_filter( 'wpghs_commit_msg_delete', function () use ( $msg ) {
 			return $msg;
@@ -438,9 +573,9 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( $this->tree );
 		$this->tree
-			->shouldReceive( 'add_post_to_tree' )
+			->shouldReceive( 'remove_post_from_tree' )
 			->once()
-			->with( $this->post, true );
+			->with( $this->post );
 		$path = '_posts/2015-10-25-github-path.md';
 		$this->post
 			->shouldReceive( 'github_path' )

@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @group managers
+ */
 class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 
 	/**
@@ -254,7 +257,7 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 				return $msg;
 			} );
 			$this->export
-				->shouldReceive( 'posts' )
+				->shouldReceive( 'new_posts' )
 				->once()
 				->with( Mockery::on( function ( $argument ) {
 					if ( count( $argument ) !== 1 ) {
@@ -263,7 +266,8 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 
 					return $argument[0] instanceof WordPress_GitHub_Sync_Post;
 
-				} ), $msg . ' - wpghs' );
+				} ) )
+				->andReturn( 'Successful export' );
 		}
 	}
 

@@ -112,6 +112,44 @@ class WordPress_GitHub_Sync_Export {
 	}
 
 	/**
+	 * Updates GitHub-created posts with latest WordPress data.
+	 *
+	 * @param WordPress_GitHub_Sync_Post[] $posts
+	 *
+	 * @return string|WP_Error
+	 */
+	public function new_posts( array $posts ) {
+		$master = $this->app->api()->fetch()->master();
+
+		if ( is_wp_error( $master ) ) {
+			return $master;
+		}
+
+		foreach ( $posts as $post ) {
+			$master->tree()->add_post_to_tree( $post );
+		}
+
+		$master->set_message(
+			apply_filters(
+				'wpghs_commit_msg_new_posts',
+				sprintf(
+					'Updating new posts from WordPress at %s (%s)',
+					site_url(),
+					get_bloginfo( 'name' )
+				)
+			) . ' - wpghs'
+		);
+
+		$result = $this->app->api()->persist()->commit( $master );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return $this->update_shas( $posts );
+	}
+
+	/**
 	 * Deletes a provided post ID from master.
 	 *
 	 * @param $post_id
@@ -131,7 +169,7 @@ class WordPress_GitHub_Sync_Export {
 			return $master;
 		}
 
-		$master->tree()->add_post_to_tree( $post, true );
+		$master->tree()->remove_post_from_tree( $post );
 		$master->set_message(
 			apply_filters(
 				'wpghs_commit_msg_delete',
@@ -169,7 +207,7 @@ class WordPress_GitHub_Sync_Export {
 
 		while ( is_wp_error( $master ) && $attempts < 5 ) {
 			$master = $this->app->api()->fetch()->master();
-			$attempts++;
+			$attempts ++;
 		}
 
 		if ( is_wp_error( $master ) ) {
@@ -177,7 +215,6 @@ class WordPress_GitHub_Sync_Export {
 			return $master;
 		}
 
-//		WordPress_GitHub_Sync::write_log( __( 'Saving the shas.', 'wordpress-github-sync' ) );
 		foreach ( $posts as $post ) {
 			$blob = $master->tree()->get_blob_by_path( $post->github_path() );
 

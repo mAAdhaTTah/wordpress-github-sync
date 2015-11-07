@@ -104,17 +104,7 @@ class WordPress_GitHub_Sync_Import {
 		}
 
 		if ( $new ) {
-			$result = $this->app->export()->posts(
-				$new,
-				apply_filters(
-					'wpghs_commit_msg_new_posts',
-					sprintf(
-						'Updating new posts from WordPress at %s (%s)',
-						site_url(),
-						get_bloginfo( 'name' )
-					)
-				) . ' - wpghs'
-			);
+			$result = $this->app->export()->new_posts( $new );
 
 			if ( is_wp_error( $result ) ) {
 				return $result;
