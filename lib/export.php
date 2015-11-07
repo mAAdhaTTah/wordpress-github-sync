@@ -1,7 +1,12 @@
 <?php
-
 /**
  * GitHub Export Manager.
+ *
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_Export
  */
 class WordPress_GitHub_Sync_Export {
 
@@ -20,7 +25,7 @@ class WordPress_GitHub_Sync_Export {
 	/**
 	 * Initializes a new export manager.
 	 *
-	 * @param WordPress_GitHub_Sync $app
+	 * @param WordPress_GitHub_Sync $app Application container.
 	 */
 	public function __construct( WordPress_GitHub_Sync $app ) {
 		$this->app = $app;
@@ -71,7 +76,7 @@ class WordPress_GitHub_Sync_Export {
 	/**
 	 * Updates the provided post ID in master.
 	 *
-	 * @param $post_id
+	 * @param int $post_id Post ID to update.
 	 *
 	 * @return string|WP_Error
 	 */
@@ -114,7 +119,7 @@ class WordPress_GitHub_Sync_Export {
 	/**
 	 * Updates GitHub-created posts with latest WordPress data.
 	 *
-	 * @param WordPress_GitHub_Sync_Post[] $posts
+	 * @param array<WordPress_GitHub_Sync_Post> $posts Array of Posts to create.
 	 *
 	 * @return string|WP_Error
 	 */
@@ -152,9 +157,9 @@ class WordPress_GitHub_Sync_Export {
 	/**
 	 * Deletes a provided post ID from master.
 	 *
-	 * @param $post_id
+	 * @param int $post_id Post ID to delete.
 	 *
-	 * @return string} WP_Error
+	 * @return string|WP_Error
 	 */
 	public function delete( $post_id ) {
 		$post = $this->app->database()->fetch_by_id( $post_id );
@@ -196,8 +201,7 @@ class WordPress_GitHub_Sync_Export {
 	 * Use the new tree to save sha data
 	 * for all the updated posts.
 	 *
-	 * @param WordPress_GitHub_Sync_Post[] $posts
-	 * @param WordPress_GitHub_Sync_Tree $tree
+	 * @param WordPress_GitHub_Sync_Post[] $posts Posts to fetch updated shas for.
 	 *
 	 * @return string|WP_Error
 	 */
@@ -229,7 +233,7 @@ class WordPress_GitHub_Sync_Export {
 	/**
 	 * Saves the export user to the database.
 	 *
-	 * @param $user_id
+	 * @param int $user_id User ID to export with.
 	 *
 	 * @return bool
 	 */
