@@ -1,7 +1,11 @@
 <?php
-
 /**
  * Git commit tree.
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_Tree
  */
 class WordPress_GitHub_Sync_Tree {
 
@@ -50,7 +54,7 @@ class WordPress_GitHub_Sync_Tree {
 	/**
 	 * Represents a commit tree.
 	 *
-	 * @param stdClass $data
+	 * @param stdClass $data Raw tree data.
 	 */
 	public function __construct( stdClass $data ) {
 		$this->data = $data;
@@ -79,7 +83,7 @@ class WordPress_GitHub_Sync_Tree {
 	/**
 	 * Updates the tree's sha.
 	 *
-	 * @param string $sha
+	 * @param string $sha Tree sha.
 	 *
 	 * @return $this
 	 */
@@ -110,7 +114,7 @@ class WordPress_GitHub_Sync_Tree {
 	/**
 	 * Sets the tree's blobs to the provided array of blobs.
 	 *
-	 * @param WordPress_GitHub_Sync_Blob[] $blobs
+	 * @param WordPress_GitHub_Sync_Blob[] $blobs Array of blobs to set to tree.
 	 *
 	 * @return $this
 	 */
@@ -128,7 +132,7 @@ class WordPress_GitHub_Sync_Tree {
 	/**
 	 * Adds the provided blob to the tree.
 	 *
-	 * @param WordPress_GitHub_Sync_Blob $blob
+	 * @param WordPress_GitHub_Sync_Blob $blob Blob to add to tree.
 	 *
 	 * @return $this
 	 */
@@ -141,7 +145,7 @@ class WordPress_GitHub_Sync_Tree {
 	/**
 	 * Adds the provided post as a blob to the tree.
 	 *
-	 * @param WordPress_GitHub_Sync_Post $post
+	 * @param WordPress_GitHub_Sync_Post $post Post to add to tree.
 	 *
 	 * @return $this
 	 */
@@ -166,7 +170,7 @@ class WordPress_GitHub_Sync_Tree {
 	/**
 	 * Removes the provided post's blob from the tree.
 	 *
-	 * @param WordPress_GitHub_Sync_Post $post
+	 * @param WordPress_GitHub_Sync_Post $post Post to remove from tree.
 	 *
 	 * @return $this
 	 */
@@ -190,7 +194,7 @@ class WordPress_GitHub_Sync_Tree {
 	/**
 	 * Retrieves a tree blob for a given path.
 	 *
-	 * @param string $path
+	 * @param string $path Path to retrieve blob by.
 	 *
 	 * @return false|WordPress_GitHub_Sync_Blob
 	 */
@@ -201,7 +205,7 @@ class WordPress_GitHub_Sync_Tree {
 	/**
 	 * Retrieves a tree blob for a given path.
 	 *
-	 * @param string $sha
+	 * @param string $sha Sha to retrieve blob by.
 	 *
 	 * @return false|WordPress_GitHub_Sync_Blob
 	 */
@@ -244,7 +248,7 @@ class WordPress_GitHub_Sync_Tree {
 	/**
 	 * Returns a blob for the provided post.
 	 *
-	 * @param WordPress_GitHub_Sync_Post $post
+	 * @param WordPress_GitHub_Sync_Post $post Post to retrieve blob for.
 	 *
 	 * @return WordPress_GitHub_Sync_Blob
 	 */

@@ -1,7 +1,11 @@
 <?php
-
 /**
  * Controller object manages tree retrieval, manipulation and publishing
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_Controller
  */
 class WordPress_GitHub_Sync_Controller {
 
@@ -15,7 +19,7 @@ class WordPress_GitHub_Sync_Controller {
 	/**
 	 * Instantiates a new Controller object
 	 *
-	 * @param WordPress_GitHub_Sync $app
+	 * @param WordPress_GitHub_Sync $app Applicatio container.
 	 */
 	public function __construct( WordPress_GitHub_Sync $app ) {
 		$this->app = $app;
@@ -125,7 +129,7 @@ class WordPress_GitHub_Sync_Controller {
 	 *
 	 * Called on the save_post hook.
 	 *
-	 * @param int $post_id Post ID
+	 * @param int $post_id Post ID.
 	 *
 	 * @return boolean
 	 */
@@ -153,7 +157,7 @@ class WordPress_GitHub_Sync_Controller {
 	 *
 	 * Called the delete_post hook.
 	 *
-	 * @param int $post_id Post ID
+	 * @param int $post_id Post ID.
 	 *
 	 * @return boolean
 	 */

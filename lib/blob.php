@@ -1,5 +1,12 @@
 <?php
+/**
+ * API Blob model.
+ * @package WordPress_GitHub_Sync
+ */
 
+/**
+ * Class WordPress_GitHub_Sync_Blob
+ */
 class WordPress_GitHub_Sync_Blob {
 
 	/**
@@ -40,9 +47,9 @@ class WordPress_GitHub_Sync_Blob {
 	/**
 	 * Instantiates a new Blob object.
 	 *
-	 * @param stdClass $data
+	 * @param stdClass $data Raw blob data.
 	 */
-	public function __construct( $data ) {
+	public function __construct( stdClass $data ) {
 		$this->data = $data;
 
 		$this->interpret_data();
@@ -120,7 +127,7 @@ class WordPress_GitHub_Sync_Blob {
 		}
 
 		/**
-		 * @todo document filter
+		 * Filters the content for import.
 		 */
 		return apply_filters( 'wpghs_content_import', trim( $content ) );
 	}

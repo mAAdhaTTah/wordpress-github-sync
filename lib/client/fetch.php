@@ -1,4 +1,8 @@
 <?php
+/**
+ * Fetch API client class.
+ * @package WordPress_GitHub_Sync
+ */
 
 /**
  * Class WordPress_GitHub_Sync_Fetch_Client
@@ -55,7 +59,7 @@ class WordPress_GitHub_Sync_Fetch_Client extends WordPress_GitHub_Sync_Base_Clie
 	 *
 	 * Returns Object the response from the API
 	 *
-	 * @param WordPress_GitHub_Sync_Post $post 
+	 * @param WordPress_GitHub_Sync_Post $post Post to retrieve remote contents for.
 	 *
 	 * @return mixed
 	 */
@@ -99,7 +103,7 @@ class WordPress_GitHub_Sync_Fetch_Client extends WordPress_GitHub_Sync_Base_Clie
 	/**
 	 * Generates blobs for recursive tree blob data.
 	 *
-	 * @param stdClass[] $blobs
+	 * @param stdClass[] $blobs Array of tree blob data.
 	 *
 	 * @return WordPress_GitHub_Sync_Blob[]
 	 */
@@ -120,7 +124,7 @@ class WordPress_GitHub_Sync_Fetch_Client extends WordPress_GitHub_Sync_Base_Clie
 	/**
 	 * Retrieves the blob data for a given sha
 	 *
-	 * @param stdClass $blob
+	 * @param stdClass $blob Tree blob data.
 	 *
 	 * @return WordPress_GitHub_Sync_Blob|WP_Error
 	 */

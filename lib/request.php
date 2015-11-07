@@ -1,5 +1,12 @@
 <?php
+/**
+ * Request management object.
+ * @package WordPress_GitHub_Sync
+ */
 
+/**
+ * Class WordPress_GitHub_Sync_Request
+ */
 class WordPress_GitHub_Sync_Request {
 
 	/**
@@ -19,7 +26,7 @@ class WordPress_GitHub_Sync_Request {
 	/**
 	 * WordPress_GitHub_Sync_Request constructor.
 	 *
-	 * @param WordPress_GitHub_Sync $app
+	 * @param WordPress_GitHub_Sync $app Application container.
 	 */
 	public function __construct( WordPress_GitHub_Sync $app ) {
 		$this->app = $app;
@@ -35,7 +42,7 @@ class WordPress_GitHub_Sync_Request {
 
 		$this->raw_data = $this->read_raw_data();
 
-		// validate secret
+		// Validate request secret.
 		$hash = hash_hmac( 'sha1', $this->raw_data, $this->secret() );
 		if ( 'sha1=' . $hash !== $headers['X-Hub-Signature'] ) {
 			return false;
@@ -64,9 +71,10 @@ class WordPress_GitHub_Sync_Request {
 		if ( function_exists( 'getallheaders' ) ) {
 			return getallheaders();
 		}
-
-		// Nginx and pre 5.4 workaround
-		// http://www.php.net/manual/en/function.getallheaders.php
+		/**
+		 * Nginx and pre 5.4 workaround.
+		 * @see http://www.php.net/manual/en/function.getallheaders.php
+		 */
 		$headers = array();
 		foreach ( $_SERVER as $name => $value ) {
 			if ( 'HTTP_' === substr( $name, 0, 5 ) ) {

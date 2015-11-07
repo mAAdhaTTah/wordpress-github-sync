@@ -1,5 +1,12 @@
 <?php
+/**
+ * GitHub Webhook payload.
+ * @package WordPress_GitHub_Sync
+ */
 
+/**
+ * Class WordPress_GitHub_Sync_Payload
+ */
 class WordPress_GitHub_Sync_Payload {
 
 	/**
@@ -34,7 +41,7 @@ class WordPress_GitHub_Sync_Payload {
 	 */
 	public function should_import() {
 		// @todo how do we get this without importing the whole api object just for this?
-		if ( strtolower( $this->data->repository->full_name ) !== strtolower( $this->app->api()->repository() ) ) {
+		if ( strtolower( $this->data->repository->full_name ) !== strtolower( $this->app->api()->fetch()->repository() ) ) {
 			return false;
 		}
 

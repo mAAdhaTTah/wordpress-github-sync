@@ -1,24 +1,34 @@
 <?php
-
 /**
  * The cache object which reads and writes the GitHub api data
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_Cache
  */
 class WordPress_GitHub_Sync_Cache {
 
 	/**
-	 * Endpoint types to cache.
+	 * Cached blobs.
 	 *
 	 * @var array
 	 */
 	protected $blobs = array();
-	protected $trees = array();
-	protected $commits = array();
 
 	/**
-	 * Object instance.
-	 * @var self
+	 * Cached trees.
+	 *
+	 * @var array
 	 */
-	protected static $instance;
+	protected $trees = array();
+
+	/**
+	 * Cached commits.
+	 *
+	 * @var array
+	 */
+	protected $commits = array();
 
 	/**
 	 * Clean out previous version of API data.
@@ -38,7 +48,7 @@ class WordPress_GitHub_Sync_Cache {
 	 * using it.
 	 */
 	public function __construct() {
-		// clear out previously saved information
+		// Clear out previously saved information.
 		if ( get_option( '_wpghs_api_cache' ) ) {
 			delete_option( '_wpghs_api_cache' );
 		}
@@ -47,7 +57,7 @@ class WordPress_GitHub_Sync_Cache {
 	/**
 	 * Fetch commit from cache by sha.
 	 *
-	 * @param $sha
+	 * @param string $sha Commit sha to fetch from cache.
 	 *
 	 * @return false|WordPress_GitHub_Sync_Commit
 	 */
@@ -64,8 +74,8 @@ class WordPress_GitHub_Sync_Cache {
 	/**
 	 * Save commit to cache by sha.
 	 *
-	 * @param string $sha
-	 * @param WordPress_GitHub_Sync_Commit $commit
+	 * @param string                       $sha Commit sha to cache by.
+	 * @param WordPress_GitHub_Sync_Commit $commit Commit to cache.
 	 *
 	 * @return WordPress_GitHub_Sync_Commit
 	 */
@@ -76,7 +86,7 @@ class WordPress_GitHub_Sync_Cache {
 	/**
 	 * Fetch tree from cache by sha.
 	 *
-	 * @param string $sha
+	 * @param string $sha Tree sha to fetch from cache.
 	 *
 	 * @return false|WordPress_GitHub_Sync_Tree
 	 */
@@ -90,9 +100,12 @@ class WordPress_GitHub_Sync_Cache {
 		return false;
 	}
 
+
 	/**
-	 * @param string $sha
-	 * @param WordPress_GitHub_Sync_Tree $tree
+	 * Save tree to cache by sha.
+	 *
+	 * @param string                     $sha Tree sha to cache by.
+	 * @param WordPress_GitHub_Sync_Tree $tree Tree to cache.
 	 *
 	 * @return WordPress_GitHub_Sync_Tree
 	 */
@@ -103,7 +116,7 @@ class WordPress_GitHub_Sync_Cache {
 	/**
 	 * Fetch tree from cache by sha.
 	 *
-	 * @param string $sha
+	 * @param string $sha Blob sha to fetch from cache.
 	 *
 	 * @return false|WordPress_GitHub_Sync_Blob
 	 */
@@ -118,10 +131,10 @@ class WordPress_GitHub_Sync_Cache {
 	}
 
 	/**
-	 * Saves a blob into the cache.
+	 * Save blob to cache by sha.
 	 *
-	 * @param string $sha
-	 * @param WordPress_GitHub_Sync_Blob $blob
+	 * @param string                     $sha Blob sha to cache by.
+	 * @param WordPress_GitHub_Sync_Blob $blob Blob to cache.
 	 *
 	 * @return WordPress_GitHub_Sync_Blob
 	 */
@@ -132,8 +145,8 @@ class WordPress_GitHub_Sync_Cache {
 	/**
 	 * Retrieve data from previous api calls by sha.
 	 *
-	 * @param string $type
-	 * @param string $sha
+	 * @param string $type Object type to retrieve from cache.
+	 * @param string $sha Object sha to retrieve from cache.
 	 *
 	 * @return stdClass|false response object if cached, false if not
 	 */
@@ -152,9 +165,10 @@ class WordPress_GitHub_Sync_Cache {
 	/**
 	 * Save data from api call by sha.
 	 *
-	 * @param string $type
-	 * @param string $sha
-	 * @param mixed $data
+	 * @param string $type Object type.
+	 * @param string $sha Object sha to cache by.
+	 * @param object $data Object to cache.
+	 * @param string $time Length of time to cache object for.
 	 *
 	 * @return mixed
 	 */
@@ -169,8 +183,8 @@ class WordPress_GitHub_Sync_Cache {
 	/**
 	 * Generates the cache id for a given type & sha.
 	 *
-	 * @param string $type
-	 * @param string $sha
+	 * @param string $type Object type.
+	 * @param string $sha Object sha.
 	 *
 	 * @return string
 	 */

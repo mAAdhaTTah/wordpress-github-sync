@@ -1,5 +1,12 @@
 <?php
+/**
+ * API commit model.
+ * @package WordPress_GitHub_Sync
+ */
 
+/**
+ * Class WordPress_GitHub_Sync_Commit
+ */
 class WordPress_GitHub_Sync_Commit {
 
 	/**
@@ -112,7 +119,7 @@ class WordPress_GitHub_Sync_Commit {
 	/**
 	 * Set's the commit author.
 	 *
-	 * @param stdClass $author
+	 * @param stdClass $author Commit author data.
 	 *
 	 * @return $this
 	 */
@@ -136,7 +143,7 @@ class WordPress_GitHub_Sync_Commit {
 	/**
 	 * Set's the commit committer.
 	 *
-	 * @param stdClass $committer
+	 * @param stdClass $committer Committer data.
 	 *
 	 * @return $this
 	 */
@@ -160,7 +167,7 @@ class WordPress_GitHub_Sync_Commit {
 	/**
 	 * Set's the commit message;
 	 *
-	 * @param string $message
+	 * @param string $message Commit message.
 	 *
 	 * @return $this
 	 */
@@ -247,7 +254,6 @@ class WordPress_GitHub_Sync_Commit {
 		);
 
 		// @todo set author here
-
 		return $body;
 	}
 

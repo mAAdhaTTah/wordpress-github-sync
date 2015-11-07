@@ -1,7 +1,11 @@
 <?php
-
 /**
  * Administrative UI views and callbacks
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_Admin
  */
 class WordPress_GitHub_Sync_Admin {
 
@@ -71,7 +75,7 @@ class WordPress_GitHub_Sync_Admin {
 	/**
 	 * Callback to render an individual options field
 	 *
-	 * @param array $args
+	 * @param array $args Field arguments.
 	 */
 	public function field_callback( $args ) {
 		include dirname( dirname( __FILE__ ) ) . '/views/setting-field.php';
@@ -80,7 +84,7 @@ class WordPress_GitHub_Sync_Admin {
 	/**
 	 * Callback to render the default import user field.
 	 *
-	 * @param array $args
+	 * @param array $args Field arguments.
 	 */
 	public function user_field_callback( $args ) {
 		include dirname( dirname( __FILE__ ) ) . '/views/user-setting-field.php';
@@ -90,7 +94,7 @@ class WordPress_GitHub_Sync_Admin {
 	 * Displays settings messages from background processes
 	 */
 	public function section_callback() {
-		if ( 'settings_page_' . WordPress_GitHub_Sync::$text_domain !== get_current_screen()->id ) {
+		if ( get_current_screen()->id !== 'settings_page_' . WordPress_GitHub_Sync::$text_domain ) {
 			return;
 		}
 
@@ -134,7 +138,7 @@ class WordPress_GitHub_Sync_Admin {
 			return;
 		}
 
-		if ( 'settings_page_' . WordPress_GitHub_Sync::$text_domain !== get_current_screen()->id ) {
+		if ( get_current_screen()->id !== 'settings_page_' . WordPress_GitHub_Sync::$text_domain ) {
 			return;
 		}
 

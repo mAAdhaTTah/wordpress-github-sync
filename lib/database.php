@@ -1,5 +1,12 @@
 <?php
+/**
+ * Database interface.
+ * @package WordPress_GitHub_Sync
+ */
 
+/**
+ * Class WordPress_GitHub_Sync_Database
+ */
 class WordPress_GitHub_Sync_Database {
 
 	/**
@@ -67,7 +74,7 @@ class WordPress_GitHub_Sync_Database {
 	/**
 	 * Queries a post and returns it if it's supported.
 	 *
-	 * @param $post_id
+	 * @param int $post_id Post ID to fetch.
 	 *
 	 * @return WP_Error|WordPress_GitHub_Sync_Post
 	 */
@@ -94,8 +101,8 @@ class WordPress_GitHub_Sync_Database {
 	 * Saves an array of Post objects to the database
 	 * and associates their author as well as their latest
 	 *
-	 * @param WordPress_GitHub_Sync_Post[] $posts
-	 * @param string $email
+	 * @param WordPress_GitHub_Sync_Post[] $posts Array of Posts to save.
+	 * @param string                       $email Author email.
 	 *
 	 * @return string|WP_Error
 	 *
@@ -211,9 +218,9 @@ class WordPress_GitHub_Sync_Database {
 	}
 
 	/**
-	 * Formats a whitelist array for a query
+	 * Formats a whitelist array for a query.
 	 *
-	 * @param  array $whitelist
+	 * @param array $whitelist Whitelisted posts to format into query.
 	 *
 	 * @return string Whitelist formatted for query
 	 */
@@ -229,9 +236,9 @@ class WordPress_GitHub_Sync_Database {
 	 * Verifies that both the post's status & type
 	 * are currently whitelisted
 	 *
-	 * @param  WordPress_GitHub_Sync_Post $post post to verify
+	 * @param  WordPress_GitHub_Sync_Post $post Post to verify.
 	 *
-	 * @return boolean                          true if supported, false if not
+	 * @return boolean                          True if supported, false if not.
 	 */
 	protected function is_post_supported( WordPress_GitHub_Sync_Post $post ) {
 		if ( wp_is_post_revision( $post->id ) ) {
@@ -259,7 +266,7 @@ class WordPress_GitHub_Sync_Database {
 	 * Searches for a user with provided email address or returns
 	 * the default user saved in the database.
 	 *
-	 * @param string $email
+	 * @param string $email User email address to search for.
 	 *
 	 * @return WP_Error|WP_User
 	 */
@@ -324,8 +331,8 @@ class WordPress_GitHub_Sync_Database {
 	 *
 	 * Bypassing triggering any hooks, including creating new revisions.
 	 *
-	 * @param int $post_id
-	 * @param int $user_id
+	 * @param int $post_id Post ID to update.
+	 * @param int $user_id User ID to update to.
 	 *
 	 * @return string|WP_Error
 	 */
@@ -366,8 +373,8 @@ class WordPress_GitHub_Sync_Database {
 	/**
 	 * Update the provided post's blob sha.
 	 *
-	 * @param WordPress_GitHub_Sync_Post $post
-	 * @param string $sha
+	 * @param WordPress_GitHub_Sync_Post $post Post to update.
+	 * @param string                     $sha Sha to update to.
 	 *
 	 * @return bool|int
 	 */

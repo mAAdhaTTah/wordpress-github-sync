@@ -1,5 +1,11 @@
 <?php
 /**
+ * Theme helper functions.
+ *
+ * @package WordPress_GitHub_SYnc
+ */
+
+/**
  * Returns the HTML markup to view the current post on GitHub.
  *
  * @return string

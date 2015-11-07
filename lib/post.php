@@ -1,11 +1,17 @@
 <?php
 /**
  * The post object which represents both the GitHub and WordPress post
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_Post
  */
 class WordPress_GitHub_Sync_Post {
 
 	/**
 	 * Api object
+	 *
 	 * @var WordPress_GitHub_Sync_Api
 	 */
 	public $api;
@@ -46,8 +52,8 @@ class WordPress_GitHub_Sync_Post {
 	/**
 	 * Instantiates a new Post object
 	 *
-	 * @param int|array $id_or_args either a post ID or an array of arguments.
-	 * @param WordPress_GitHub_Sync_Api $api
+	 * @param int|array                 $id_or_args Either a post ID or an array of arguments.
+	 * @param WordPress_GitHub_Sync_Api $api API object.
 	 *
 	 * @todo remove database operations from this method
 	 */
@@ -207,7 +213,7 @@ class WordPress_GitHub_Sync_Post {
 	 * @return string
 	 */
 	public function github_view_url() {
-		return 'https://github.com/' . $this->api->repository() . '/blob/master/' . $this->github_path();
+		return 'https://github.com/' . $this->api->fetch()->repository() . '/blob/master/' . $this->github_path();
 	}
 
 	/**
@@ -216,14 +222,16 @@ class WordPress_GitHub_Sync_Post {
 	 * @return string
 	 */
 	public function github_edit_url() {
-		return 'https://github.com/' . $this->api->repository() . '/edit/master/' . $this->github_path();
+		return 'https://github.com/' . $this->api->fetch()->repository() . '/edit/master/' . $this->github_path();
 	}
 
 	/**
-	* Retrieve post type directory from blob path
-	* @param string $path
-	* @return string
-	*/
+	 * Retrieve post type directory from blob path.
+	 *
+	 * @param string $path Path string.
+	 *
+	 * @return string
+	 */
 	public function get_directory_from_path( $path ) {
 		$directory = explode( '/',$path );
 		$directory = count( $directory ) > 0 ? $directory[0] : '';
@@ -258,7 +266,7 @@ class WordPress_GitHub_Sync_Post {
 		$sha = get_post_meta( $this->id, '_sha', true );
 
 		// If we've done a full export and we have no sha
-		// then we should try a live check to see if it exists
+		// then we should try a live check to see if it exists.
 		if ( ! $sha && 'yes' === get_option( '_wpghs_fully_exported' ) ) {
 
 			// @todo could we eliminate this by calling down the full tree and searching it

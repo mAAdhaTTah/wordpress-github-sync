@@ -1,9 +1,14 @@
 <?php
+/**
+ * Base API client class.
+ * @package WordPress_GitHub_Sync
+ */
 
 /**
  * Class WordPress_GitHub_Sync_Base_Client
  */
 class WordPress_GitHub_Sync_Base_Client {
+
 	const TOKEN_OPTION_KEY = 'wpghs_oauth_token';
 	const REPO_OPTION_KEY = 'wpghs_repository';
 	const HOST_OPTION_KEY = 'wpghs_host';
@@ -27,9 +32,9 @@ class WordPress_GitHub_Sync_Base_Client {
 	/**
 	 * Generic GitHub API interface and response handler
 	 *
-	 * @param string $method
-	 * @param string $endpoint
-	 * @param array $body
+	 * @param string $method HTTP method.
+	 * @param string $endpoint API endpoint.
+	 * @param array  $body Request body.
 	 *
 	 * @return stdClass|WP_Error
 	 */
@@ -106,7 +111,7 @@ class WordPress_GitHub_Sync_Base_Client {
 	 *
 	 * @return string
 	 */
-	protected function repository() {
+	public function repository() {
 		return (string) get_option( self::REPO_OPTION_KEY );
 	}
 
@@ -115,7 +120,7 @@ class WordPress_GitHub_Sync_Base_Client {
 	 *
 	 * @return string
 	 */
-	protected function oauth_token() {
+	public function oauth_token() {
 		return (string) get_option( self::TOKEN_OPTION_KEY );
 	}
 

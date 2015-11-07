@@ -1,6 +1,11 @@
 <?php
 /**
  * Interfaces with the GitHub API
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_Api
  */
 class WordPress_GitHub_Sync_Api {
 

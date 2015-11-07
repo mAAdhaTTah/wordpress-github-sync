@@ -1,4 +1,8 @@
 <?php
+/**
+ * API Persist client.
+ * @package WordPress_GitHub_Sync
+ */
 
 /**
  * Class WordPress_GitHub_Sync_Persist_Client
@@ -8,7 +12,7 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 	/**
 	 * Add a new commit to the master branch.
 	 *
-	 * @param WordPress_GitHub_Sync_Commit $commit
+	 * @param WordPress_GitHub_Sync_Commit $commit Commit to create.
 	 *
 	 * @return bool|mixed|WordPress_GitHub_Sync_Commit|WP_Error
 	 */
@@ -23,7 +27,6 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 			);
 		}
 
-//		WordPress_GitHub_Sync::write_log( __( 'Creating the tree.', 'wordpress-github-sync' ) );
 		$tree = $this->create_tree( $commit->tree() );
 
 		if ( is_wp_error( $tree ) ) {
@@ -31,14 +34,12 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 		}
 
 		$commit->tree()->set_sha( $tree->sha );
-//		WordPress_GitHub_Sync::write_log( __( 'Creating the commit.', 'wordpress-github-sync' ) );
 		$commit = $this->create_commit( $commit );
 
 		if ( is_wp_error( $commit ) ) {
 			return $commit;
 		}
 
-//		WordPress_GitHub_Sync::write_log( __( 'Setting the master branch to our new commit.', 'wordpress-github-sync' ) );
 		$ref = $this->set_ref( $commit->sha );
 
 		if ( is_wp_error( $ref ) ) {
@@ -51,7 +52,7 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 	/**
 	 * Create the tree by a set of blob ids.
 	 *
-	 * @param WordPress_GitHub_Sync_Tree $tree
+	 * @param WordPress_GitHub_Sync_Tree $tree Tree to create.
 	 *
 	 * @return stdClass|WP_Error
 	 */
@@ -60,10 +61,9 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 	}
 
 	/**
-	 * Create the commit from tree sha
+	 * Create the commit from tree sha.
 	 *
-	 * @param string $sha shasum for the tree for this commit
-	 * @param string $msg
+	 * @param WordPress_GitHub_Sync_Commit $commit Commit to create.
 	 *
 	 * @return mixed
 	 */
@@ -80,7 +80,7 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 	/**
 	 * Updates the master branch to point to the new commit
 	 *
-	 * @param string $sha shasum for the commit for the master branch
+	 * @param string $sha Sha for the commit for the master branch.
 	 *
 	 * @return mixed
 	 */

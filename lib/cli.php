@@ -1,6 +1,11 @@
 <?php
 /**
  * WP_CLI Commands
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_CLI
  */
 class WordPress_GitHub_Sync_CLI {
 
@@ -14,7 +19,7 @@ class WordPress_GitHub_Sync_CLI {
 	/**
 	 * Wire up controller object on init
 	 *
-	 * @param WordPress_GitHub_Sync $app
+	 * @param WordPress_GitHub_Sync $app Application container.
 	 */
 	public function __construct( WordPress_GitHub_Sync $app ) {
 		$this->app = $app;
@@ -39,7 +44,7 @@ class WordPress_GitHub_Sync_CLI {
 	 *
 	 * @synopsis <post_id|all> <user_id>
 	 *
-	 * @param array $args
+	 * @param array $args Command arguments.
 	 */
 	public function export( $args ) {
 		list( $post_id, $user_id ) = $args;
@@ -81,7 +86,7 @@ class WordPress_GitHub_Sync_CLI {
 	 *
 	 * @synopsis <user_id>
 	 *
-	 * @param array $args
+	 * @param array $args Command arguments.
 	 */
 	public function import( $args ) {
 		list( $user_id ) = $args;
