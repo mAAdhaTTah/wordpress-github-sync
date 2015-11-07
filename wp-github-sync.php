@@ -176,7 +176,7 @@ class WordPress_GitHub_Sync {
 	 * Sets and kicks off the export cronjob
 	 */
 	public function start_export() {
-		$this->export->set_user( get_current_user_id() );
+		$this->export()->set_user( get_current_user_id() );
 		update_option( '_wpghs_export_started', 'yes' );
 
 		WordPress_GitHub_Sync::write_log( __( 'Starting full export to GitHub.', 'wordpress-github-sync' ) );
