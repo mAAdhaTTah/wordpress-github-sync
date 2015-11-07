@@ -76,7 +76,13 @@ class WordPress_GitHub_Sync_Post_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_export_published_unknown_post_type_to_root() {
-		$id   = $this->factory->post->create( array( 'post_type' => 'unknown' ) );
+		global $wp_version;
+
+		if ( version_compare( $wp_version, '4.0', '<' ) && is_multisite() ) {
+			$this->markTestSkipped( "Can't create post with unregistered type in Multisite v3.9." );
+		}
+
+		$id   = $this->factory->post->create( array( 'post_type' => 'widget' ) );
 		$post = new WordPress_GitHub_Sync_Post( $id, $this->api );
 
 		$this->assertEquals( '', $post->github_directory() );
