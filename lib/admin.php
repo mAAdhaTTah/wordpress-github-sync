@@ -132,8 +132,6 @@ class WordPress_GitHub_Sync_Admin {
 	 * Admin callback to trigger import/export because WordPress admin routing lol
 	 */
 	public function callback() {
-		global $wpghs;
-
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
@@ -147,11 +145,11 @@ class WordPress_GitHub_Sync_Admin {
 		}
 
 		if ( 'export' === $_GET['action'] ) {
-			$wpghs->start_export();
+			WordPress_GitHub_Sync::$instance->start_export();
 		}
 
 		if ( 'import' === $_GET['action'] ) {
-			$wpghs->start_import();
+            WordPress_GitHub_Sync::$instance->start_import();
 		}
 
 		wp_redirect( admin_url( 'options-general.php?page=wordpress-github-sync' ) );
