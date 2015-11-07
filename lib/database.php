@@ -95,14 +95,22 @@ class WordPress_GitHub_Sync_Database {
 	 * and associates their author as well as their latest
 	 *
 	 * @param WordPress_GitHub_Sync_Post[] $posts
-	 *
 	 * @param string $email
+	 *
+	 * @return string|WP_Error
 	 *
 	 * @todo what about return values?
 	 */
-	public function save_posts( $posts, $email ) {
+	public function save_posts( array $posts, $email ) {
 		$user    = $this->fetch_commit_user( $email );
 		$user_id = ! is_wp_error( $user ) ? $user->ID : 0;
+
+		/**
+		 * Whether an error has occurred.
+		 *
+		 * @var WP_Error|false $error
+		 */
+		$error = false;
 
 		foreach ( $posts as $post ) {
 			$post_id = $post->is_new() ?
@@ -110,8 +118,11 @@ class WordPress_GitHub_Sync_Database {
 				wp_update_post( $post->get_args(), true );
 
 			if ( is_wp_error( $post_id ) ) {
-				// @todo handle error
-				continue;
+				if ( ! $error ) {
+					$error = $post_id;
+				} else {
+					$error->add( $post_id->get_error_code(), $post_id->get_error_message() );
+				}
 			}
 
 			foreach ( $post->get_meta() as $key => $value ) {
@@ -126,6 +137,12 @@ class WordPress_GitHub_Sync_Database {
 
 			$post->set_post( get_post( $post_id ) );
 		}
+
+		if ( $error ) {
+			return $error;
+		}
+
+		return __( 'Successfully saved posts.', 'wordpress-github-sync' );
 	}
 
 	/**
