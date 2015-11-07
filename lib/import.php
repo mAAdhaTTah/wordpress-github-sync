@@ -1,7 +1,12 @@
 <?php
-
 /**
  * GitHub Import Manager
+ *
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_Import
  */
 class WordPress_GitHub_Sync_Import {
 
@@ -15,7 +20,7 @@ class WordPress_GitHub_Sync_Import {
 	/**
 	 * Initializes a new import manager.
 	 *
-	 * @param WordPress_GitHub_Sync $app
+	 * @param WordPress_GitHub_Sync $app Application container.
 	 */
 	public function __construct( WordPress_GitHub_Sync $app ) {
 		$this->app = $app;
@@ -24,12 +29,16 @@ class WordPress_GitHub_Sync_Import {
 	/**
 	 * Imports a payload.
 	 *
-	 * @param WordPress_GitHub_Sync_Payload $payload
+	 * @param WordPress_GitHub_Sync_Payload $payload GitHub payload object.
 	 *
 	 * @return string|WP_Error
 	 */
 	public function payload( WordPress_GitHub_Sync_Payload $payload ) {
-		/** @var false|WP_Error $error */
+		/**
+		 * Whether there's an error during import.
+		 *
+		 * @var false|WP_Error $error
+		 */
 		$error = false;
 
 		$result = $this->commit( $this->app->api()->fetch()->commit( $payload->get_commit_id() ) );
@@ -73,7 +82,7 @@ class WordPress_GitHub_Sync_Import {
 	/**
 	 * Imports a provided commit into the database.
 	 *
-	 * @param WordPress_GitHub_Sync_Commit|WP_Error $commit
+	 * @param WordPress_GitHub_Sync_Commit|WP_Error $commit Commit to import.
 	 *
 	 * @return string|WP_Error
 	 */
@@ -117,7 +126,7 @@ class WordPress_GitHub_Sync_Import {
 	/**
 	 * Imports a single blob content into matching post.
 	 *
-	 * @param WordPress_GitHub_Sync_Blob $blob
+	 * @param WordPress_GitHub_Sync_Blob $blob Blob to transform into a Post.
 	 *
 	 * @return WordPress_GitHub_Sync_Post
 	 */
