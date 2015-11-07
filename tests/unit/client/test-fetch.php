@@ -237,22 +237,20 @@ class WordPress_GitHub_Sync_Fetch_Client_Test extends WordPress_GitHub_Sync_Base
 		/**
 		 * Validate the blobs' api data mapped correctly.
 		 */
-		$count = 0;
-		foreach ( $tree as $blob ) {
+		$blobs = $tree->blobs();
+		$this->assertCount( 3, $blobs );
+		foreach ( $blobs as $blob ) {
 			$this->assertTrue( in_array( $blob->sha(), array(
 				'2d73165945b0ccbe4932f1363457986b0ed49f19',
 				'8d9b2e6fd93761211dc03abd71f4a9189d680fd0',
+				'9fa5c7537f8582b71028ff34b8c20dfd0f3b2a25',
 			) ) );
 			$this->assertTrue( in_array( $blob->path(), array(
 				'_pages/sample-page.md',
 				'_posts/2015-11-02-hello-world.md',
+				'README.md',
 			) ) );
-
-			$count++;
 		}
-
-		$this->assertTrue( 2 === $count );
-
 	}
 
 	protected function malformed_repo( $repo ) {

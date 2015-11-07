@@ -157,7 +157,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->once()
 			->andReturn( $path );
 		$this->tree
-			->shouldReceive( 'get_blob_for_path' )
+			->shouldReceive( 'get_blob_by_path' )
 			->with( $path )
 			->once()
 			->andReturn( $this->blob );
@@ -332,7 +332,7 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 			->twice()
 			->andReturn( $path );
 		$this->tree
-			->shouldReceive( 'get_blob_for_path' )
+			->shouldReceive( 'get_blob_by_path' )
 			->with( $path )
 			->once()
 			->andReturn( $this->blob );

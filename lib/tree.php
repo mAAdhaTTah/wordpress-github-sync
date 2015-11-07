@@ -3,14 +3,7 @@
 /**
  * Git commit tree.
  */
-class WordPress_GitHub_Sync_Tree implements Iterator {
-
-	/**
-	 * Whether the tree has changed.
-	 *
-	 * @var bool
-	 */
-	protected $changed = false;
+class WordPress_GitHub_Sync_Tree {
 
 	/**
 	 * Current tree if retrieved, otherwise, error
@@ -20,32 +13,39 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	protected $data;
 
 	/**
+	 * Tree's sha.
+	 *
+	 * @var string
+	 */
+	protected $sha;
+
+	/**
+	 * Tree's url.
+	 *
+	 * @var string
+	 */
+	protected $url;
+
+	/**
 	 * Blobs keyed by path.
 	 *
-	 * @var array<string $path, WordPress_GitHub_Sync_Blob $blob>
+	 * @var WordPress_GitHub_Sync_Blob[]
 	 */
-	protected $paths;
+	protected $paths = array();
 
 	/**
 	 * Blobs keyed by sha.
 	 *
-	 * @var array<string $sha, WordPress_GitHub_Sync_Blob $blob>
+	 * @var WordPress_GitHub_Sync_Blob[]
 	 */
-	protected $shas;
+	protected $shas = array();
 
 	/**
-	 * Current position in the loop.
+	 * Whether the tree has changed.
 	 *
-	 * @var int
+	 * @var bool
 	 */
-	protected $position;
-
-	/**
-	 * Current blob in the loop.
-	 *
-	 * @var stdClass
-	 */
-	protected $current;
+	protected $changed = false;
 
 	/**
 	 * Represents a commit tree.
@@ -55,13 +55,13 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	public function __construct( stdClass $data ) {
 		$this->data = $data;
 
-		$this->sha = $this->data->sha;
+		$this->interpret_data();
 	}
 
 	/**
 	 * Returns the tree's raw data.
 	 *
-	 * @return array
+	 * @return stdClass
 	 */
 	public function get_data() {
 		return $this->data;
@@ -74,6 +74,15 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 */
 	public function sha() {
 		return $this->sha;
+	}
+
+	/**
+	 * Returns the tree's url.
+	 *
+	 * @return string
+	 */
+	public function url() {
+		return $this->url;
 	}
 
 	/**
@@ -117,98 +126,52 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	}
 
 	/**
-	 * Manipulates the tree for a given post.
-	 *
-	 * If remove is true, removes the provided post from the current true.
-	 * If false or nothing is provided, adds or updates the tree
-	 * with the provided post.
+	 * Adds the provided post as a blob to the tree.
 	 *
 	 * @param WordPress_GitHub_Sync_Post $post
-	 * @param bool $remove
 	 *
-	 * @todo split into post_{to/from}_tree instead of param toggle; easier to understand
+	 * @return $this
 	 */
-	public function add_post_to_tree( $post, $remove = false ) {
-		$match = false;
+	public function add_post_to_tree( WordPress_GitHub_Sync_Post $post ) {
+		$blob = $this->get_blob_for_post( $post );
 
-		foreach ( $this->data as $index => $blob ) {
-			if ( ! isset( $blob->sha ) ) {
-				continue;
-			}
+		if (
+			! $blob->sha() ||
+			$blob->content_import() !== $post->github_content()
+		) {
+			$this->shas[]  = $this->paths[ $blob->path() ] = $post->to_blob();
+			$this->changed = true;
 
-			if ( $blob->sha === $post->sha() ) {
-				unset( $this->data[ $index ] );
-				$match = true;
-
-				if ( ! $remove ) {
-					$this->data[] = $this->new_blob( $post, $blob );
-				} else {
-					$this->changed = true;
-				}
-
-				break;
+			if ( $blob->sha() ) {
+				unset( $this->shas[ $blob->sha() ] );
 			}
 		}
 
-		if ( ! $match && ! $remove ) {
-			$this->data[]  = $this->new_blob( $post );
+		return $this;
+	}
+
+	/**
+	 * Removes the provided post's blob from the tree.
+	 *
+	 * @param WordPress_GitHub_Sync_Post $post
+	 *
+	 * @return $this
+	 */
+	public function remove_post_from_tree( WordPress_GitHub_Sync_Post $post ) {
+		if ( isset( $this->shas[ $post->sha() ] ) ) {
+			$blob = $this->shas[ $post->sha() ];
+
+			unset( $this->paths[ $blob->path() ] );
+			unset( $this->shas[ $post->sha() ] );
+
+			$this->changed = true;
+		} else if ( isset( $this->paths[ $post->github_path() ] ) ) {
+			unset( $this->paths[ $post->github_path() ] );
+
 			$this->changed = true;
 		}
-	}
 
-	/**
-	 * Combines a post and (potentially) a blob.
-	 *
-	 * If no blob is provided, turns post into blob.
-	 *
-	 * If blob is provided, compares blob to post
-	 * and updates blob data based on differences.
-	 *
-	 * @param WordPress_GitHub_Sync_Post $post
-	 * @param bool|stdClass $blob
-	 *
-	 * @return array
-	 */
-	public function new_blob( $post, $blob = false ) {
-		if ( ! $blob ) {
-			$blob = $this->blob_from_post( $post );
-		} else {
-			unset( $blob->url );
-			unset( $blob->size );
-
-			if ( $blob->path !== $post->github_path() ) {
-				$blob->path    = $post->github_path();
-				$this->changed = true;
-			}
-
-			$blob_data = $this->api->get_blob( $blob->sha );
-
-			if ( base64_decode( $blob_data->content ) !== $post->github_content() ) {
-				unset( $blob->sha );
-				$blob->content = $post->github_content();
-				$this->changed = true;
-			}
-		}
-
-		return $blob;
-	}
-
-	/**
-	 * Creates a blob with the data required for the tree.
-	 *
-	 * @param WordPress_GitHub_Sync_Post $post
-	 *
-	 * @return stdClass
-	 */
-	public function blob_from_post( $post ) {
-		$blob = new stdClass;
-
-		$blob->path    = $post->github_path();
-		$blob->mode    = '100644';
-		$blob->type    = 'blob';
-		$blob->content = $post->github_content();
-
-		return $blob;
+		return $this;
 	}
 
 	/**
@@ -216,113 +179,21 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 *
 	 * @param string $path
 	 *
-	 * @return bool|WordPress_GitHub_Sync_Blob
+	 * @return false|WordPress_GitHub_Sync_Blob
 	 */
-	public function get_blob_for_path( $path ) {
+	public function get_blob_by_path( $path ) {
 		return isset( $this->paths[ $path ] ) ? $this->paths[ $path ] : false;
 	}
 
 	/**
-	 * Return the current element.
+	 * Retrieves a tree blob for a given path.
 	 *
-	 * @link http://php.net/manual/en/iterator.current.php
-	 * @return WordPress_GitHub_Sync_Blob
-	 */
-	public function current() {
-		return $this->current;
-	}
-
-	/**
-	 * Move forward to next element.
+	 * @param string $sha
 	 *
-	 * @link http://php.net/manual/en/iterator.next.php
+	 * @return false|WordPress_GitHub_Sync_Blob
 	 */
-	public function next() {
-		$this->position++;
-	}
-
-	/**
-	 * Return the key of the current element
-	 *
-	 * @link http://php.net/manual/en/iterator.key.php
-	 * @return int|null int on success, or null on failure.
-	 */
-	public function key() {
-		if ( $this->valid() ) {
-			return $this->position;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Checks if current position is valid
-	 *
-	 * @link http://php.net/manual/en/iterator.valid.php
-	 * @return boolean true on success, false on failure.
-	 */
-	public function valid() {
-		global $wpdb;
-
-		$blobs = $this->blobs();
-
-		while ( isset( $blobs[ $this->position ] ) ) {
-			$blob = $blobs[ $this->position ];
-
-			// Skip the repo's readme
-			if ( 'readme' === strtolower( substr( $blob->path(), 0, 6 ) ) ) {
-//				WordPress_GitHub_Sync::write_log( __( 'Skipping README', 'wordpress-github-sync' ) );
-				$this->next();
-
-				continue;
-			}
-
-			// If the blob sha already matches a post, then move on
-			// @todo this doesn't belong here
-			$id = $wpdb->get_var(
-				"SELECT post_id FROM $wpdb->postmeta
-				WHERE meta_key = '_sha' AND meta_value = '{$blob->sha()}'"
-			);
-
-			if ( $id ) {
-//				WordPress_GitHub_Sync::write_log(
-//					sprintf(
-//						__( 'Already synced blob %s', 'wordpress-github-sync' ),
-//						$blob->path()
-//					)
-//				);
-				$this->next();
-
-				continue;
-			}
-
-			if ( ! $blob->has_frontmatter() ) {
-//				WordPress_GitHub_Sync::write_log(
-//					sprintf(
-//						__( 'No front matter on blob %s', 'wordpress-github-sync' ),
-//						$blob->path()
-//					)
-//				);
-				$this->next();
-
-				continue;
-			}
-
-			$this->current = $blob;
-
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Rewind the Iterator to the first element
-	 *
-	 * @link http://php.net/manual/en/iterator.rewind.php
-	 */
-	public function rewind() {
-		$this->position = 0;
+	public function get_blob_by_sha( $sha ) {
+		return isset( $this->shas[ $sha ] ) ? $this->shas[ $sha ] : false;
 	}
 
 	/**
@@ -340,6 +211,39 @@ class WordPress_GitHub_Sync_Tree implements Iterator {
 	 * @return array
 	 */
 	public function to_body() {
-		return array( 'tree' => $this->data );
+		$tree = array();
+
+		foreach ( $this->blobs() as $blob ) {
+			$tree[] = $blob->to_body();
+		}
+
+		return array( 'tree' => $tree );
+	}
+
+	/**
+	 * Interprets the Tree from the data.
+	 */
+	protected function interpret_data() {
+		$this->sha = isset( $this->data->sha ) ? $this->data->sha : '';
+		$this->url = isset( $this->data->url ) ? $this->data->url : '';
+	}
+
+	/**
+	 * Returns a blob for the provided post.
+	 *
+	 * @param WordPress_GitHub_Sync_Post $post
+	 *
+	 * @return WordPress_GitHub_Sync_Blob
+	 */
+	protected function get_blob_for_post( WordPress_GitHub_Sync_Post $post ) {
+		if ( $blob = $this->get_blob_by_sha( $post->sha() ) ) {
+			return $blob;
+		}
+
+		if ( $blob = $this->get_blob_by_path( $post->github_path() ) ) {
+			return $blob;
+		}
+
+		return $post->to_blob();
 	}
 }

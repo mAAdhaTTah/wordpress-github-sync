@@ -231,7 +231,6 @@ class WordPress_GitHub_Sync_Post {
 		return $directory;
 	}
 
-
 	/**
 	 * Determines the last author to modify the post
 	 *
@@ -362,5 +361,19 @@ class WordPress_GitHub_Sync_Post {
 	 */
 	public function set_post( WP_Post $post ) {
 		$this->post = $post;
+	}
+
+	/**
+	 * Transforms the Post into a Blob.
+	 *
+	 * @return WordPress_GitHub_Sync_Blob
+	 */
+	public function to_blob() {
+		$data = new stdClass;
+
+		$data->path    = $this->github_path();
+		$data->content = $this->github_content();
+
+		return new WordPress_GitHub_Sync_Blob( $data );
 	}
 }

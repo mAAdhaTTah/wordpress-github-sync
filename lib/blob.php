@@ -132,12 +132,33 @@ class WordPress_GitHub_Sync_Blob {
 	}
 
 	/**
+	 * Formats the blob into an API call body.
+	 *
+	 * @return stdClass
+	 */
+	public function to_body() {
+		$data = new stdClass;
+
+		$data->path = $this->path();
+		$data->mode = '100644';
+		$data->type = 'blob';
+
+		if ( $this->sha() ) {
+			$data->sha = $this->sha();
+		} else {
+			$data->content = $this->content();
+		}
+
+		return $data;
+	}
+
+	/**
 	 * Interprets the blob's data into properties.
 	 */
 	protected function interpret_data() {
 		$content = trim( $this->data->content );
 
-		if ( 'base64' === $this->data->encoding ) {
+		if ( isset( $this->data->encoding ) && 'base64' === $this->data->encoding ) {
 			$content = base64_decode( $content );
 		}
 
@@ -158,6 +179,7 @@ class WordPress_GitHub_Sync_Blob {
 
 		$this->content = $content;
 		$this->meta    = $meta;
-		$this->sha     = $this->data->sha;
+		$this->sha     = isset( $this->data->sha ) ? $this->data->sha : '';
+		$this->path    = isset( $this->data->path ) ? $this->data->path : '';
 	}
 }

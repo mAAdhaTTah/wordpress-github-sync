@@ -179,7 +179,7 @@ class WordPress_GitHub_Sync_Export {
 
 //		WordPress_GitHub_Sync::write_log( __( 'Saving the shas.', 'wordpress-github-sync' ) );
 		foreach ( $posts as $post ) {
-			$blob = $master->tree()->get_blob_for_path( $post->github_path() );
+			$blob = $master->tree()->get_blob_by_path( $post->github_path() );
 
 			if ( $blob ) {
 				$this->app->database()->set_post_sha( $post, $blob->sha() );
