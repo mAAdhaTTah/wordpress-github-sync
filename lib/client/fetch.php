@@ -122,8 +122,9 @@ class WordPress_GitHub_Sync_Fetch_Client extends WordPress_GitHub_Sync_Base_Clie
 			return $data;
 		}
 
+		$data->path = $blob->path;
 		$obj = new WordPress_GitHub_Sync_Blob( $data );
 
-		return $this->app->cache()->set_blob( $blob->sha, $obj->set_path( $blob->path ) );
+		return $this->app->cache()->set_blob( $obj->sha(), $obj );
 	}
 }

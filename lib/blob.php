@@ -10,18 +10,11 @@ class WordPress_GitHub_Sync_Blob {
 	protected $data;
 
 	/**
-	 * Blob content.
+	 * Complete blob content.
 	 *
 	 * @var string
 	 */
 	protected $content;
-
-	/**
-	 * Blob post meta.
-	 *
-	 * @var array
-	 */
-	protected $meta;
 
 	/**
 	 * Blob sha.
@@ -47,30 +40,12 @@ class WordPress_GitHub_Sync_Blob {
 	/**
 	 * Instantiates a new Blob object.
 	 *
-	 * @param $data
+	 * @param stdClass $data
 	 */
 	public function __construct( $data ) {
 		$this->data = $data;
 
 		$this->interpret_data();
-	}
-
-	/**
-	 * Returns the formatted/filtered blob content used for import.
-	 *
-	 * @return string
-	 */
-	public function content_import() {
-		$content = $this->content();
-
-		if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
-			$content = wpmarkdown_markdown_to_html( $content );
-		}
-
-		/**
-		 * @todo document filter
-		 */
-		return apply_filters( 'wpghs_content_import', $content );
 	}
 
 	/**
@@ -83,14 +58,22 @@ class WordPress_GitHub_Sync_Blob {
 	}
 
 	/**
-	 * Returns the blob meta.
+	 * Set's the blob's content.
 	 *
-	 * @return array
+	 * @param string $content Raw blob content.
+	 * @param bool   $base64 Whether the content is base64 encoded.
+	 *
+	 * @return $this
 	 */
-	public function meta() {
-		return $this->meta;
-	}
+	public function set_content( $content, $base64 = false ) {
+		if ( $base64 ) {
+			$content = base64_decode( $content );
+		}
 
+		$this->frontmatter = '---' === substr( $this->content = $content, 0, 3 ) ? true : false;
+
+		return $this;
+	}
 	/**
 	 * Returns the blob sha.
 	 *
@@ -110,25 +93,58 @@ class WordPress_GitHub_Sync_Blob {
 	}
 
 	/**
-	 * Updates the blob's path.
-	 *
-	 * @param string $path
-	 *
-	 * @return WordPress_GitHub_Sync_Blob
-	 */
-	public function set_path( $path ) {
-		$this->path = (string) $path;
-
-		return $this;
-	}
-
-	/**
 	 * Whether the blob has frontmatter.
 	 *
 	 * @return bool
 	 */
 	public function has_frontmatter() {
 		return $this->frontmatter;
+	}
+
+	/**
+	 * Returns the formatted/filtered blob content used for import.
+	 *
+	 * @return string
+	 */
+	public function content_import() {
+		$content = $this->content();
+
+		if ( $this->has_frontmatter() ) {
+			// Break out content.
+			preg_match( '/(^---(.*?)---$)?(.*)/ms', $content, $matches );
+			$content = array_pop( $matches );
+		}
+
+		if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
+			$content = wpmarkdown_markdown_to_html( $content );
+		}
+
+		/**
+		 * @todo document filter
+		 */
+		return apply_filters( 'wpghs_content_import', trim( $content ) );
+	}
+
+	/**
+	 * Returns the blob meta.
+	 *
+	 * @return array
+	 */
+	public function meta() {
+		$meta = array();
+
+		if ( $this->has_frontmatter() ) {
+			// Break out meta, if present.
+			preg_match( '/(^---(.*?)---$)?(.*)/ms', $this->content(), $matches );
+			array_pop( $matches );
+
+			$meta = cyps_load( $matches[2] );
+			if ( isset( $meta['permalink'] ) ) {
+				$meta['permalink'] = str_replace( home_url(), '', $meta['permalink'] );
+			}
+		}
+
+		return $meta;
 	}
 
 	/**
@@ -139,9 +155,10 @@ class WordPress_GitHub_Sync_Blob {
 	public function to_body() {
 		$data = new stdClass;
 
-		$data->path = $this->path();
 		$data->mode = '100644';
 		$data->type = 'blob';
+
+		$data->path = $this->path();
 
 		if ( $this->sha() ) {
 			$data->sha = $this->sha();
@@ -156,30 +173,12 @@ class WordPress_GitHub_Sync_Blob {
 	 * Interprets the blob's data into properties.
 	 */
 	protected function interpret_data() {
-		$content = trim( $this->data->content );
+		$this->sha  = isset( $this->data->sha ) ? $this->data->sha : '';
+		$this->path = isset( $this->data->path ) ? $this->data->path : '';
 
-		if ( isset( $this->data->encoding ) && 'base64' === $this->data->encoding ) {
-			$content = base64_decode( $content );
-		}
-
-		if ( '---' === substr( $content, 0, 3 ) ) {
-			$this->frontmatter = true;
-
-			// Break out meta, if present
-			preg_match( '/(^---(.*?)---$)?(.*)/ms', $content, $matches );
-			$content = array_pop( $matches );
-
-			$meta = cyps_load( $matches[2] );
-			if ( isset( $meta['permalink'] ) ) {
-				$meta['permalink'] = str_replace( home_url(), '', get_permalink( $meta['permalink'] ) );
-			}
-		} else {
-			$meta = array();
-		}
-
-		$this->content = $content;
-		$this->meta    = $meta;
-		$this->sha     = isset( $this->data->sha ) ? $this->data->sha : '';
-		$this->path    = isset( $this->data->path ) ? $this->data->path : '';
+		$this->set_content(
+			isset( $this->data->content ) ? trim( $this->data->content ) : '',
+			isset( $this->data->encoding ) && 'base64' === $this->data->encoding ? true : false
+		);
 	}
 }
