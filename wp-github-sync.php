@@ -177,24 +177,14 @@ class WordPress_GitHub_Sync {
 	 */
 	public function start_export() {
 		$this->export()->set_user( get_current_user_id() );
-		update_option( '_wpghs_export_started', 'yes' );
-
-		WordPress_GitHub_Sync::write_log( __( 'Starting full export to GitHub.', 'wordpress-github-sync' ) );
-
-		wp_schedule_single_event( time(), 'wpghs_export' );
-		spawn_cron();
+		$this->start_cron( 'export' );
 	}
 
 	/**
 	 * Sets and kicks off the import cronjob
 	 */
 	public function start_import() {
-		update_option( '_wpghs_import_started', 'yes' );
-
-		WordPress_GitHub_Sync::write_log( __( 'Starting import from GitHub.', 'wordpress-github-sync' ) );
-
-		wp_schedule_single_event( time(), 'wpghs_import' );
-		spawn_cron();
+		$this->start_cron( 'import' );
 	}
 
 	/**
@@ -376,5 +366,16 @@ class WordPress_GitHub_Sync {
 				error_log( $msg );
 			}
 		}
+	}
+
+	/**
+	 * Kicks of an import or export cronjob.
+	 *
+	 * @param $type
+	 */
+	protected function start_cron( $type ) {
+		update_option( '_wpghs_' . $type . '_started', 'yes' );
+		wp_schedule_single_event( time(), 'wpghs_' . $type . '' );
+		spawn_cron();
 	}
 }
