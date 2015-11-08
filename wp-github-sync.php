@@ -244,7 +244,7 @@ class WordPress_GitHub_Sync {
 	 */
 	public function cli() {
 		if ( ! $this->cli ) {
-			$this->cli = new WordPress_GitHub_Sync_CLI( $this );
+			$this->cli = new WordPress_GitHub_Sync_CLI;
 		}
 
 		return $this->cli;
