@@ -1,0 +1,9 @@
+{
+  "ref": "refs/heads/master",
+  "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/refs/heads/master",
+  "object": {
+    "sha": "db2510854e6aeab68ead26b48328b19f4bdf926e",
+    "type": "commit",
+    "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/commits/db2510854e6aeab68ead26b48328b19f4bdf926e"
+  }
+}

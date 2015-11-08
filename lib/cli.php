@@ -1,20 +1,26 @@
 <?php
 /**
  * WP_CLI Commands
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_CLI
  */
 class WordPress_GitHub_Sync_CLI {
 
 	/**
-	 * Controller object
-	 * @var WordPress_GitHub_Sync_Controller
+	 * Application container.
+	 *
+	 * @var WordPress_GitHub_Sync
 	 */
-	public $controller;
+	protected $app;
 
 	/**
-	 * Wire up controller object on init
+	 * Grab the Application container on instantiation.
 	 */
 	public function __construct() {
-		$this->controller = new WordPress_GitHub_Sync_Controller;
+		$this->app = WordPress_GitHub_Sync::$instance;
 	}
 
 	/**
@@ -36,7 +42,7 @@ class WordPress_GitHub_Sync_CLI {
 	 *
 	 * @synopsis <post_id|all> <user_id>
 	 *
-	 * @param array $args
+	 * @param array $args Command arguments.
 	 */
 	public function export( $args ) {
 		list( $post_id, $user_id ) = $args;
@@ -45,11 +51,11 @@ class WordPress_GitHub_Sync_CLI {
 			WP_CLI::error( __( 'Invalid user ID', 'wordpress-github-sync' ) );
 		}
 
-		update_option( '_wpghs_export_user_id', (int) $user_id );
+		$this->app->export()->set_user( $user_id );
 
 		if ( 'all' === $post_id ) {
 			WP_CLI::line( __( 'Starting full export to GitHub.', 'wordpress-github-sync' ) );
-			$this->controller->export_all();
+			$this->app->controller()->export_all();
 		} elseif ( is_numeric( $post_id ) ) {
 			WP_CLI::line(
 				sprintf(
@@ -57,7 +63,7 @@ class WordPress_GitHub_Sync_CLI {
 					$post_id
 				)
 			);
-			$this->controller->export_post( (int) $post_id );
+			$this->app->controller()->export_post( (int) $post_id );
 		} else {
 			WP_CLI::error( __( 'Invalid post ID', 'wordpress-github-sync' ) );
 		}
@@ -78,7 +84,7 @@ class WordPress_GitHub_Sync_CLI {
 	 *
 	 * @synopsis <user_id>
 	 *
-	 * @param array $args
+	 * @param array $args Command arguments.
 	 */
 	public function import( $args ) {
 		list( $user_id ) = $args;
@@ -91,6 +97,6 @@ class WordPress_GitHub_Sync_CLI {
 
 		WP_CLI::line( __( 'Starting import from GitHub.', 'wordpress-github-sync' ) );
 
-		$this->controller->import_master();
+		$this->app->controller()->import_master();
 	}
 }

@@ -27,10 +27,14 @@
 		Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+// If the functions have already been autoloaded, don't reload.
+// This fixes function duplication during unit testing.
 $path = dirname( __FILE__ ) . '/vendor/autoload_52.php';
-if ( file_exists( $path ) ) {
+if ( ! function_exists( 'get_the_github_view_link' ) && file_exists( $path ) ) {
 	require_once $path;
 }
+
+add_action( 'plugins_loaded', array( new WordPress_GitHub_Sync, 'boot' ) );
 
 class WordPress_GitHub_Sync {
 
@@ -65,127 +69,114 @@ class WordPress_GitHub_Sync {
 	public $admin;
 
 	/**
-	 * Locked when receiving payload
-	 * @var boolean
+	 * CLI object.
+	 *
+	 * @var WordPress_GitHub_Sync_CLI
 	 */
-	public $push_lock = false;
+	protected $cli;
+
+	/**
+	 * Request object.
+	 *
+	 * @var WordPress_GitHub_Sync_Request
+	 */
+	protected $request;
+
+	/**
+	 * Response object.
+	 *
+	 * @var WordPress_GitHub_Sync_Response
+	 */
+	protected $response;
+
+	/**
+	 * Api object.
+	 *
+	 * @var WordPress_GitHub_Sync_Api
+	 */
+	protected $api;
+
+	/**
+	 * Import object.
+	 *
+	 * @var WordPress_GitHub_Sync_Import
+	 */
+	protected $import;
+
+	/**
+	 * Export object.
+	 *
+	 * @var WordPress_GitHub_Sync_Export
+	 */
+	protected $export;
+
+	/**
+	 * Semaphore object.
+	 *
+	 * @var WordPress_GitHub_Sync_Semaphore
+	 */
+	protected $semaphore;
+
+	/**
+	 * Database object.
+	 *
+	 * @var WordPress_GitHub_Sync_Database
+	 */
+	protected $database;
+
+	/**
+	 * Cache object.
+	 *
+	 * @var WordPress_GitHub_Sync_Cache
+	 */
+	protected $cache;
 
 	/**
 	 * Called at load time, hooks into WP core
 	 */
 	public function __construct() {
-		self::$instance = &$this;
+		self::$instance = $this;
 
 		if ( is_admin() ) {
 			$this->admin = new WordPress_GitHub_Sync_Admin;
 		}
-		$this->controller = new WordPress_GitHub_Sync_Controller;
 
+		$this->controller = new WordPress_GitHub_Sync_Controller( $this );
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::add_command( 'wpghs', $this->cli() );
+		}
+	}
+
+	/**
+	 * Attaches the plugin's hooks into WordPress.
+	 */
+	public function boot() {
 		register_activation_hook( __FILE__, array( $this, 'activate' ) );
 		add_action( 'admin_notices', array( $this, 'activation_notice' ) );
 
-		add_action( 'init', array( &$this, 'l10n' ) );
-		add_action( 'save_post', array( &$this, 'save_post_callback' ) );
-		add_action( 'delete_post', array( &$this, 'delete_post_callback' ) );
-		add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( &$this, 'pull_posts' ) );
-		add_action( 'wpghs_export', array( &$this->controller, 'export_all' ) );
-		add_action( 'wpghs_import', array( &$this->controller, 'import_master' ) );
+		add_action( 'init', array( $this, 'l10n' ) );
 
-		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			WP_CLI::add_command( 'wpghs', 'WordPress_GitHub_Sync_CLI' );
-		}
+		// Controller actions.
+		add_action( 'save_post', array( $this->controller, 'export_post' ) );
+		add_action( 'delete_post', array( $this->controller, 'delete_post' ) );
+		add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( $this->controller, 'pull_posts' ) );
+		add_action( 'wpghs_export', array( $this->controller, 'export_all' ) );
+		add_action( 'wpghs_import', array( $this->controller, 'import_master' ) );
 	}
 
 	/**
-		* Init i18n files
-		*/
+	 * Init i18n files
+	 */
 	public function l10n() {
 		load_plugin_textdomain( self::$text_domain, false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' );
-	}
-
-	/**
-	 * Returns the Webhook secret
-	 */
-	public function secret() {
-		return get_option( 'wpghs_secret' );
-	}
-
-	/**
-	 * Callback triggered on post save, used to initiate an outbound sync
-	 *
-	 * $post_id - (int) the post to sync
-	 */
-	public function save_post_callback( $post_id ) {
-		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
-			return;
-		}
-
-		$this->controller->export_post( $post_id );
-	}
-
-	/**
-	 * Callback triggered on post delete, used to initiate an outbound sync
-	 *
-	 * $post_id - (int) the post to delete
-	 */
-	public function delete_post_callback( $post_id ) {
-		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
-			return;
-		}
-
-		$this->controller->delete_post( $post_id );
-	}
-
-	/**
-	 * Webhook callback as trigered from GitHub push
-	 */
-	public function pull_posts() {
-		# Prevent pushes on update
-		$this->push_lock = true;
-
-		$raw_data = file_get_contents( 'php://input' );
-		$headers = $this->headers();
-
-		// validate secret
-		$hash = hash_hmac( 'sha1', $raw_data, $this->secret() );
-		if ( 'sha1=' . $hash !== $headers['X-Hub-Signature'] ) {
-			$msg = __( 'Failed to validate secret.', 'wordpress-github-sync' );
-			self::write_log( $msg );
-			wp_send_json( array(
-				'result'  => 'error',
-				'message' => $msg,
-			) );
-		}
-
-		$result = $this->controller->pull( json_decode( $raw_data ) );
-		wp_send_json( $result );
-	}
-
-	/**
-	 * Cross-server header support
-	 * Returns an array of the request's headers
-	 */
-	public function headers() {
-		if ( function_exists( 'getallheaders' ) ) {
-			return getallheaders();
-		}
-
-		// Nginx and pre 5.4 workaround
-		// http://www.php.net/manual/en/function.getallheaders.php
-		$headers = array();
-		foreach ( $_SERVER as $name => $value ) {
-			if ( 'HTTP_' === substr( $name, 0, 5 ) ) {
-				$headers[ str_replace( ' ', '-', ucwords( strtolower( str_replace( '_', ' ', substr( $name, 5 ) ) ) ) ) ] = $value;
-			}
-		}
-		return $headers;
 	}
 
 	/**
 	 * Sets and kicks off the export cronjob
 	 */
 	public function start_export() {
-		update_option( '_wpghs_export_user_id', get_current_user_id() );
+		$this->export()->set_user( get_current_user_id() );
 		update_option( '_wpghs_export_started', 'yes' );
 
 		WordPress_GitHub_Sync::write_log( __( 'Starting full export to GitHub.', 'wordpress-github-sync' ) );
@@ -238,11 +229,140 @@ class WordPress_GitHub_Sync {
 	}
 
 	/**
+	 * Get the Controller object.
+	 *
+	 * @return WordPress_GitHub_Sync_Controller
+	 */
+	public function controller() {
+		return $this->controller;
+	}
+
+	/**
+	 * Lazy-load the CLI object.
+	 *
+	 * @return WordPress_GitHub_Sync_CLI
+	 */
+	public function cli() {
+		if ( ! $this->cli ) {
+			$this->cli = new WordPress_GitHub_Sync_CLI;
+		}
+
+		return $this->cli;
+	}
+
+	/**
+	 * Lazy-load the Request object.
+	 *
+	 * @return WordPress_GitHub_Sync_Request
+	 */
+	public function request() {
+		if ( ! $this->request ) {
+			$this->request = new WordPress_GitHub_Sync_Request( $this );
+		}
+
+		return $this->request;
+	}
+
+	/**
+	 * Lazy-load the Response object.
+	 *
+	 * @return WordPress_GitHub_Sync_Response
+	 */
+	public function response() {
+		if ( ! $this->response ) {
+			$this->response = new WordPress_GitHub_Sync_Response( $this );
+		}
+
+		return $this->response;
+	}
+
+	/**
+	 * Lazy-load the Api object.
+	 *
+	 * @return WordPress_GitHub_Sync_Api
+	 */
+	public function api() {
+		if ( ! $this->api ) {
+			$this->api = new WordPress_GitHub_Sync_Api( $this );
+		}
+
+		return $this->api;
+	}
+
+	/**
+	 * Lazy-load the Import object.
+	 *
+	 * @return WordPress_GitHub_Sync_Import
+	 */
+	public function import() {
+		if ( ! $this->import ) {
+			$this->import = new WordPress_GitHub_Sync_Import( $this );
+		}
+
+		return $this->import;
+	}
+
+	/**
+	 * Lazy-load the Export object.
+	 *
+	 * @return WordPress_GitHub_Sync_Export
+	 */
+	public function export() {
+		if ( ! $this->export ) {
+			$this->export = new WordPress_GitHub_Sync_Export( $this );
+		}
+
+		return $this->export;
+	}
+
+	/**
+	 * Lazy-load the Semaphore object.
+	 *
+	 * @return WordPress_GitHub_Sync_Semaphore
+	 */
+	public function semaphore() {
+		if ( ! $this->semaphore ) {
+			$this->semaphore = new WordPress_GitHub_Sync_Semaphore;
+		}
+
+		return $this->semaphore;
+	}
+
+	/**
+	 * Lazy-load the Database object.
+	 *
+	 * @return WordPress_GitHub_Sync_Database
+	 */
+	public function database() {
+		if ( ! $this->database ) {
+			$this->database = new WordPress_GitHub_Sync_Database( $this );
+		}
+
+		return $this->database;
+	}
+
+	/**
+	 * Lazy-load the Cache object.
+	 *
+	 * @return WordPress_GitHub_Sync_Cache
+	 */
+	public function cache() {
+		if ( ! $this->cache ) {
+			$this->cache = new WordPress_GitHub_Sync_Cache;
+		}
+
+		return $this->cache;
+	}
+
+	/**
 	 * Print to WP_CLI if in CLI environment or
 	 * write to debug.log if WP_DEBUG is enabled
 	 * @source http://www.stumiller.me/sending-output-to-the-wordpress-debug-log/
+	 *
+	 * @param mixed $msg
+	 * @param string $write
 	 */
-	public static function write_log($msg, $write = 'line') {
+	public static function write_log( $msg, $write = 'line' ) {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			if ( is_array( $msg ) || is_object( $msg ) ) {
 				WP_CLI::print_value( $msg );
@@ -258,5 +378,3 @@ class WordPress_GitHub_Sync {
 		}
 	}
 }
-
-$wpghs = new WordPress_GitHub_Sync;

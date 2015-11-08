@@ -1,114 +1,171 @@
 <?php
-
 /**
  * GitHub Import Manager
+ *
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_Import
  */
 class WordPress_GitHub_Sync_Import {
 
 	/**
-	 * Tree object to import.
+	 * Application container.
 	 *
-	 * @var WordPress_GitHub_Sync_Tree
+	 * @var WordPress_GitHub_Sync
 	 */
-	protected $tree;
-
-	/**
-	 * Post IDs for posts imported from GitHub.
-	 *
-	 * @var int[]
-	 */
-	protected $new_posts = array();
-
-	/**
-	 * Posts that needs their revision author set.
-	 *
-	 * @var int[]
-	 */
-	protected $updated_posts;
+	protected $app;
 
 	/**
 	 * Initializes a new import manager.
+	 *
+	 * @param WordPress_GitHub_Sync $app Application container.
 	 */
-	public function __construct() {
-		$this->tree = new WordPress_GitHub_Sync_Tree();
+	public function __construct( WordPress_GitHub_Sync $app ) {
+		$this->app = $app;
 	}
 
 	/**
-	 * Returns the IDs of newly added posts.
+	 * Imports a payload.
 	 *
-	 * @return int[]
-	 */
-	public function new_posts() {
-		return $this->new_posts;
-	}
-
-	/**
-	 * Returns the newly added posts.
+	 * @param WordPress_GitHub_Sync_Payload $payload GitHub payload object.
 	 *
-	 * @return int[]
+	 * @return string|WP_Error
 	 */
-	public function updated_posts() {
-		return $this->updated_posts;
-	}
+	public function payload( WordPress_GitHub_Sync_Payload $payload ) {
+		/**
+		 * Whether there's an error during import.
+		 *
+		 * @var false|WP_Error $error
+		 */
+		$error = false;
 
-	/**
-	 * Runs the import process for a provided sha.
-	 *
-	 * @param string $sha
-	 */
-	public function run( $sha ) {
-		$this->tree->fetch_sha( $sha );
+		$result = $this->commit( $this->app->api()->fetch()->commit( $payload->get_commit_id() ) );
 
-		if ( ! $this->tree->is_ready() ) {
-			WordPress_GitHub_Sync::write_log(
-				sprintf(
-					__( 'Failed getting recursive tree with error: %s', 'wordpress-github-sync' ),
-					$this->tree->last_error()
-				)
-			);
-
-			return;
+		if ( is_wp_error( $result ) ) {
+			$error = $result;
 		}
 
-		foreach ( $this->tree as $blob ) {
-			$this->import_blob( $blob );
+		$removed = array();
+		foreach ( $payload->get_commits() as $commit ) {
+			$removed = array_merge( $removed, $commit->removed );
+		}
+		foreach ( array_unique( $removed ) as $path ) {
+			$result = $this->app->database()->delete_post_by_path( $path );
+
+			if ( is_wp_error( $result ) ) {
+				if ( $error ) {
+					$error->add( $result->get_error_code(), $result->get_error_message() );
+				} else {
+					$error = $result;
+				}
+			}
 		}
 
-		WordPress_GitHub_Sync::write_log(
-			sprintf(
-				__( 'Imported tree %s', 'wordpress-github-sync' ),
-				$sha
-			)
-		);
+		if ( $error ) {
+			return $error;
+		}
+
+		return __( 'Payload processed', 'wordpress-github-sync' );
+	}
+
+	/**
+	 * Imports the latest commit on the master branch.
+	 *
+	 * @return string|WP_Error
+	 */
+	public function master() {
+		return $this->commit( $this->app->api()->fetch()->master() );
+	}
+
+	/**
+	 * Imports a provided commit into the database.
+	 *
+	 * @param WordPress_GitHub_Sync_Commit|WP_Error $commit Commit to import.
+	 *
+	 * @return string|WP_Error
+	 */
+	protected function commit( $commit ) {
+		if ( is_wp_error( $commit ) ) {
+			return $commit;
+		}
+
+		if ( $commit->already_synced() ) {
+			return new WP_Error( 'commit_synced', __( 'Already synced this commit.', 'wordpress-github-sync' ) );
+		}
+
+		$posts = array();
+		$new   = array();
+
+		foreach ( $commit->tree()->blobs() as $blob ) {
+			if ( ! $this->importable_blob( $blob ) ) {
+				continue;
+			}
+
+			$posts[] = $post = $this->blob_to_post( $blob );
+
+			if ( $post->is_new() ) {
+				$new[] = $post;
+			}
+		}
+
+		$result = $this->app->database()->save_posts( $posts, $commit->author_email() );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		if ( $new ) {
+			$result = $this->app->export()->new_posts( $new );
+
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+		}
+
+		return $posts;
+	}
+
+	/**
+	 * Checks whether the provided blob should be imported.
+	 *
+	 * @param WordPress_GitHub_Sync_Blob $blob Blob to validate.
+	 *
+	 * @return bool
+	 */
+	protected function importable_blob( WordPress_GitHub_Sync_Blob $blob ) {
+		global $wpdb;
+
+		// Skip the repo's readme.
+		if ( 'readme' === strtolower( substr( $blob->path(), 0, 6 ) ) ) {
+			return false;
+		}
+
+		// If the blob sha already matches a post, then move on.
+		if ( ! is_wp_error( $this->app->database()->fetch_by_sha( $blob->sha() ) ) ) {
+			return false;
+		}
+
+		if ( ! $blob->has_frontmatter() ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
 	 * Imports a single blob content into matching post.
 	 *
-	 * @param stdClass $blob
+	 * @param WordPress_GitHub_Sync_Blob $blob Blob to transform into a Post.
+	 *
+	 * @return WordPress_GitHub_Sync_Post
 	 */
-	protected function import_blob( $blob ) {
-		// Break out meta, if present
-		preg_match( '/(^---(.*?)---$)?(.*)/ms', $blob->content, $matches );
+	protected function blob_to_post( WordPress_GitHub_Sync_Blob $blob ) {
+		$args = array( 'post_content' => $blob->content_import() );
+		$meta = $blob->meta();
 
-		$body = array_pop( $matches );
-
-		if ( 3 === count( $matches ) ) {
-			$meta = cyps_load( $matches[2] );
-			if ( isset( $meta['permalink'] ) ) {
-				$meta['permalink'] = str_replace( home_url(), '', get_permalink( $meta['permalink'] ) );
-			}
-		} else {
-			$meta = array();
-		}
-
-		if ( function_exists( 'wpmarkdown_markdown_to_html' ) ) {
-			$body = wpmarkdown_markdown_to_html( $body );
-		}
-
-		$args = array( 'post_content' => apply_filters( 'wpghs_content_import', $body ) );
-
-		if ( ! empty( $meta ) ) {
+		if ( $meta ) {
 			if ( array_key_exists( 'layout', $meta ) ) {
 				$args['post_type'] = $meta['layout'];
 				unset( $meta['layout'] );
@@ -130,27 +187,11 @@ class WordPress_GitHub_Sync_Import {
 			}
 		}
 
-		$post_id = ! isset( $args['ID'] ) ? wp_insert_post( $args ) : wp_update_post( $args );
+		$meta['_sha'] = $blob->sha();
 
-		/** @var WordPress_GitHub_Sync_Post $post */
-		$post = new WordPress_GitHub_Sync_Post( $post_id );
-		$post->set_sha( $blob->sha );
+		$post = new WordPress_GitHub_Sync_Post( $args, $this->app->api() );
+		$post->set_meta( $meta );
 
-		foreach ( $meta as $key => $value ) {
-			update_post_meta( $post_id, $key, $value );
-		}
-
-		WordPress_GitHub_Sync::write_log(
-			sprintf(
-				__( 'Updated blob %s', 'wordpress-github-sync' ),
-				$blob->sha
-			)
-		);
-
-		$this->updated_posts[] = $post_id;
-
-		if ( ! isset( $args['ID'] ) ) {
-			$this->new_posts[] = $post_id;
-		}
+		return $post;
 	}
 }

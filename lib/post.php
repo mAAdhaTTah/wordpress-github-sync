@@ -1,11 +1,17 @@
 <?php
 /**
  * The post object which represents both the GitHub and WordPress post
+ * @package WordPress_GitHub_Sync
+ */
+
+/**
+ * Class WordPress_GitHub_Sync_Post
  */
 class WordPress_GitHub_Sync_Post {
 
 	/**
 	 * Api object
+	 *
 	 * @var WordPress_GitHub_Sync_Api
 	 */
 	public $api;
@@ -17,96 +23,62 @@ class WordPress_GitHub_Sync_Post {
 	public $id = 0;
 
 	/**
-	 * Path to the file
-	 * @var string
-	 */
-	public $path;
-
-	/**
 	 * Post object
 	 * @var WP_Post
 	 */
 	public $post;
 
 	/**
+	 * Post args.
+	 *
+	 * @var array
+	 */
+	protected $args;
+
+	/**
+	 * Post meta.
+	 *
+	 * @var array
+	 */
+	protected $meta;
+
+	/**
+	 * Whether the post has been saved.
+	 *
+	 * @var bool
+	 */
+	protected $new = true;
+
+	/**
 	 * Instantiates a new Post object
 	 *
-	 * @param int|string $id_or_path either a postID (WordPress) or a path to a file (GitHub)
-	 */
-	public function __construct( $id_or_path ) {
-		$this->api = new WordPress_GitHub_Sync_Api;
-
-		if ( is_numeric( $id_or_path ) ) {
-			$this->id = $id_or_path;
-		} else {
-			$this->path = $id_or_path;
-			$this->id = $this->id_from_path();
-		}
-
-		$this->post = get_post( $this->id );
-	}
-
-	/**
-	 * Parse the various parts of a filename from a path
+	 * @param int|array                 $id_or_args Either a post ID or an array of arguments.
+	 * @param WordPress_GitHub_Sync_Api $api API object.
 	 *
-	 * @todo - CUSTOM FORMAT SUPPORT
+	 * @todo remove database operations from this method
 	 */
-	public function parts_from_path() {
-		$directory = trim( $this->github_directory(), '/' );
+	public function __construct( $id_or_args, WordPress_GitHub_Sync_Api $api ) {
+		$this->api = $api;
 
-		if ( 'post' === $this->type() ) {
-			$pattern = sprintf( '/%s\/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $directory );
-		} else {
-			$pattern = sprintf( '/%s\/(.*)\.md/', $directory );
+		if ( is_numeric( $id_or_args ) ) {
+			$this->id = (int) $id_or_args;
+			$this->post = get_post( $this->id );
+			$this->new = false;
 		}
 
-		preg_match( $pattern, $this->path, $matches );
-		return $matches;
-	}
+		if ( is_array( $id_or_args ) ) {
+			$this->args = $id_or_args;
 
-	/**
-	 * Extract's the post's title from its path
-	 */
-	public function title_from_path() {
-		$matches = $this->parts_from_path();
-		if ( 'post' === $this->type() ) {
-			return $matches[4];
+			if ( isset( $this->args['ID'] ) ) {
+				$this->post = get_post( $this->args['ID'] );
+
+				if ( $this->post ) {
+					$this->id = $this->post->ID;
+				}
+
+				$this->new = false;
+			}
 		}
-
-		return $matches[1];
-	}
-
-	/**
-	 * Extract's the post's date from its path
-	 */
-	public function date_from_path() {
-		$matches = $this->parts_from_path();
-		return $matches[1] . '-' . $matches[2] . '-' . $matches[3] . '00:00:00';
-	}
-
-	/**
-	 * Determines the post's WordPress ID from its GitHub path
-	 * Creates the WordPress post if it does not exist
-	 */
-	public function id_from_path() {
-		global $wpdb;
-
-		$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wpghs_github_path' AND meta_value = '$this->path'" );
-
-		if ( ! $id ) {
-			$title = $this->title_from_path();
-			$id = $wpdb->get_var( "SELECT ID FROM $wpdb->posts WHERE post_name = '$title'" );
-		}
-
-		if ( ! $id ) {
-			$id = wp_insert_post( array(
-					'post_name' => $this->title_from_path(),
-					'post_date' => $this->date_from_path()
-				)
-			);
-		}
-
-		return $id;
 	}
 
 	/**
@@ -142,7 +114,10 @@ class WordPress_GitHub_Sync_Post {
 	 * Combines the 2 content parts for GitHub
 	 */
 	public function github_content() {
-		return $this->front_matter() . $this->post_content();
+		$content = $this->front_matter() . $this->post_content();
+		$ending = apply_filters( 'wpghs_line_endings', "\n" );
+
+		return preg_replace( '~(*BSR_ANYCRLF)\R~', $ending, $content );
 	}
 
 	/**
@@ -256,7 +231,7 @@ class WordPress_GitHub_Sync_Post {
 	 * @return string
 	 */
 	public function github_view_url() {
-		return 'https://github.com/' . $this->api->repository() . '/blob/master/' . $this->github_path();
+		return 'https://github.com/' . $this->api->fetch()->repository() . '/blob/master/' . $this->github_path();
 	}
 
 	/**
@@ -265,21 +240,22 @@ class WordPress_GitHub_Sync_Post {
 	 * @return string
 	 */
 	public function github_edit_url() {
-		return 'https://github.com/' . $this->api->repository() . '/edit/master/' . $this->github_path();
+		return 'https://github.com/' . $this->api->fetch()->repository() . '/edit/master/' . $this->github_path();
 	}
 
 	/**
-	* Retrieve post type directory from blob path
-	* @param string $path
-	* @return string
-	*/
+	 * Retrieve post type directory from blob path.
+	 *
+	 * @param string $path Path string.
+	 *
+	 * @return string
+	 */
 	public function get_directory_from_path( $path ) {
 		$directory = explode( '/',$path );
 		$directory = count( $directory ) > 0 ? $directory[0] : '';
 
 		return $directory;
 	}
-
 
 	/**
 	 * Determines the last author to modify the post
@@ -308,11 +284,11 @@ class WordPress_GitHub_Sync_Post {
 		$sha = get_post_meta( $this->id, '_sha', true );
 
 		// If we've done a full export and we have no sha
-		// then we should try a live check to see if it exists
+		// then we should try a live check to see if it exists.
 		if ( ! $sha && 'yes' === get_option( '_wpghs_fully_exported' ) ) {
 
 			// @todo could we eliminate this by calling down the full tree and searching it
-			$data = $this->api->remote_contents( $this );
+			$data = $this->api->fetch()->remote_contents( $this );
 
 			if ( ! is_wp_error( $data ) ) {
 				update_post_meta( $this->id, '_sha', $data->sha );
@@ -321,7 +297,7 @@ class WordPress_GitHub_Sync_Post {
 		}
 
 		// if the sha still doesn't exist, then it's empty
-		if ( ! $sha ) {
+		if ( ! $sha || is_wp_error( $sha ) ) {
 			$sha = '';
 		}
 
@@ -366,5 +342,69 @@ class WordPress_GitHub_Sync_Post {
 		}
 
 		return apply_filters( 'wpghs_post_meta', $meta, $this );
+	}
+
+	/**
+	 * Returns whether the Post has been saved in the DB yet.
+	 *
+	 * @return bool
+	 */
+	public function is_new() {
+		return $this->new;
+	}
+
+	/**
+	 * Sets the Post's meta.
+	 *
+	 * @param array $meta
+	 */
+	public function set_meta( $meta ) {
+		$this->meta = $meta;
+	}
+
+	/**
+	 * Returns the Post's arguments.
+	 *
+	 * @return array
+	 */
+	public function get_args() {
+		return $this->args;
+	}
+
+	/**
+	 * Returns the Post's meta.
+	 *
+	 * @return array
+	 */
+	public function get_meta() {
+		return $this->meta;
+	}
+
+	/**
+	 * Sets the Post's WP_Post object.
+	 *
+	 * @param WP_Post $post
+	 *
+	 * @return $this
+	 */
+	public function set_post( WP_Post $post ) {
+		$this->post = $post;
+		$this->id = $post->ID;
+
+		return $this;
+	}
+
+	/**
+	 * Transforms the Post into a Blob.
+	 *
+	 * @return WordPress_GitHub_Sync_Blob
+	 */
+	public function to_blob() {
+		$data = new stdClass;
+
+		$data->path    = $this->github_path();
+		$data->content = $this->github_content();
+
+		return new WordPress_GitHub_Sync_Blob( $data );
 	}
 }

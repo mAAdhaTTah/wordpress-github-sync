@@ -2,6 +2,22 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [Unreleased] ###
+
+* Major rewrite of the plugin internals.
+    * Improved architecture.
+    * More maintainable.
+    * Improved speed.
+        * Upgraded caching implementation means updates happen faster.
+* Line-endings are now normalize to Unix-style.
+    * New filter: `wpghs_line_endings` to set preferred line endings.
+* New filter: `wpghs_pre_import_args`
+    * Called before post arguments are passed for an imported post.
+* New filter: `wpghs_pre_import_meta`
+    * Called before post meta is imported from a post.
+* BREAKING: Remove reference to global `$wpghs` variable.
+    * Use `WordPress_GitHub_Sync::$instance` instead.
+
 ### [1.3.4] ###
 
 * Add German translation (props @lsinger).

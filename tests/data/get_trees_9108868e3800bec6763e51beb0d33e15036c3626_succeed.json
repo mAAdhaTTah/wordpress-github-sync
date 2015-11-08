@@ -1,0 +1,45 @@
+{
+  "sha": "9108868e3800bec6763e51beb0d33e15036c3626",
+  "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/trees/9108868e3800bec6763e51beb0d33e15036c3626",
+  "tree": [
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9fa5c7537f8582b71028ff34b8c20dfd0f3b2a25",
+      "size": 13,
+      "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/blobs/9fa5c7537f8582b71028ff34b8c20dfd0f3b2a25"
+    },
+    {
+      "path": "_pages",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a746b810e70d76d961116501dcb689f481b76c2c",
+      "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/trees/a746b810e70d76d961116501dcb689f481b76c2c"
+    },
+    {
+      "path": "_pages/sample-page.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8d9b2e6fd93761211dc03abd71f4a9189d680fd0",
+      "size": 1155,
+      "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/blobs/8d9b2e6fd93761211dc03abd71f4a9189d680fd0"
+    },
+    {
+      "path": "_posts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c5021d2560d1c86837aecfd55f333ad6a03b405f",
+      "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/trees/c5021d2560d1c86837aecfd55f333ad6a03b405f"
+    },
+    {
+      "path": "_posts/2015-11-02-hello-world.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d73165945b0ccbe4932f1363457986b0ed49f19",
+      "size": 283,
+      "url": "https://api.github.com/repos/wpghstest/wpghs-test/git/blobs/2d73165945b0ccbe4932f1363457986b0ed49f19"
+    }
+  ],
+  "truncated": false
+}

@@ -1,5 +1,11 @@
 <?php
 /**
+ * Theme helper functions.
+ *
+ * @package WordPress_GitHub_SYnc
+ */
+
+/**
  * Returns the HTML markup to view the current post on GitHub.
  *
  * @return string
@@ -14,7 +20,7 @@ function get_the_github_view_link() {
  * @return string
  */
 function get_the_github_view_url() {
-	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID() );
+	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID(), WordPress_GitHub_Sync::$instance->api() );
 
 	return $wpghs_post->github_view_url();
 }
@@ -34,7 +40,7 @@ function get_the_github_edit_link() {
  * @return string
  */
 function get_the_github_edit_url() {
-	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID() );
+	$wpghs_post = new WordPress_GitHub_Sync_Post( get_the_ID(), WordPress_GitHub_Sync::$instance->api() );
 
 	return $wpghs_post->github_edit_url();
 }
