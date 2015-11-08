@@ -118,9 +118,10 @@ class WordPress_GitHub_Sync_Database {
 		$error = false;
 
 		foreach ( $posts as $post ) {
+			$args    = apply_filters( 'wpghs_pre_import_args', $post->get_args(), $post );
 			$post_id = $post->is_new() ?
-				wp_insert_post( $post->get_args(), true ) :
-				wp_update_post( $post->get_args(), true );
+				wp_insert_post( $args, true ) :
+				wp_update_post( $args, true );
 
 			if ( is_wp_error( $post_id ) ) {
 				if ( ! $error ) {
