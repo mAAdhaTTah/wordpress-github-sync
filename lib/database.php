@@ -197,6 +197,26 @@ class WordPress_GitHub_Sync_Database {
 		$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wpghs_github_path' AND meta_value = '$path'" );
 
 		if ( ! $id ) {
+			$parts     = explode( '/', $path );
+			$filename  = array_pop( $parts );
+			$directory = $parts ? array_shift( $parts ) : '';
+
+			if ( false !== strpos( $directory, 'post' ) ) {
+				preg_match( '/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $filename, $matches );
+				$title = $matches[4];
+
+				$id = $wpdb->get_var( "SELECT ID FROM $wpdb->posts WHERE post_name = '$title'" );
+			}
+
+			if ( ! $id ) {
+				preg_match( '/(.*)\.md/', $filename, $matches );
+				$title = $matches[1];
+
+				$id = $wpdb->get_var( "SELECT ID FROM $wpdb->posts WHERE post_name = '$title'" );
+			}
+		}
+
+		if ( ! $id ) {
 			return new WP_Error(
 				'path_not_found',
 				sprintf(

@@ -80,7 +80,7 @@ class WordPress_GitHub_Sync_Database_Test extends WordPress_GitHub_Sync_TestCase
 	}
 
 	public function test_should_return_error_if_cant_find_sha() {
-		$sha     = '1234567890qwertyuiop';
+		$sha = '1234567890qwertyuiop';
 		$this->factory->post->create();
 
 		$this->assertInstanceOf( 'WP_Error', $error = $this->database->fetch_by_sha( $sha ) );
@@ -92,7 +92,7 @@ class WordPress_GitHub_Sync_Database_Test extends WordPress_GitHub_Sync_TestCase
 		$post_id = $this->factory->post->create();
 		update_post_meta( $post_id, '_sha', $sha );
 
-		$this->assertInstanceOf( 'WordPress_GitHub_Sync_Post', $post = $this->database->fetch_by_sha( $sha) );
+		$this->assertInstanceOf( 'WordPress_GitHub_Sync_Post', $post = $this->database->fetch_by_sha( $sha ) );
 		$this->assertEquals( $post_id, $post->id );
 	}
 
@@ -375,6 +375,45 @@ class WordPress_GitHub_Sync_Database_Test extends WordPress_GitHub_Sync_TestCase
 		$path    = '_posts/2015-10-22-post-title.md';
 		$post_id = $this->factory->post->create();
 		update_post_meta( $post_id, '_wpghs_github_path', $path );
+
+		$result = $this->database->delete_post_by_path( $path );
+
+		$this->assertInternalType( 'string', $result );
+		$this->assertContains( 'Successfully deleted post ID', $result );
+		$this->assertEquals( 'trash', get_post( $post_id )->post_status );
+	}
+
+	public function test_should_delete_post_by_matching_title() {
+		$path    = '_posts/2015-10-22-post-title.md';
+		$post_id = $this->factory->post->create( array( 'post_title' => 'Post title' ) );
+
+		$result = $this->database->delete_post_by_path( $path );
+
+		$this->assertInternalType( 'string', $result );
+		$this->assertContains( 'Successfully deleted post ID', $result );
+		$this->assertEquals( 'trash', get_post( $post_id )->post_status );
+	}
+
+	public function test_should_delete_page_by_matching_title() {
+		$path    = '_pages/page-title.md';
+		$post_id = $this->factory->post->create( array(
+			'post_title' => 'Page title',
+			'post_type'  => 'page',
+		) );
+
+		$result = $this->database->delete_post_by_path( $path );
+
+		$this->assertInternalType( 'string', $result );
+		$this->assertContains( 'Successfully deleted post ID', $result );
+		$this->assertEquals( 'trash', get_post( $post_id )->post_status );
+	}
+
+	public function test_should_delete_page_in_root() {
+		$path    = 'page-title.md';
+		$post_id = $this->factory->post->create( array(
+				'post_title' => 'Page title',
+				'post_type'  => 'page',
+		) );
 
 		$result = $this->database->delete_post_by_path( $path );
 
