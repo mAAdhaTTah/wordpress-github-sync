@@ -33,10 +33,28 @@ class WordPress_GitHub_Sync_Response {
 	 * @return false
 	 */
 	public function error( WP_Error $error ) {
+		global $wp_version;
+
 		$this->log( $error );
 
-		// @todo back-compat this, only 4.1+ works
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			/**
+			 * WordPress 4.1.0 introduced allowing WP_Error objects to be
+			 * passed directly into `wp_send_json_error`. This shims in
+			 * compatibility for older versions. We're currently supporting 3.9+.
+			 */
+			if ( version_compare( $wp_version, '4.1.0', '<' ) ) {
+				$result = array();
+
+				foreach ( $error->errors as $code => $messages ) {
+					foreach ( $messages as $message ) {
+						$result[] = array( 'code' => $code, 'message' => $message );
+					}
+				}
+
+				$error = $result;
+			}
+
 			wp_send_json_error( $error );
 		}
 
