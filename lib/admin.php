@@ -149,7 +149,7 @@ class WordPress_GitHub_Sync_Admin {
 		}
 
 		if ( 'import' === $_GET['action'] ) {
-            WordPress_GitHub_Sync::$instance->start_import();
+			WordPress_GitHub_Sync::$instance->start_import();
 		}
 
 		wp_redirect( admin_url( 'options-general.php?page=wordpress-github-sync' ) );
