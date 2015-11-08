@@ -87,6 +87,10 @@ class WordPress_GitHub_Sync_Export {
 			return $post;
 		}
 
+		if ( 'trash' === $post->status() ) {
+			return $this->delete( $post_id );
+		}
+
 		$master = $this->app->api()->fetch()->master();
 
 		if ( is_wp_error( $master ) ) {

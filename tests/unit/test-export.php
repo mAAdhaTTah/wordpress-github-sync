@@ -19,6 +19,9 @@ class WordPress_GitHub_Sync_Export_Test extends WordPress_GitHub_Sync_TestCase {
 		parent::setUp();
 
 		$this->export = new WordPress_GitHub_Sync_Export( $this->app );
+		$this->post
+			->shouldReceive( 'status' )
+			->andReturn( 'publish' );
 	}
 
 	public function test_should_fail_full_export_if_database_fails() {
