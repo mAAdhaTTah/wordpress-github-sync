@@ -220,6 +220,7 @@ class WordPress_GitHub_Sync_Export {
 
 		if ( is_wp_error( $master ) ) {
 			// @todo throw a big warning! not having the latest shas is BAD
+			// Solution: Show error message and link to kick off sha importing.
 			return $master;
 		}
 
