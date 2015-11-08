@@ -17,12 +17,10 @@ class WordPress_GitHub_Sync_CLI {
 	protected $app;
 
 	/**
-	 * Wire up controller object on init
-	 *
-	 * @param WordPress_GitHub_Sync $app Application container.
+	 * Grab the Application container on instantiation.
 	 */
-	public function __construct( WordPress_GitHub_Sync $app ) {
-		$this->app = $app;
+	public function __construct() {
+		$this->app = WordPress_GitHub_Sync::$instance;
 	}
 
 	/**
