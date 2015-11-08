@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the WordPress GitHub Sync package.
 msgid ""
 msgstr ""
-"Project-Id-Version: WordPress GitHub Sync 1.1.1\n"
+"Project-Id-Version: WordPress GitHub Sync 1.3.4\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/wp-github-sync\n"
-"POT-Creation-Date: 2015-09-12 16:19:55+00:00\n"
+"POT-Creation-Date: 2015-11-08 22:00:38+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,195 +12,184 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
-#: lib/admin.php:30
+#: lib/admin.php:40
 msgid "GitHub hostname"
 msgstr ""
 
-#: lib/admin.php:33
+#: lib/admin.php:43
 msgid "The GitHub host to use. Can be changed to support a GitHub Enterprise installation."
 msgstr ""
 
-#: lib/admin.php:38
+#: lib/admin.php:48
 msgid "Repository"
 msgstr ""
 
-#: lib/admin.php:41
+#: lib/admin.php:51
 msgid "The GitHub repository to commit to, with owner (<code>[OWNER]/[REPOSITORY]</code>), e.g., <code>benbalter/benbalter.github.com</code>. The repository should contain an initial commit."
 msgstr ""
 
-#: lib/admin.php:46
+#: lib/admin.php:56
 msgid "Oauth Token"
 msgstr ""
 
-#: lib/admin.php:49
+#: lib/admin.php:59
 msgid "A <a href='https://github.com/settings/tokens/new'>personal oauth token</a> with <code>public_repo</code> scope."
 msgstr ""
 
-#: lib/admin.php:54
+#: lib/admin.php:64
 msgid "Webhook Secret"
 msgstr ""
 
-#: lib/admin.php:57
+#: lib/admin.php:67
 msgid "The webhook's secret phrase."
 msgstr ""
 
-#: lib/admin.php:79
+#: lib/admin.php:72
+msgid "Default Import User"
+msgstr ""
+
+#: lib/admin.php:75
+msgid "The fallback user for import, in case WordPress <--> GitHub Sync cannot find the committer in the database."
+msgstr ""
+
+#: lib/admin.php:108
 msgid "Export to GitHub started."
 msgstr ""
 
-#: lib/admin.php:86
+#: lib/admin.php:115
 msgid "Export to GitHub failed with error:"
 msgstr ""
 
-#: lib/admin.php:93 lib/export.php:135
+#: lib/admin.php:122 lib/export.php:201 lib/export.php:235
 msgid "Export to GitHub completed successfully."
 msgstr ""
 
-#: lib/admin.php:104 views/options.php:2
+#: lib/admin.php:134 views/options.php:9
 msgid "WordPress <--> GitHub Sync"
 msgstr ""
 
-#: lib/admin.php:104
+#: lib/admin.php:135
 msgid "GitHub Sync"
 msgstr ""
 
-#: lib/cli.php:43 lib/cli.php:78
+#: lib/cli.php:51 lib/cli.php:93
 msgid "Invalid user ID"
 msgstr ""
 
-#: lib/cli.php:49 wp-github-sync.php:191
+#: lib/cli.php:57 wp-github-sync.php:182
 msgid "Starting full export to GitHub."
 msgstr ""
 
-#: lib/cli.php:52
-msgid "Exporting post ID to GitHub: "
+#: lib/cli.php:62
+msgid "Exporting post ID to GitHub: %d"
 msgstr ""
 
-#: lib/cli.php:55
+#: lib/cli.php:68
 msgid "Invalid post ID"
 msgstr ""
 
-#: lib/cli.php:83 wp-github-sync.php:203
+#: lib/cli.php:98 wp-github-sync.php:194
 msgid "Starting import from GitHub."
 msgstr ""
 
-#: lib/controller.php:63
-msgid " is an invalid repository."
+#: lib/client/base.php:84
+msgid "WordPress-GitHub-Sync needs an auth token. Please update your settings."
 msgstr ""
 
-#: lib/controller.php:77
-msgid "Not on the master branch."
+#: lib/client/base.php:93
+msgid "WordPress-GitHub-Sync needs a repository. Please update your settings."
 msgstr ""
 
-#: lib/controller.php:88 lib/controller.php:145
-msgid "Already synced this commit."
+#: lib/client/base.php:102
+msgid "WordPress-GitHub-Sync needs a properly formed repository. Please update your settings."
 msgstr ""
 
-#: lib/controller.php:100
-msgid "Failed getting commit with error: "
-msgstr ""
-
-#: lib/controller.php:123
-msgid "Payload processed"
-msgstr ""
-
-#: lib/controller.php:139
-msgid "Failed getting last commit with error: "
-msgstr ""
-
-#: lib/controller.php:161
-msgid "Export locked. Terminating."
-msgstr ""
-
-#: lib/export.php:59
-msgid "Failed getting tree with error: "
-msgstr ""
-
-#: lib/export.php:63
-msgid "Building the tree."
-msgstr ""
-
-#: lib/export.php:87
-msgid "Saving the shas."
-msgstr ""
-
-#: lib/export.php:99
+#: lib/client/persist.php:23
 msgid "There were no changes, so no additional commit was added."
 msgstr ""
 
-#: lib/export.php:109
-msgid "Error exporting to GitHub. Error: "
+#: lib/controller.php:39 lib/controller.php:86 lib/controller.php:114
+#: lib/controller.php:148 lib/controller.php:176
+msgid "%s : Semaphore is locked, import/export already in progress."
 msgstr ""
 
-#: lib/export.php:124
-msgid "No sha matched for post ID "
-msgstr ""
-
-#: lib/import.php:31
-msgid "Failed getting recursive tree with error: "
-msgstr ""
-
-#: lib/import.php:40
-msgid "Imported tree "
-msgstr ""
-
-#: lib/import.php:106
-msgid "Updated blob "
-msgstr ""
-
-#: lib/tree.php:46
-msgid "Tree not initialized"
-msgstr ""
-
-#: lib/tree.php:215
-msgid "Creating the tree."
-msgstr ""
-
-#: lib/tree.php:222
-msgid "Creating the commit."
-msgstr ""
-
-#: lib/tree.php:229
-msgid "Setting the master branch to our new commit."
-msgstr ""
-
-#: lib/tree.php:286
-msgid "Skipping README"
-msgstr ""
-
-#: lib/tree.php:295
-msgid "Already synced blob "
-msgstr ""
-
-#: lib/tree.php:304
-msgid "Failed getting blob with error: "
-msgstr ""
-
-#: lib/tree.php:314
-msgid "No front matter on blob "
-msgstr ""
-
-#: views/options.php:8
-msgid "Webhook callback"
-msgstr ""
-
-#: views/options.php:12
-msgid "Bulk actions"
-msgstr ""
-
-#: views/options.php:14
-msgid "Export to GitHub"
-msgstr ""
-
-#: views/options.php:15
-msgid "Import from GitHub"
-msgstr ""
-
-#: wp-github-sync.php:152
+#: lib/controller.php:46
 msgid "Failed to validate secret."
 msgstr ""
 
-#: wp-github-sync.php:232
+#: lib/controller.php:56
+msgid "%s is an invalid repository."
+msgstr ""
+
+#: lib/database.php:62
+msgid "Querying for supported posts returned no results."
+msgstr ""
+
+#: lib/database.php:88
+msgid "Post ID %s is not supported by WPGHS. See wiki to find out how to add support."
+msgstr ""
+
+#: lib/database.php:119
+msgid "Post for sha %s not found."
+msgstr ""
+
+#: lib/database.php:184
+msgid "Successfully saved posts."
+msgstr ""
+
+#: lib/database.php:223
+msgid "Post not found for path %s."
+msgstr ""
+
+#: lib/database.php:241
+msgid "Failed to delete post ID %d."
+msgstr ""
+
+#: lib/database.php:249
+msgid "Successfully deleted post ID %d."
+msgstr ""
+
+#: lib/database.php:340
+msgid "Commit user not found for email %s"
+msgstr ""
+
+#: lib/database.php:413
+msgid "No change for post ID %d."
+msgstr ""
+
+#: lib/database.php:421
+msgid "Successfully updated post ID %d."
+msgstr ""
+
+#: lib/import.php:70
+msgid "Payload processed"
+msgstr ""
+
+#: lib/import.php:95 lib/payload.php:58
+msgid "Already synced this commit."
+msgstr ""
+
+#: lib/payload.php:53
+msgid "Not on the master branch."
+msgstr ""
+
+#: views/options.php:16
+msgid "Webhook callback"
+msgstr ""
+
+#: views/options.php:20
+msgid "Bulk actions"
+msgstr ""
+
+#: views/options.php:23
+msgid "Export to GitHub"
+msgstr ""
+
+#: views/options.php:26
+msgid "Import from GitHub"
+msgstr ""
+
+#: wp-github-sync.php:223
 msgid "To set up your site to sync with GitHub, update your <a href=\"%s\">settings</a> and click \"Export to GitHub.\""
 msgstr ""
 #. Plugin Name of the plugin/theme
@@ -208,17 +197,17 @@ msgid "WordPress GitHub Sync"
 msgstr ""
 
 #. Plugin URI of the plugin/theme
-msgid "https://github.com/benbalter/wordpress-github-sync"
+msgid "https://github.com/mAAdhaTTah/wordpress-github-sync"
 msgstr ""
 
 #. Description of the plugin/theme
-msgid "A WordPress plugin to sync content with a GitHub repository (or Jekyll site)"
+msgid "A WordPress plugin to sync content with a GitHub repository (or Jekyll site)."
 msgstr ""
 
 #. Author of the plugin/theme
-msgid "Ben Balter, James DiGioia"
+msgid "James DiGioia, Ben Balter"
 msgstr ""
 
 #. Author URI of the plugin/theme
-msgid "http://ben.balter.com"
+msgid "http://jamesdigioia.com"
 msgstr ""
