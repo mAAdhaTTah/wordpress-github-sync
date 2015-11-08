@@ -1,18 +1,30 @@
+<?php
+/**
+ * Options Page View.
+ * @package WordPress_GitHub_Sync
+ */
+
+?>
 <div class="wrap">
-	<h2><?php _e( 'WordPress <--> GitHub Sync', WordPress_GitHub_Sync::$text_domain ); ?></h2>
+	<h2><?php esc_html_e( 'WordPress <--> GitHub Sync', 'wordpress-github-sync' ); ?></h2>
+
 	<form method="post" action="options.php">
-		<?php settings_fields( WordPress_GitHub_Sync::$text_domain ); ?>
-		<?php do_settings_sections( WordPress_GitHub_Sync::$text_domain ); ?>
+		<?php settings_fields( 'wordpress-github-sync' ); ?>
+		<?php do_settings_sections( 'wordpress-github-sync' ); ?>
 		<table class="form-table">
 			<tr>
-				<th scope="row"><?php _e( 'Webhook callback', WordPress_GitHub_Sync::$text_domain ); ?></th>
-				<td><code><?php echo admin_url( 'admin-ajax.php' ); ?>?action=wpghs_sync_request</code></td>
+				<th scope="row"><?php esc_html_e( 'Webhook callback', 'wordpress-github-sync' ); ?></th>
+				<td><code><?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>?action=wpghs_sync_request</code></td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Bulk actions', WordPress_GitHub_Sync::$text_domain ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Bulk actions', 'wordpress-github-sync' ); ?></th>
 				<td>
-					<a href="<?php echo add_query_arg( array( 'action' => 'export' ) ) ?>"><?php _e( 'Export to GitHub', WordPress_GitHub_Sync::$text_domain ); ?></a> |
-					<a href="<?php echo add_query_arg( array( 'action' => 'import' ) ) ?>"><?php _e( 'Import from GitHub', WordPress_GitHub_Sync::$text_domain ); ?></a>
+					<a href="<?php echo esc_url( add_query_arg( array( 'action' => 'export' ) ) ); ?>">
+						<?php esc_html_e( 'Export to GitHub', 'wordpress-github-sync' ); ?>
+					</a> |
+					<a href="<?php echo esc_url( add_query_arg( array( 'action' => 'import' ) ) ); ?>">
+						<?php esc_html_e( 'Import from GitHub', 'wordpress-github-sync' ); ?>
+					</a>
 				</td>
 		</table>
 		<?php submit_button(); ?>
