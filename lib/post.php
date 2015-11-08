@@ -114,7 +114,10 @@ class WordPress_GitHub_Sync_Post {
 	 * Combines the 2 content parts for GitHub
 	 */
 	public function github_content() {
-		return $this->front_matter() . $this->post_content();
+		$content = $this->front_matter() . $this->post_content();
+		$ending = apply_filters( 'wpghs_line_endings', "\n" );
+
+		return preg_replace( '~(*BSR_ANYCRLF)\R~', $ending, $content );
 	}
 
 	/**
