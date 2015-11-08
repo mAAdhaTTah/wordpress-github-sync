@@ -381,9 +381,14 @@ class WordPress_GitHub_Sync_Post {
 	 * Sets the Post's WP_Post object.
 	 *
 	 * @param WP_Post $post
+	 *
+	 * @return $this
 	 */
 	public function set_post( WP_Post $post ) {
 		$this->post = $post;
+		$this->id = $post->ID;
+
+		return $this;
 	}
 
 	/**
