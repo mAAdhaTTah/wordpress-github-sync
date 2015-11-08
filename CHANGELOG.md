@@ -5,7 +5,10 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 ### [Unreleased] ###
 
 * Major rewrite of the plugin internals.
-* BACKWARDS BREAKING: Remove reference to global `$wpghs` variable.
+* Improved speed.
+    * Upgraded caching implementation means updates happen faster.
+* Architecture improvements 
+* BREAKING: Remove reference to global `$wpghs` variable.
 
 ### [1.3.4] ###
 
