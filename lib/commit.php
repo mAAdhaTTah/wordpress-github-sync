@@ -61,7 +61,7 @@ class WordPress_GitHub_Sync_Commit {
 	/**
 	 * Commit parents.
 	 *
-	 * @var stdClass[]
+	 * @var string[]
 	 */
 	protected $parents;
 
@@ -182,7 +182,7 @@ class WordPress_GitHub_Sync_Commit {
 	/**
 	 * Return the commit parents.
 	 *
-	 * @return stdClass[]
+	 * @return string[]
 	 */
 	public function parents() {
 		return $this->parents;
