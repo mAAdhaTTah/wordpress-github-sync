@@ -36,7 +36,7 @@ Well, now you can! Introducing [WordPress <--> GitHub Sync](https://github.com/b
 The sync action is based on two hooks:
 
 1. A per-post sync fired in response to WordPress's `save_post` hook which pushes content to GitHub
-2. A sync of all changed files trigged by GitHub's `push` webhook (outbound API call)
+2. A sync of all changed files triggered by GitHub's `push` webhook (outbound API call)
 
 ## Installation ##
 
