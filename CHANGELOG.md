@@ -6,10 +6,9 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 
 * Major rewrite of the plugin internals.
     * Improved architecture.
-    * Easier maintainence.
-* Improved speed.
-    * Upgraded caching implementation means updates happen faster.
-* Architecture improvements.
+    * More maintainable.
+    * Improved speed.
+        * Upgraded caching implementation means updates happen faster.
 * Line-endings are now normalize to Unix-style.
     * New filter: `wpghs_line_endings` to set preferred line endings.
 * BREAKING: Remove reference to global `$wpghs` variable.
