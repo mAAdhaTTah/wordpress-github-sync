@@ -79,6 +79,23 @@ class WordPress_GitHub_Sync_Database_Test extends WordPress_GitHub_Sync_TestCase
 		$this->assertEquals( $post_id, $post->id );
 	}
 
+	public function test_should_return_error_if_cant_find_sha() {
+		$sha     = '1234567890qwertyuiop';
+		$this->factory->post->create();
+
+		$this->assertInstanceOf( 'WP_Error', $error = $this->database->fetch_by_sha( $sha ) );
+		$this->assertEquals( 'sha_not_found', $error->get_error_code() );
+	}
+
+	public function test_should_fetch_by_sha() {
+		$sha     = '1234567890qwertyuiop';
+		$post_id = $this->factory->post->create();
+		update_post_meta( $post_id, '_sha', $sha );
+
+		$this->assertInstanceOf( 'WordPress_GitHub_Sync_Post', $post = $this->database->fetch_by_sha( $sha) );
+		$this->assertEquals( $post_id, $post->id );
+	}
+
 	public function test_should_save_new_post_with_provided_user() {
 		$email   = 'test@test.com';
 		$user_id = $this->factory->user->create( array( 'user_email' => $email, 'role' => 'administrator' ) );

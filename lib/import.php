@@ -143,13 +143,7 @@ class WordPress_GitHub_Sync_Import {
 		}
 
 		// If the blob sha already matches a post, then move on.
-		// @todo This doesn't belong here.
-		$id = $wpdb->get_var(
-			"SELECT post_id FROM $wpdb->postmeta
-			WHERE meta_key = '_sha' AND meta_value = '{$blob->sha()}'"
-		);
-
-		if ( $id ) {
+		if ( ! is_wp_error( $this->app->database()->fetch_by_sha( $blob->sha() ) ) ) {
 			return false;
 		}
 

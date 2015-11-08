@@ -210,7 +210,7 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 
 	protected function set_blob_expectations() {
 		$email = 'mAAdhaTTah@github';
-		$blobs  = array( $this->blob );
+		$blobs = array( $this->blob );
 		$this->fetch
 			->shouldReceive( 'master' )
 			->once()
@@ -243,6 +243,11 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			->shouldReceive( 'path' )
 			->once()
 			->andReturn( '_posts/2015-10-25-new-post.md' );
+		$this->database
+			->shouldReceive( 'fetch_by_sha' )
+			->once()
+			->with( $this->sha )
+			->andReturn( new WP_Error( 'sha_not_found' ) );
 		$this->blob
 			->shouldReceive( 'has_frontmatter' )
 			->once()

@@ -98,6 +98,37 @@ class WordPress_GitHub_Sync_Database {
 	}
 
 	/**
+	 * Queries for a post by provided sha.
+	 *
+	 * @param $sha
+	 *
+	 * @return WordPress_GitHub_Sync_Post|WP_Error
+	 */
+	public function fetch_by_sha( $sha ) {
+		global $wpdb;
+
+		$post_id = $wpdb->get_var(
+			"SELECT post_id FROM $wpdb->postmeta
+			WHERE meta_key = '_sha' AND meta_value = '{$sha}'"
+		);
+
+		if ( ! $post_id ) {
+			return new WP_Error(
+				'sha_not_found',
+				sprintf(
+					__(
+						'Post for sha %s not found.',
+						'wordpress-github-sync'
+					),
+					$sha
+				)
+			);
+		}
+
+		return new WordPress_GitHub_Sync_Post( $post_id, $this->app->api() );
+	}
+
+	/**
 	 * Saves an array of Post objects to the database
 	 * and associates their author as well as their latest
 	 *
