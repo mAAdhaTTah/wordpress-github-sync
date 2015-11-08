@@ -29,10 +29,15 @@ class WordPress_GitHub_Sync_Admin {
 	 * Callback to register the plugin's options
 	 */
 	public function register_settings() {
-		add_settings_section( 'general', 'General Settings', array( &$this, 'section_callback' ), WordPress_GitHub_Sync::$text_domain );
+		add_settings_section(
+			'general',
+			'General Settings',
+			array( $this, 'section_callback' ),
+			WordPress_GitHub_Sync::$text_domain
+		);
 
 		register_setting( WordPress_GitHub_Sync::$text_domain, 'wpghs_host' );
-		add_settings_field( 'wpghs_host', __( 'GitHub hostname', 'wordpress-github-sync' ), array( &$this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
+		add_settings_field( 'wpghs_host', __( 'GitHub hostname', 'wordpress-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
 				'default'   => 'https://api.github.com',
 				'name'      => 'wpghs_host',
 				'help_text' => __( 'The GitHub host to use. Can be changed to support a GitHub Enterprise installation.', 'wordpress-github-sync' ),
@@ -40,7 +45,7 @@ class WordPress_GitHub_Sync_Admin {
 		);
 
 		register_setting( WordPress_GitHub_Sync::$text_domain, 'wpghs_repository' );
-		add_settings_field( 'wpghs_repository', __( 'Repository', 'wordpress-github-sync' ), array( &$this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
+		add_settings_field( 'wpghs_repository', __( 'Repository', 'wordpress-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
 				'default'   => '',
 				'name'      => 'wpghs_repository',
 				'help_text' => __( 'The GitHub repository to commit to, with owner (<code>[OWNER]/[REPOSITORY]</code>), e.g., <code>benbalter/benbalter.github.com</code>. The repository should contain an initial commit.', 'wordpress-github-sync' ),
@@ -48,7 +53,7 @@ class WordPress_GitHub_Sync_Admin {
 		);
 
 		register_setting( WordPress_GitHub_Sync::$text_domain, 'wpghs_oauth_token' );
-		add_settings_field( 'wpghs_oauth_token', __( 'Oauth Token', 'wordpress-github-sync' ), array( &$this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
+		add_settings_field( 'wpghs_oauth_token', __( 'Oauth Token', 'wordpress-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
 				'default'   => '',
 				'name'      => 'wpghs_oauth_token',
 				'help_text' => __( "A <a href='https://github.com/settings/tokens/new'>personal oauth token</a> with <code>public_repo</code> scope.", 'wordpress-github-sync' ),
@@ -56,7 +61,7 @@ class WordPress_GitHub_Sync_Admin {
 		);
 
 		register_setting( WordPress_GitHub_Sync::$text_domain, 'wpghs_secret' );
-		add_settings_field( 'wpghs_secret', __( 'Webhook Secret', 'wordpress-github-sync' ), array( &$this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
+		add_settings_field( 'wpghs_secret', __( 'Webhook Secret', 'wordpress-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
 				'default'   => '',
 				'name'      => 'wpghs_secret',
 				'help_text' => __( "The webhook's secret phrase.", 'wordpress-github-sync' ),
@@ -125,7 +130,13 @@ class WordPress_GitHub_Sync_Admin {
 	 * Add options menu to admin navbar
 	 */
 	public function add_admin_menu() {
-		add_options_page( __( 'WordPress <--> GitHub Sync', WordPress_GitHub_Sync::$text_domain ), __( 'GitHub Sync', 'wordpress-github-sync' ), 'manage_options', WordPress_GitHub_Sync::$text_domain, array( &$this, 'settings_page' ) );
+		add_options_page(
+			__( 'WordPress <--> GitHub Sync', 'wordpress-github-sync' ),
+			__( 'GitHub Sync', 'wordpress-github-sync' ),
+			'manage_options',
+			WordPress_GitHub_Sync::$text_domain,
+			array( $this, 'settings_page' )
+		);
 	}
 
 	/**
