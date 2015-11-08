@@ -60,7 +60,11 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		$this->app->semaphore()->lock();
+		remove_action( 'save_post', array( $this, 'export_post' ) );
+		remove_action( 'save_post', array( $this, 'delete_post' ) );
+
 		$result = $this->app->import()->payload( $payload );
+
 		$this->app->semaphore()->unlock();
 
 		if ( is_wp_error( $result ) ) {
@@ -84,7 +88,11 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		$this->app->semaphore()->lock();
+		remove_action( 'save_post', array( $this, 'export_post' ) );
+		remove_action( 'save_post', array( $this, 'delete_post' ) );
+
 		$result = $this->app->import()->master();
+
 		$this->app->semaphore()->unlock();
 
 		if ( is_wp_error( $result ) ) {
