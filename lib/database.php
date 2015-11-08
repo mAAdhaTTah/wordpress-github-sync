@@ -105,8 +105,6 @@ class WordPress_GitHub_Sync_Database {
 	 * @param string $email Author email.
 	 *
 	 * @return string|WP_Error
-	 *
-	 * @todo what about return values?
 	 */
 	public function save_posts( array $posts, $email ) {
 		$user    = $this->fetch_commit_user( $email );
@@ -132,10 +130,6 @@ class WordPress_GitHub_Sync_Database {
 				}
 			}
 
-			foreach ( $post->get_meta() as $key => $value ) {
-				update_post_meta( $post_id, $key, $value );
-			}
-
 			$this->set_revision_author( $post_id, $user_id );
 
 			if ( $post->is_new() ) {
@@ -143,6 +137,12 @@ class WordPress_GitHub_Sync_Database {
 			}
 
 			$post->set_post( get_post( $post_id ) );
+
+			$meta = apply_filters( 'wpghs_pre_import_meta', $post->get_meta(), $post );
+
+			foreach ( $meta as $key => $value ) {
+				update_post_meta( $post_id, $key, $value );
+			}
 		}
 
 		if ( $error ) {

@@ -11,6 +11,8 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
         * Upgraded caching implementation means updates happen faster.
 * Line-endings are now normalize to Unix-style.
     * New filter: `wpghs_line_endings` to set preferred line endings.
+* New filter: `wpghs_pre_import_meta`
+    * Called before post meta is imported from a post.
 * BREAKING: Remove reference to global `$wpghs` variable.
 
 ### [1.3.4] ###
