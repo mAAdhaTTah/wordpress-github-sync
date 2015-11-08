@@ -36,7 +36,7 @@ class WordPress_GitHub_Sync_Controller {
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
-				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
+				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' ), 'Controller::pull_posts()' )
 			) );
 		}
 
@@ -79,7 +79,7 @@ class WordPress_GitHub_Sync_Controller {
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
-				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
+				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' ), 'Controller::import_master()' )
 			) );
 		}
 
@@ -103,7 +103,7 @@ class WordPress_GitHub_Sync_Controller {
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
-				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
+				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' ), 'Controller::export_all()' )
 			) );
 		}
 
@@ -137,7 +137,7 @@ class WordPress_GitHub_Sync_Controller {
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
-				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
+				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' ), 'Controller::export_post()' )
 			) );
 		}
 
@@ -165,7 +165,7 @@ class WordPress_GitHub_Sync_Controller {
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
-				__( 'Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' )
+				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' ), 'Controller::delete_post()' )
 			) );
 		}
 
