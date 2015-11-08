@@ -4,9 +4,6 @@
  * @group models
  */
 class WordPress_GitHub_Sync_Tree_Test extends WordPress_GitHub_Sync_TestCase {
-	public function setUp() {
-		parent::setUp();
-	}
 
 	public function test_should_interpret_data() {
 		$data      = new stdClass;

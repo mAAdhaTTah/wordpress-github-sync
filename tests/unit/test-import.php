@@ -210,7 +210,7 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 
 	protected function set_blob_expectations() {
 		$email = 'mAAdhaTTah@github';
-		$tree  = array( $this->blob );
+		$blobs  = array( $this->blob );
 		$this->fetch
 			->shouldReceive( 'master' )
 			->once()
@@ -222,7 +222,11 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			->andReturn( false );
 		$this->commit
 			->shouldReceive( 'tree' )
-			->andReturn( $tree );
+			->andReturn( $this->tree );
+		$this->tree
+			->shouldReceive( 'blobs' )
+			->once()
+			->andReturn( $blobs );
 		$this->blob
 			->shouldReceive( 'content_import' )
 			->once()
@@ -233,8 +237,16 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 			->andReturn( $this->blob_meta );
 		$this->blob
 			->shouldReceive( 'sha' )
-			->once()
+			->twice()
 			->andReturn( $this->sha );
+		$this->blob
+			->shouldReceive( 'path' )
+			->once()
+			->andReturn( '_posts/2015-10-25-new-post.md' );
+		$this->blob
+			->shouldReceive( 'has_frontmatter' )
+			->once()
+			->andReturn( true );
 		$this->commit
 			->shouldReceive( 'author_email' )
 			->once()
