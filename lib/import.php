@@ -98,7 +98,11 @@ class WordPress_GitHub_Sync_Import {
 		$posts = array();
 		$new   = array();
 
-		foreach ( $commit->tree() as $blob ) {
+		foreach ( $commit->tree()->blobs() as $blob ) {
+			if ( ! $this->importable_blob( $blob ) ) {
+				continue;
+			}
+
 			$posts[] = $post = $this->blob_to_post( $blob );
 
 			if ( $post->is_new() ) {
@@ -121,6 +125,39 @@ class WordPress_GitHub_Sync_Import {
 		}
 
 		return $posts;
+	}
+
+	/**
+	 * Checks whether the provided blob should be imported.
+	 *
+	 * @param WordPress_GitHub_Sync_Blob $blob Blob to validate.
+	 *
+	 * @return bool
+	 */
+	protected function importable_blob( WordPress_GitHub_Sync_Blob $blob ) {
+		global $wpdb;
+
+		// Skip the repo's readme.
+		if ( 'readme' === strtolower( substr( $blob->path(), 0, 6 ) ) ) {
+			return false;
+		}
+
+		// If the blob sha already matches a post, then move on.
+		// @todo This doesn't belong here.
+		$id = $wpdb->get_var(
+			"SELECT post_id FROM $wpdb->postmeta
+			WHERE meta_key = '_sha' AND meta_value = '{$blob->sha()}'"
+		);
+
+		if ( $id ) {
+			return false;
+		}
+
+		if ( ! $blob->has_frontmatter() ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
