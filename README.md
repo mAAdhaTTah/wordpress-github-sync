@@ -11,7 +11,7 @@
 
 *A WordPress plugin to sync content with a GitHub repository (or Jekyll site)*
 
-[![Build Status](https://travis-ci.org/mAAdhaTTah/wordpress-github-sync.svg?branch=master)](https://travis-ci.org/benbalter/wordpress-github-sync)
+[![Build Status](https://scrutinizer-ci.com/g/mAAdhaTTah/wordpress-github-sync/badges/build.png?b=master)](https://scrutinizer-ci.com/g/mAAdhaTTah/wordpress-github-sync/build-status/master) [![Code Coverage](https://scrutinizer-ci.com/g/mAAdhaTTah/wordpress-github-sync/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/mAAdhaTTah/wordpress-github-sync/?branch=master) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/mAAdhaTTah/wordpress-github-sync/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/mAAdhaTTah/wordpress-github-sync/?branch=master)
 
 Ever wish you could collaboratively author content for your WordPress site (or expose change history publicly and accept pull requests from your readers)?
 
