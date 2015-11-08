@@ -102,7 +102,7 @@ class WordPress_GitHub_Sync_Database {
 	 * and associates their author as well as their latest
 	 *
 	 * @param WordPress_GitHub_Sync_Post[] $posts Array of Posts to save.
-	 * @param string                       $email Author email.
+	 * @param string $email Author email.
 	 *
 	 * @return string|WP_Error
 	 *
@@ -245,7 +245,8 @@ class WordPress_GitHub_Sync_Database {
 			return false;
 		}
 
-		if ( ! in_array( $post->status(), $this->get_whitelisted_post_statuses() ) ) {
+		// We need to allow trashed posts to be queried, but they are not whitelisted for export.
+		if ( ! in_array( $post->status(), $this->get_whitelisted_post_statuses() ) && 'trash' !== $post->status() ) {
 			return false;
 		}
 
@@ -374,7 +375,7 @@ class WordPress_GitHub_Sync_Database {
 	 * Update the provided post's blob sha.
 	 *
 	 * @param WordPress_GitHub_Sync_Post $post Post to update.
-	 * @param string                     $sha Sha to update to.
+	 * @param string $sha Sha to update to.
 	 *
 	 * @return bool|int
 	 */
