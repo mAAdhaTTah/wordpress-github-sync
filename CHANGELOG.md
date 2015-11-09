@@ -5,8 +5,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 ### [Unreleased] ###
 
 * Major rewrite of the plugin internals.
-    * Improved architecture.
-    * More maintainable.
+    * *Massively* improved internal architecture.
     * Improved speed.
         * Upgraded caching implementation means updates happen faster.
 * Line-endings are now normalize to Unix-style.
