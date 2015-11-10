@@ -17,6 +17,10 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 * BREAKING: Remove reference to global `$wpghs` variable.
     * Use `WordPress_GitHub_Sync::$instance` instead.
 
+### [Unreleased] ###
+ 
+* Fix Database error handling 
+
 ### [1.3.4] ###
 
 * Add German translation (props @lsinger).

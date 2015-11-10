@@ -160,6 +160,9 @@ class WordPress_GitHub_Sync_Database {
 				} else {
 					$error->add( $post_id->get_error_code(), $post_id->get_error_message() );
 				}
+
+				// Abort saving if updating the post fails.
+				continue;
 			}
 
 			$this->set_revision_author( $post_id, $user_id );
