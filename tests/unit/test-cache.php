@@ -43,7 +43,7 @@ class WordPress_GitHub_Sync_Cache_Test extends WordPress_GitHub_Sync_TestCase {
 		$data                    = new stdClass;
 		$data->message           = 'Commit message';
 		$this->commit->fake_data = $data;
-		set_transient( '_wpghs_commits_' . $this->sha, $this->commit );
+		set_transient( 'wpghs_' . md5( 'commits_' . $this->sha ), $this->commit );
 
 		$commit = $this->api_cache->fetch_commit( $this->sha );
 
@@ -54,7 +54,7 @@ class WordPress_GitHub_Sync_Cache_Test extends WordPress_GitHub_Sync_TestCase {
 		$data                  = new stdClass;
 		$data->blobs           = array( $this->blob );
 		$this->tree->fake_data = $data;
-		set_transient( '_wpghs_trees_' . $this->sha, $this->tree );
+		set_transient( 'wpghs_' . md5( 'trees_' . $this->sha ), $this->tree );
 
 		$tree = $this->api_cache->fetch_tree( $this->sha );
 
@@ -66,7 +66,7 @@ class WordPress_GitHub_Sync_Cache_Test extends WordPress_GitHub_Sync_TestCase {
 		$data                  = new stdClass;
 		$data->content         = 'Post content';
 		$this->blob->fake_data = $data;
-		set_transient( '_wpghs_blobs_' . $this->sha, $this->blob );
+		set_transient( 'wpghs_' . md5( 'blobs_' . $this->sha ), $this->blob );
 
 		$blob = $this->api_cache->fetch_blob( $this->sha );
 
