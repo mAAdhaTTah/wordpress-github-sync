@@ -33,6 +33,7 @@ class WordPress_GitHub_Sync_Controller {
 	 * @return boolean
 	 */
 	public function pull_posts() {
+		$this->set_ajax();
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
@@ -186,5 +187,16 @@ class WordPress_GitHub_Sync_Controller {
 		}
 
 		return $this->app->response()->success( $result );
+	}
+
+	/**
+	 * Indicates we're running our own AJAX hook
+	 * and thus should respond with JSON, rather
+	 * than just returning data.
+	 */
+	protected function set_ajax() {
+		if ( ! defined( 'WPGHS_AJAX' ) ) {
+			define( 'WPGHS_AJAX', true );
+		}
 	}
 }

@@ -18,8 +18,9 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
     * Use `WordPress_GitHub_Sync::$instance` instead.
 
 ### [Unreleased] ###
- 
-* Fix Database error handling 
+
+* Fix Database error handling
+* Fix bug where WPGHS would interfere with other plugins' AJAX hooks. 
 
 ### [1.3.4] ###
 
