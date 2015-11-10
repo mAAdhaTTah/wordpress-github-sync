@@ -189,6 +189,6 @@ class WordPress_GitHub_Sync_Cache {
 	 * @return string
 	 */
 	protected function cache_id( $type, $sha ) {
-		return '_wpghs_' . $type . '_' . $sha;
+		return 'wpghs_' . md5( $type . '_' . $sha );
 	}
 }

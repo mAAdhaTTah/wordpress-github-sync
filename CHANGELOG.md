@@ -20,7 +20,8 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 ### [Unreleased] ###
 
 * Fix Database error handling
-* Fix bug where WPGHS would interfere with other plugins' AJAX hooks. 
+* Fix bug where WPGHS would interfere with other plugins' AJAX hooks.
+* Fix transient key length to <40.
 
 ### [1.3.4] ###
 
