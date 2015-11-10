@@ -2,6 +2,12 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [1.4.1] ###
+
+* Fix Database error handling
+* Fix bug where WPGHS would interfere with other plugins' AJAX hooks.
+* Fix transient key length to <40.
+
 ### [1.4.0] ###
 
 * Major rewrite of the plugin internals.
@@ -16,12 +22,6 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
     * Called before post meta is imported from a post.
 * BREAKING: Remove reference to global `$wpghs` variable.
     * Use `WordPress_GitHub_Sync::$instance` instead.
-
-### [Unreleased] ###
-
-* Fix Database error handling
-* Fix bug where WPGHS would interfere with other plugins' AJAX hooks.
-* Fix transient key length to <40.
 
 ### [1.3.4] ###
 
@@ -80,6 +80,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
   [Keep a Changelog standards]: http://keepachangelog.com/
   [Semantic Versioning]: http://semver.org/
   [Unreleased]: https://github.com/benbalter/wordpress-github-sync
+  [1.4.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.4.1
   [1.4.0]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.4.0
   [1.3.4]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.4
   [1.3.3]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.3
