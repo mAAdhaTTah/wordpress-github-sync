@@ -87,17 +87,17 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 
   [Keep a Changelog standards]: http://keepachangelog.com/
   [Semantic Versioning]: http://semver.org/
-  [Unreleased]: https://github.com/benbalter/wordpress-github-sync
-  [1.4.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.4.1
-  [1.4.0]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.4.0
-  [1.3.4]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.4
-  [1.3.3]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.3
-  [1.3.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.2
-  [1.3.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3.1
-  [1.3]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.3
-  [1.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.2
-  [1.1.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.1.1
-  [1.1.0]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.1.0
-  [1.0.2]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.0.2
-  [1.0.1]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.0.1
-  [1.0.0]: https://github.com/benbalter/wordpress-github-sync/releases/tag/1.0.0
+  [Unreleased]: https://github.com/mAAdhaTTah/wordpress-github-sync
+  [1.4.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.4.1
+  [1.4.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.4.0
+  [1.3.4]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.3.4
+  [1.3.3]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.3.3
+  [1.3.2]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.3.2
+  [1.3.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.3.1
+  [1.3]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.3
+  [1.2]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.2
+  [1.1.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.1.1
+  [1.1.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.1.0
+  [1.0.2]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.0.2
+  [1.0.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.0.1
+  [1.0.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.0.0
