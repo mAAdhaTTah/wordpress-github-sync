@@ -6,6 +6,9 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 
 * New filters:
     * `wpghs_sync_branch`: Branch the WordPress install should sync itself with.
+    * `wpghs_commit_msg_tag`: Tag appended to the end of the commit message. Split from message with ` - `. Used to determine if commit has been synced already.
+* These two new filters allow you to use WPGHS to keep multiple sites in sync.
+    * This is an _advanced feature_. Your configuration may or may not be fully supported. **Use at your own risk.**
 
 ### [1.4.1] ###
 

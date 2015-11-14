@@ -64,8 +64,14 @@ class WordPress_GitHub_Sync_Payload {
 			);
 		}
 
-		// We add wpghs to commits we push out, so we shouldn't pull them in again.
-		if ( 'wpghs' === substr( $this->data->head_commit->message, -5 ) ) {
+		// We add a tag to commits we push out, so we shouldn't pull them in again.
+		$tag = apply_filters( 'wpghs_commit_msg_tag', 'wpghs' );
+
+		if ( ! $tag ) {
+			throw new Exception( __( 'Commit message tag not set. Filter `wpghs_commit_msg_tag` misconfigured.', 'wordpress-github-sync' ) );
+		}
+
+		if ( $tag === substr( $this->message(), -1 * strlen( $tag ) ) ) {
 			return new WP_Error( 'synced_commit', __( 'Already synced this commit.', 'wordpress-github-sync' ) );
 		}
 
@@ -106,5 +112,14 @@ class WordPress_GitHub_Sync_Payload {
 	 */
 	public function get_repository_name() {
 		return $this->data->repository->full_name;
+	}
+
+	/**
+	 * Returns the payload's commit message.
+	 *
+	 * @return string
+	 */
+	protected function message() {
+		return $this->data->head_commit->message;
 	}
 }

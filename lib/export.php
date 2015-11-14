@@ -61,7 +61,7 @@ class WordPress_GitHub_Sync_Export {
 					site_url(),
 					get_bloginfo( 'name' )
 				)
-			) . ' - wpghs'
+			) . $this->get_commit_msg_tag()
 		);
 
 		$result = $this->app->api()->persist()->commit( $master );
@@ -108,7 +108,7 @@ class WordPress_GitHub_Sync_Export {
 					get_bloginfo( 'name' )
 				),
 				$post
-			) . ' - wpghs'
+			) . $this->get_commit_msg_tag()
 		);
 
 		$result = $this->app->api()->persist()->commit( $master );
@@ -146,7 +146,7 @@ class WordPress_GitHub_Sync_Export {
 					site_url(),
 					get_bloginfo( 'name' )
 				)
-			) . ' - wpghs'
+			) . $this->get_commit_msg_tag()
 		);
 
 		$result = $this->app->api()->persist()->commit( $master );
@@ -189,7 +189,7 @@ class WordPress_GitHub_Sync_Export {
 					get_bloginfo( 'name' )
 				),
 				$post
-			) . ' - wpghs'
+			) . $this->get_commit_msg_tag()
 		);
 
 		$result = $this->app->api()->persist()->commit( $master );
@@ -244,5 +244,20 @@ class WordPress_GitHub_Sync_Export {
 	 */
 	public function set_user( $user_id ) {
 		return update_option( self::EXPORT_USER_OPTION, (int) $user_id );
+	}
+
+	/**
+	 * Gets the commit message tag.
+	 *
+	 * @return string
+	 */
+	protected function get_commit_msg_tag() {
+		$tag = apply_filters( 'wpghs_commit_msg_tag', 'wpghs' );
+
+		if ( ! $tag ) {
+			throw new Exception( __( 'Commit message tag not set. Filter `wpghs_commit_msg_tag` misconfigured.', 'wordpress-github-sync' ) );
+		}
+
+		return ' - ' . $tag;
 	}
 }
