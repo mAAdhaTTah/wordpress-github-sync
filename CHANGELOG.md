@@ -2,6 +2,11 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [Unreleased] ###
+
+* New filters:
+    * `wpghs_sync_branch`: Branch the WordPress install should sync itself with.
+
 ### [1.4.1] ###
 
 * Fix Database error handling

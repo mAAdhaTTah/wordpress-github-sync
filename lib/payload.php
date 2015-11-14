@@ -45,12 +45,23 @@ class WordPress_GitHub_Sync_Payload {
 			return false;
 		}
 
-		// The last term in the ref is the branch name.
+		// The last term in the ref is the payload_branch name.
 		$refs   = explode( '/', $this->data->ref );
-		$branch = array_pop( $refs );
+		$payload_branch = array_pop( $refs );
+		$sync_branch = apply_filters( 'wpghs_sync_branch', 'master' );
 
-		if ( 'master' !== $branch ) {
-			return new WP_Error( 'invalid_branch', __( 'Not on the master branch.', 'wordpress-github-sync' ) );
+		if ( ! $sync_branch ) {
+			throw new Exception( __( 'Sync branch not set. Filter `wpghs_sync_branch` misconfigured.', 'wordpress-github-sync' ) );
+		}
+
+		if ( $sync_branch !== $payload_branch ) {
+			return new WP_Error(
+				'invalid_branch',
+				sprintf(
+					__( 'Not on branch %s.', 'wordpress-github-sync' ),
+					$sync_branch
+				)
+			);
 		}
 
 		// We add wpghs to commits we push out, so we shouldn't pull them in again.
