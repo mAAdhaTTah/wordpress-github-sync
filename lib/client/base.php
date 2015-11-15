@@ -61,7 +61,7 @@ class WordPress_GitHub_Sync_Base_Client {
 			return new WP_Error(
 				strtolower( str_replace( ' ', '_', $status ) ),
 				sprintf(
-					'Method %s to endpoint %s failed with error: %s',
+					__( 'Method %s to endpoint %s failed with error: %s', 'wordpress-github-sync' ),
 					$method,
 					$endpoint,
 					$body && $body->message ? $body->message : 'Unknown error'
