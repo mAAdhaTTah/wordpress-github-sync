@@ -364,7 +364,7 @@ class WordPress_GitHub_Sync_Database_Test extends WordPress_GitHub_Sync_TestCase
 	public function test_should_return_error_if_path_not_found() {
 		$post_id = $this->factory->post->create();
 
-		$result = $this->database->delete_post_by_path( '_posts/2015-10-22-post-title.md' );
+		$result = $this->database->delete_post_by_path( '_posts/2015-10-22-new-post.md' );
 
 		$this->assertInstanceOf( 'WP_Error', $result );
 		$this->assertEquals( 'path_not_found', $result->get_error_code() );
