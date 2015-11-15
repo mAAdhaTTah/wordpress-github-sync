@@ -159,15 +159,19 @@ If you'd like to include an edit link without modifying your theme directly, you
       return $content;
     }, 1000 );
 
+### Using WPGHS to Keep Multiple Sites in Sync
+
+This is an _advanced feature_. Your configuration may or may not be fully supported. **Use at your own risk.**
+
+More information can be found in the [wiki](https://github.com/mAAdhaTTah/wordpress-github-sync/wiki).
+
 ### Additional Customizations ###
 
-There are a number of other filters available in WordPress <--> GitHub Sync for customizing various parts of the export, including the commit message and YAML front-matter. Want more detail? Check out the [wiki](https://github.com/benbalter/wordpress-github-sync/wiki).
-
-We're also working on making it possible to import new posts from GitHub into WordPress, but this is **not yet supported**. For now, please create your posts in WordPress initially then edit the exported file to keep it in sync.
+There are a number of other filters available in WordPress <--> GitHub Sync for customizing various parts of the export, including the commit message and YAML front-matter. Want more detail? Check out the [wiki](https://github.com/mAAdhaTTah/wordpress-github-sync/wiki).
 
 ### Contributing ###
 
-Found a bug? Want to take a stab at [one of the open issues](https://github.com/benbalter/wordpress-github-sync/issues)? We'd love your help!
+Found a bug? Want to take a stab at [one of the open issues](https://github.com/mAAdhaTTah/wordpress-github-sync/issues)? We'd love your help!
 
 See [the contributing documentation](CONTRIBUTING.md) for details.
 

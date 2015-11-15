@@ -45,16 +45,33 @@ class WordPress_GitHub_Sync_Payload {
 			return false;
 		}
 
-		// The last term in the ref is the branch name.
+		// The last term in the ref is the payload_branch name.
 		$refs   = explode( '/', $this->data->ref );
-		$branch = array_pop( $refs );
+		$payload_branch = array_pop( $refs );
+		$sync_branch = apply_filters( 'wpghs_sync_branch', 'master' );
 
-		if ( 'master' !== $branch ) {
-			return new WP_Error( 'invalid_branch', __( 'Not on the master branch.', 'wordpress-github-sync' ) );
+		if ( ! $sync_branch ) {
+			throw new Exception( __( 'Sync branch not set. Filter `wpghs_sync_branch` misconfigured.', 'wordpress-github-sync' ) );
 		}
 
-		// We add wpghs to commits we push out, so we shouldn't pull them in again.
-		if ( 'wpghs' === substr( $this->data->head_commit->message, -5 ) ) {
+		if ( $sync_branch !== $payload_branch ) {
+			return new WP_Error(
+				'invalid_branch',
+				sprintf(
+					__( 'Not on branch %s.', 'wordpress-github-sync' ),
+					$sync_branch
+				)
+			);
+		}
+
+		// We add a tag to commits we push out, so we shouldn't pull them in again.
+		$tag = apply_filters( 'wpghs_commit_msg_tag', 'wpghs' );
+
+		if ( ! $tag ) {
+			throw new Exception( __( 'Commit message tag not set. Filter `wpghs_commit_msg_tag` misconfigured.', 'wordpress-github-sync' ) );
+		}
+
+		if ( $tag === substr( $this->message(), -1 * strlen( $tag ) ) ) {
 			return new WP_Error( 'synced_commit', __( 'Already synced this commit.', 'wordpress-github-sync' ) );
 		}
 
@@ -95,5 +112,14 @@ class WordPress_GitHub_Sync_Payload {
 	 */
 	public function get_repository_name() {
 		return $this->data->repository->full_name;
+	}
+
+	/**
+	 * Returns the payload's commit message.
+	 *
+	 * @return string
+	 */
+	protected function message() {
+		return $this->data->head_commit->message;
 	}
 }
