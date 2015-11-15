@@ -7,7 +7,7 @@
 /**
  * Class WordPress_GitHub_Sync_CLI
  */
-class WordPress_GitHub_Sync_CLI {
+class WordPress_GitHub_Sync_CLI extends WP_CLI_Command {
 
 	/**
 	 * Application container.
@@ -98,5 +98,61 @@ class WordPress_GitHub_Sync_CLI {
 		WP_CLI::line( __( 'Starting import from GitHub.', 'wordpress-github-sync' ) );
 
 		$this->app->controller()->import_master();
+	}
+
+	/**
+	 * Fetches the provided sha or the repository's
+	 * master branch and caches it.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <user_id>
+	 * : The user ID you'd like to save the commit as
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp wpghs prime --branch=master
+	 *     wp wpghs prime --sha=<commit_sha>
+	 *
+	 * @synopsis [--sha=<commit_sha>] [--branch]
+	 *
+	 * @param array $args Command arguments.
+	 * @param array $assoc_args Command associated arguments.
+	 */
+	public function prime( $args, $assoc_args ) {
+		if ( isset( $assoc_args['branch'] ) ) {
+			WP_CLI::line( __( 'Starting branch import.', 'wordpress-github-sync' ) );
+
+			$commit = $this->app->api()->fetch()->master();
+
+			if ( is_wp_error( $commit ) ) {
+				WP_CLI::error(
+					sprintf(
+						__( 'Failed to import and cache branch with error: %s', 'wordpress-github-sync' ),
+						$commit->get_error_message()
+					)
+				);
+			} else {
+				WP_CLI::success(
+					sprintf(
+						__( 'Successfully imported and cached commit %s from branch.', 'wordpress-github-sync' ),
+						$commit->sha()
+					)
+				);
+			}
+		} else if ( isset( $assoc_args['sha'] ) ) {
+			WP_CLI::line( 'Starting sha import.' );
+
+			$commit = $this->app->api()->fetch()->commit( $assoc_args['sha'] );
+
+			WP_CLI::success(
+				sprintf(
+					__( 'Successfully imported and cached commit %s.', 'wordpress-github-sync' ),
+					$commit->sha()
+				)
+			);
+		} else {
+			WP_CLI::error( 'Invalid fetch.' );
+		}
 	}
 }

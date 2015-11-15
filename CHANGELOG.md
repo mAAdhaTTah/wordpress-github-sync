@@ -4,6 +4,8 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 
 ### [Unreleased] ###
 
+* New WP-CLI command:
+    * `prime`: Forces WPGHS to fetch the latest commit and save it in the cache.
 * New filters:
     * `wpghs_sync_branch`: Branch the WordPress install should sync itself with.
     * `wpghs_commit_msg_tag`: Tag appended to the end of the commit message. Split from message with ` - `. Used to determine if commit has been synced already.
