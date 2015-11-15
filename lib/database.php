@@ -45,16 +45,14 @@ class WordPress_GitHub_Sync_Database {
 	 * @return WordPress_GitHub_Sync_Post[]|WP_Error
 	 */
 	public function fetch_all_supported() {
-		global $wpdb;
+		$query = new WP_Query( array(
+			'post_type'   => $this->get_whitelisted_post_types(),
+			'post_status' => $this->get_whitelisted_post_statuses(),
+			'nopaging'    => true,
+			'fields'      => 'ids',
+		) );
 
-		$post_statuses = $this->format_for_query( $this->get_whitelisted_post_statuses() );
-		$post_types    = $this->format_for_query( $this->get_whitelisted_post_types() );
-
-		$post_ids = $wpdb->get_col(
-			"SELECT ID FROM $wpdb->posts WHERE
-			post_status IN ( $post_statuses ) AND
-			post_type IN ( $post_types )"
-		);
+		$post_ids = $query->get_posts();
 
 		if ( ! $post_ids ) {
 			return new WP_Error(
@@ -100,17 +98,21 @@ class WordPress_GitHub_Sync_Database {
 	/**
 	 * Queries for a post by provided sha.
 	 *
-	 * @param $sha
+	 * @param string $sha Post sha to fetch by.
 	 *
 	 * @return WordPress_GitHub_Sync_Post|WP_Error
 	 */
 	public function fetch_by_sha( $sha ) {
-		global $wpdb;
+		$query = new WP_Query( array(
+			'meta_key'       => '_sha',
+			'meta_value'     => $sha,
+			'meta_compare'   => '=',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+		) );
 
-		$post_id = $wpdb->get_var(
-			"SELECT post_id FROM $wpdb->postmeta
-			WHERE meta_key = '_sha' AND meta_value = '{$sha}'"
-		);
+		$post_id = $query->get_posts();
+		$post_id = array_pop( $post_id );
 
 		if ( ! $post_id ) {
 			return new WP_Error(
@@ -133,7 +135,7 @@ class WordPress_GitHub_Sync_Database {
 	 * and associates their author as well as their latest
 	 *
 	 * @param WordPress_GitHub_Sync_Post[] $posts Array of Posts to save.
-	 * @param string $email Author email.
+	 * @param string                       $email Author email.
 	 *
 	 * @return string|WP_Error
 	 */
@@ -195,11 +197,18 @@ class WordPress_GitHub_Sync_Database {
 	 * @return string|WP_Error
 	 */
 	public function delete_post_by_path( $path ) {
-		global $wpdb;
+		$query = new WP_Query( array(
+			'meta_key'       => '_wpghs_github_path',
+			'meta_value'     => $path,
+			'meta_compare'   => '=',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+		) );
 
-		$id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wpghs_github_path' AND meta_value = '$path'" );
+		$post_id = $query->get_posts();
+		$post_id = array_pop( $post_id );
 
-		if ( ! $id ) {
+		if ( ! $post_id ) {
 			$parts     = explode( '/', $path );
 			$filename  = array_pop( $parts );
 			$directory = $parts ? array_shift( $parts ) : '';
@@ -208,18 +217,34 @@ class WordPress_GitHub_Sync_Database {
 				preg_match( '/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md/', $filename, $matches );
 				$title = $matches[4];
 
-				$id = $wpdb->get_var( "SELECT ID FROM $wpdb->posts WHERE post_name = '$title'" );
+				$query = new WP_Query( array(
+					'name'     => $title,
+					'posts_per_page' => 1,
+					'post_type' => $this->get_whitelisted_post_types(),
+					'fields'         => 'ids',
+				) );
+
+				$post_id = $query->get_posts();
+				$post_id = array_pop( $post_id );
 			}
 
-			if ( ! $id ) {
+			if ( ! $post_id ) {
 				preg_match( '/(.*)\.md/', $filename, $matches );
 				$title = $matches[1];
 
-				$id = $wpdb->get_var( "SELECT ID FROM $wpdb->posts WHERE post_name = '$title'" );
+				$query = new WP_Query( array(
+					'name'     => $title,
+					'posts_per_page' => 1,
+					'post_type' => $this->get_whitelisted_post_types(),
+					'fields'         => 'ids',
+				) );
+
+				$post_id = $query->get_posts();
+				$post_id = array_pop( $post_id );
 			}
 		}
 
-		if ( ! $id ) {
+		if ( ! $post_id ) {
 			return new WP_Error(
 				'path_not_found',
 				sprintf(
@@ -229,11 +254,11 @@ class WordPress_GitHub_Sync_Database {
 			);
 		}
 
-		$result = wp_delete_post( $id );
+		$result = wp_delete_post( $post_id );
 
 		// If deleting fails...
 		if ( false === $result ) {
-			$post = get_post( $id );
+			$post = get_post( $post_id );
 
 			// ...and the post both exists and isn't in the trash...
 			if ( $post && 'trash' !== $post->post_status ) {
@@ -242,7 +267,7 @@ class WordPress_GitHub_Sync_Database {
 					'db_error',
 					sprintf(
 						__( 'Failed to delete post ID %d.', 'wordpress-github-sync' ),
-						$id
+						$post_id
 					)
 				);
 			}
@@ -250,7 +275,7 @@ class WordPress_GitHub_Sync_Database {
 
 		return sprintf(
 			__( 'Successfully deleted post ID %d.', 'wordpress-github-sync' ),
-			$id
+			$post_id
 		);
 	}
 
@@ -430,7 +455,7 @@ class WordPress_GitHub_Sync_Database {
 	 * Update the provided post's blob sha.
 	 *
 	 * @param WordPress_GitHub_Sync_Post $post Post to update.
-	 * @param string $sha Sha to update to.
+	 * @param string                     $sha Sha to update to.
 	 *
 	 * @return bool|int
 	 */
