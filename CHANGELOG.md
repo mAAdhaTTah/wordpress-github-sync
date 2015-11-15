@@ -2,7 +2,7 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
-### [Unreleased] ###
+### [1.5.0] ###
 
 * New WP-CLI command:
     * `prime`: Forces WPGHS to fetch the latest commit and save it in the cache.
@@ -91,6 +91,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
   [Keep a Changelog standards]: http://keepachangelog.com/
   [Semantic Versioning]: http://semver.org/
   [Unreleased]: https://github.com/mAAdhaTTah/wordpress-github-sync
+  [1.5.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.5.0
   [1.4.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.4.1
   [1.4.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.4.0
   [1.3.4]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.3.4
