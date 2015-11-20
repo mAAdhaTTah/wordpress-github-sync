@@ -12,17 +12,24 @@ class WordPress_GitHub_Sync_Semaphore {
 	/**
 	 * Sempahore's option key.
 	 */
-	const OPTION = 'wpghs_semaphore_lock';
+	const KEY = 'wpghs_semaphore_lock';
 
 	/**
 	 * Option key when semaphore is locked.
 	 */
-	const LOCKED = 'yes';
+	const VALUE_LOCKED = 'yes';
 
 	/**
 	 * Option key when semaphore is unlocked.
 	 */
-	const UNLOCKED = 'no';
+	const VALUE_UNLOCKED = 'no';
+
+	/**
+	 * Clean up the old values on instantiation.
+	 */
+	public function __construct() {
+		delete_option( self::KEY );
+	}
 
 	/**
 	 * Checks if the Semaphore is open.
@@ -33,7 +40,7 @@ class WordPress_GitHub_Sync_Semaphore {
 	 * @return bool
 	 */
 	public function is_open() {
-		if ( self::LOCKED === get_option( self::OPTION ) ) {
+		if ( self::VALUE_LOCKED === get_transient( self::KEY ) ) {
 			return false;
 		}
 
@@ -44,13 +51,13 @@ class WordPress_GitHub_Sync_Semaphore {
 	 * Enables the push lock.
 	 */
 	public function lock() {
-		update_option( self::OPTION, self::LOCKED );
+		set_transient( self::KEY, self::VALUE_LOCKED, MINUTE_IN_SECONDS );
 	}
 
 	/**
 	 * Disables the push lock.
 	 */
 	public function unlock() {
-		update_option( self::OPTION, self::UNLOCKED );
+		set_transient( self::KEY, self::VALUE_UNLOCKED, MINUTE_IN_SECONDS );
 	}
 }

@@ -1,6 +1,10 @@
 <?php
 
+/**
+ * @group semaphore
+ */
 class WordPress_GitHub_Sync_Semaphore_Test extends WordPress_GitHub_Sync_TestCase {
+
 	public function setUp() {
 		parent::setUp();
 
@@ -12,7 +16,7 @@ class WordPress_GitHub_Sync_Semaphore_Test extends WordPress_GitHub_Sync_TestCas
 	}
 
 	public function test_should_unlock() {
-		update_option( WordPress_GitHub_Sync_Semaphore::OPTION, WordPress_GitHub_Sync_Semaphore::LOCKED );
+		set_transient( WordPress_GitHub_Sync_Semaphore::KEY, WordPress_GitHub_Sync_Semaphore::VALUE_LOCKED );
 
 		$this->semaphore->unlock();
 
@@ -20,10 +24,20 @@ class WordPress_GitHub_Sync_Semaphore_Test extends WordPress_GitHub_Sync_TestCas
 	}
 
 	public function test_should_lock() {
-		update_option( WordPress_GitHub_Sync_Semaphore::OPTION, WordPress_GitHub_Sync_Semaphore::UNLOCKED );
+		set_transient( WordPress_GitHub_Sync_Semaphore::KEY, WordPress_GitHub_Sync_Semaphore::VALUE_UNLOCKED );
 
 		$this->semaphore->lock();
 
 		$this->assertFalse( $this->semaphore->is_open() );
+	}
+
+	public function test_should_expire() {
+		$this->semaphore->lock();
+
+		sleep( MINUTE_IN_SECONDS );
+		// A little extra to make sure it's expired.
+		sleep( 5 );
+
+		$this->assertTrue( $this->semaphore->is_open() );
 	}
 }
