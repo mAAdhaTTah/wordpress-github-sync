@@ -2,6 +2,12 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [1.5.1] ###
+
+* Added Chinese translation (props @malsony!).
+* Updated German translation (props @lsinger!).
+* Expire semaphore lock to avoid permanently locked install.
+
 ### [1.5.0] ###
 
 * New WP-CLI command:
