@@ -29,8 +29,7 @@ class WordPress_GitHub_Sync_Payload_Test extends WordPress_GitHub_Sync_TestCase 
 			file_get_contents( $this->data_dir . 'payload-invalid-branch.json' )
 		);
 
-		$this->assertInstanceOf( 'WP_Error', $error = $payload->should_import() );
-		$this->assertEquals( 'invalid_branch', $error->get_error_code() );
+		$this->assertFalse( $payload->should_import() );
 	}
 
 	public function test_should_not_import_synced_commit() {
@@ -39,8 +38,7 @@ class WordPress_GitHub_Sync_Payload_Test extends WordPress_GitHub_Sync_TestCase 
 			file_get_contents( $this->data_dir . 'payload-synced-commit.json' )
 		);
 
-		$this->assertInstanceOf( 'WP_Error', $error = $payload->should_import() );
-		$this->assertEquals( 'synced_commit', $error->get_error_code() );
+		$this->assertFalse( $payload->should_import() );
 	}
 
 	public function test_should_be_valid_payload() {

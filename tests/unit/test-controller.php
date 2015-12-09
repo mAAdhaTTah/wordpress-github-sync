@@ -89,9 +89,9 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->once()
 			->andReturn( false );
 		$this->payload
-			->shouldReceive( 'get_repository_name' )
+			->shouldReceive( 'get_commit_id' )
 			->once()
-			->andReturn( 'owner/repo' );
+			->andReturn( 'commit id' );
 		$this->response
 			->shouldReceive( 'error' )
 			->with( Mockery::type( 'WP_Error' ) )

@@ -37,7 +37,7 @@ class WordPress_GitHub_Sync_Payload {
 	/**
 	 * Returns whether payload should be imported.
 	 *
-	 * @return bool|WP_Error
+	 * @return bool
 	 */
 	public function should_import() {
 		// @todo how do we get this without importing the whole api object just for this?
@@ -55,13 +55,7 @@ class WordPress_GitHub_Sync_Payload {
 		}
 
 		if ( $sync_branch !== $payload_branch ) {
-			return new WP_Error(
-				'invalid_branch',
-				sprintf(
-					__( 'Not on branch %s.', 'wordpress-github-sync' ),
-					$sync_branch
-				)
-			);
+			return false;
 		}
 
 		// We add a tag to commits we push out, so we shouldn't pull them in again.
@@ -72,7 +66,7 @@ class WordPress_GitHub_Sync_Payload {
 		}
 
 		if ( $tag === substr( $this->message(), -1 * strlen( $tag ) ) ) {
-			return new WP_Error( 'synced_commit', __( 'Already synced this commit.', 'wordpress-github-sync' ) );
+			return false;
 		}
 
 		return true;

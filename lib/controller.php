@@ -52,10 +52,10 @@ class WordPress_GitHub_Sync_Controller {
 
 		if ( ! $payload->should_import() ) {
 			return $this->app->response()->error( new WP_Error(
-				'invalid_repo',
+				'invalid_payload',
 				sprintf(
-					__( '%s is an invalid repository.', 'wordpress-github-sync' ),
-					strtolower( $payload->get_repository_name() )
+					__( "%s won't be imported.", 'wordpress-github-sync' ),
+					strtolower( $payload->get_commit_id() )
 				)
 			) );
 		}
