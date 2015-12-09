@@ -39,7 +39,7 @@ class WordPress_GitHub_Sync_Post_Test extends WordPress_GitHub_Sync_TestCase {
 		$post = new WordPress_GitHub_Sync_Post( $this->id, $this->api );
 
 		$this->assertStringStartsWith( '---', $post->github_content() );
-		$this->assertStringEndsWith( 'Post content 1', $post->github_content() );
+		$this->assertStringEndsWith( $this->post->post_content, $post->github_content() );
 	}
 
 	public function test_should_build_github_view_url() {
