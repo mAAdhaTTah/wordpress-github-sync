@@ -73,10 +73,11 @@ class WordPress_GitHub_Sync_Post {
 				$this->post = get_post( $this->args['ID'] );
 
 				if ( $this->post ) {
-					$this->id = $this->post->ID;
+					$this->id  = $this->post->ID;
+					$this->new = false;
+				} else {
+					unset( $this->args['ID'] );
 				}
-
-				$this->new = false;
 			}
 		}
 	}
