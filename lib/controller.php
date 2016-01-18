@@ -97,8 +97,12 @@ class WordPress_GitHub_Sync_Controller {
 		$this->app->semaphore()->unlock();
 
 		if ( is_wp_error( $result ) ) {
+			update_option( '_wpghs_import_error', $result->get_error_message() );
+
 			return $this->app->response()->error( $result );
 		}
+
+		update_option( '_wpghs_import_complete', 'yes' );
 
 		return $this->app->response()->success( $result );
 	}
