@@ -106,7 +106,9 @@ If WPGHS cannot find the author for a given import, it will fallback to the defa
 
 ### Custom Post Type & Status Support ###
 
-By default, WordPress <--> GitHub Sync only exports published posts and pages. If you want to export additional post types or draft posts, you'll have to hook into the filters `wpghs_whitelisted_post_types` or `wpghs_whitelisted_post_statuses` respectively.
+By default, WordPress <--> GitHub Sync only exports published posts and pages. However, it provides a number of [hooks](https://codex.wordpress.org/Plugin_API) in order to customize its functionality. Check out the [wiki](https://github.com/mAAdhaTTah/wordpress-github-sync/wiki) for complete documentation for these actions and filters.
+
+If you want to export additional post types or draft posts, you'll have to hook into the filters `wpghs_whitelisted_post_types` or `wpghs_whitelisted_post_statuses` respectively.
 
 In `wp-content`, create or open the `mu-plugins` folder and create a plugin file there called `wpghs-custom-filters.php`. In it, paste and modify the below code:
 
@@ -159,15 +161,9 @@ If you'd like to include an edit link without modifying your theme directly, you
       return $content;
     }, 1000 );
 
-### Using WPGHS to Keep Multiple Sites in Sync
-
-This is an _advanced feature_. Your configuration may or may not be fully supported. **Use at your own risk.**
-
-More information can be found in the [wiki](https://github.com/mAAdhaTTah/wordpress-github-sync/wiki).
-
 ### Additional Customizations ###
 
-There are a number of other filters available in WordPress <--> GitHub Sync for customizing various parts of the export, including the commit message and YAML front-matter. Want more detail? Check out the [wiki](https://github.com/mAAdhaTTah/wordpress-github-sync/wiki).
+There are a number of other customizations available in WordPress <--> GitHub Sync, including the commit message and YAML front-matter. Want more detail? Check out the [wiki](https://github.com/mAAdhaTTah/wordpress-github-sync/wiki).
 
 ### Contributing ###
 
