@@ -2,7 +2,7 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
-### [Unreleased] ###
+### [1.6.0] ###
 
 * New filters:
     * `wpghs_pre_fetch_all_supported`: Filter the query args before all supported posts are queried.
@@ -111,6 +111,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
   [#121]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/121
   [#127]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/127
   [Unreleased]: https://github.com/mAAdhaTTah/wordpress-github-sync
+  [1.6.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.6.0
   [1.5.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.5.1
   [1.5.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.5.0
   [1.4.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.4.1
