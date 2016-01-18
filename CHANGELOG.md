@@ -4,6 +4,9 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 
 ### [Unreleased] ###
 
+* New filters:
+    * `wpghs_pre_fetch_all_supported`: Filter the query args before all supported posts are queried.
+    * `wpghs_is_post_supported`: Determines whether the post is supported by importing/exporting.
 * Bugfix: Set secret to password field. See [#124].
 * Bugfix: Fix error when importing branch-deletion webhooks.
 * Bugfix: Fix "semaphore is locked" response from webhook. See [#121].

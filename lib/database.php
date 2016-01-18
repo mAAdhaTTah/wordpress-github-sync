@@ -45,12 +45,14 @@ class WordPress_GitHub_Sync_Database {
 	 * @return WordPress_GitHub_Sync_Post[]|WP_Error
 	 */
 	public function fetch_all_supported() {
-		$query = new WP_Query( array(
+		$args  = array(
 			'post_type'   => $this->get_whitelisted_post_types(),
 			'post_status' => $this->get_whitelisted_post_statuses(),
 			'nopaging'    => true,
 			'fields'      => 'ids',
-		) );
+		);
+
+		$query = new WP_Query( apply_filters( 'wpghs_pre_fetch_all_supported', $args ) );
 
 		$post_ids = $query->get_posts();
 
@@ -338,7 +340,7 @@ class WordPress_GitHub_Sync_Database {
 			return false;
 		}
 
-		return true;
+		return apply_filters( 'wpghs_is_post_supported', true, $post );
 	}
 
 	/**
