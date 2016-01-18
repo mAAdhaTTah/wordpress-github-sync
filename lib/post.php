@@ -61,9 +61,9 @@ class WordPress_GitHub_Sync_Post {
 		$this->api = $api;
 
 		if ( is_numeric( $id_or_args ) ) {
-			$this->id = (int) $id_or_args;
+			$this->id   = (int) $id_or_args;
 			$this->post = get_post( $this->id );
-			$this->new = false;
+			$this->new  = false;
 		}
 
 		if ( is_array( $id_or_args ) ) {
@@ -116,7 +116,7 @@ class WordPress_GitHub_Sync_Post {
 	 */
 	public function github_content() {
 		$content = $this->front_matter() . $this->post_content();
-		$ending = apply_filters( 'wpghs_line_endings', "\n" );
+		$ending  = apply_filters( 'wpghs_line_endings', "\n" );
 
 		return preg_replace( '~(*BSR_ANYCRLF)\R~', $ending, $content );
 	}
@@ -252,7 +252,7 @@ class WordPress_GitHub_Sync_Post {
 	 * @return string
 	 */
 	public function get_directory_from_path( $path ) {
-		$directory = explode( '/',$path );
+		$directory = explode( '/', $path );
 		$directory = count( $directory ) > 0 ? $directory[0] : '';
 
 		return $directory;
@@ -390,7 +390,7 @@ class WordPress_GitHub_Sync_Post {
 	 */
 	public function set_post( WP_Post $post ) {
 		$this->post = $post;
-		$this->id = $post->ID;
+		$this->id   = $post->ID;
 
 		return $this;
 	}
