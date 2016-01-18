@@ -124,6 +124,26 @@ class WordPress_GitHub_Sync_Admin {
 			delete_option( '_wpghs_export_complete' );
 		}
 
+		if ( 'yes' === get_option( '_wpghs_import_started' ) ) { ?>
+			<div class="updated">
+			<p><?php esc_html_e( 'Import to GitHub started.', 'wordpress-github-sync' ); ?></p>
+			</div><?php
+			delete_option( '_wpghs_import_started' );
+		}
+
+		if ( $message = get_option( '_wpghs_import_error' ) ) { ?>
+			<div class="error">
+			<p><?php esc_html_e( 'Import to GitHub failed with error:', 'wordpress-github-sync' ); ?> <?php echo esc_html( $message );?></p>
+			</div><?php
+			delete_option( '_wpghs_import_error' );
+		}
+
+		if ( 'yes' === get_option( '_wpghs_import_complete' ) ) { ?>
+			<div class="updated">
+			<p><?php esc_html_e( 'Import to GitHub completed successfully.', 'wordpress-github-sync' );?></p>
+			</div><?php
+			delete_option( '_wpghs_import_complete' );
+		}
 	}
 
 	/**
