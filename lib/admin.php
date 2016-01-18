@@ -13,9 +13,9 @@ class WordPress_GitHub_Sync_Admin {
 	 * Hook into GitHub API
 	 */
 	public function __construct() {
-		add_action( 'admin_menu', array( &$this, 'add_admin_menu' ) );
-		add_action( 'admin_init', array( &$this, 'register_settings' ) );
-		add_action( 'current_screen', array( &$this, 'callback' ) );
+		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'current_screen', array( $this, 'trigger_cron' ) );
 	}
 
 	/**
@@ -142,7 +142,7 @@ class WordPress_GitHub_Sync_Admin {
 	/**
 	 * Admin callback to trigger import/export because WordPress admin routing lol
 	 */
-	public function callback() {
+	public function trigger_cron() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
@@ -164,5 +164,6 @@ class WordPress_GitHub_Sync_Admin {
 		}
 
 		wp_redirect( admin_url( 'options-general.php?page=wordpress-github-sync' ) );
+		die;
 	}
 }
