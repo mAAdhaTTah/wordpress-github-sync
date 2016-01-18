@@ -2,6 +2,13 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [Unreleased] ###
+
+* Bugfix: Set secret to password field. See [#124].
+* Bugfix: Fix error when importing branch-deletion webhooks.
+* Bugfix: Fix "semaphore is locked" response from webhook. See [#121].
+* Bugfix: Correctly display import/export messages in settings page. See [#127].
+
 ### [1.5.1] ###
 
 * Added Chinese translation (props @malsony!).
@@ -96,6 +103,9 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 
   [Keep a Changelog standards]: http://keepachangelog.com/
   [Semantic Versioning]: http://semver.org/
+  [#124]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/124
+  [#121]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/121
+  [#127]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/127
   [Unreleased]: https://github.com/mAAdhaTTah/wordpress-github-sync
   [1.5.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.5.1
   [1.5.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.5.0
