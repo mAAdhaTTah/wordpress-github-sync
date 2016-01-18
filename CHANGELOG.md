@@ -8,6 +8,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 * Bugfix: Fix error when importing branch-deletion webhooks.
 * Bugfix: Fix "semaphore is locked" response from webhook. See [#121].
 * Bugfix: Correctly display import/export messages in settings page. See [#127].
+* Bugfix: Correctly set if post is new only when the matching ID is found in the database.
 
 ### [1.5.1] ###
 
