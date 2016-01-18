@@ -62,7 +62,7 @@ class WordPress_GitHub_Sync_Controller {
 
 		$this->app->semaphore()->lock();
 		remove_action( 'save_post', array( $this, 'export_post' ) );
-		remove_action( 'save_post', array( $this, 'delete_post' ) );
+		remove_action( 'delete_post', array( $this, 'delete_post' ) );
 
 		$result = $this->app->import()->payload( $payload );
 
