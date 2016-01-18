@@ -55,7 +55,7 @@ class WordPress_GitHub_Sync_Controller {
 				'invalid_payload',
 				sprintf(
 					__( "%s won't be imported.", 'wordpress-github-sync' ),
-					strtolower( $payload->get_commit_id() )
+					strtolower( $payload->get_commit_id() ) ? : '[Missing Commit ID]'
 				)
 			) );
 		}

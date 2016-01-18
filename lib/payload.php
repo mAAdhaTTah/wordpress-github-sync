@@ -69,6 +69,10 @@ class WordPress_GitHub_Sync_Payload {
 			return false;
 		}
 
+		if ( ! $this->get_commit_id() ) {
+			return false;
+		}
+
 		return true;
 	}
 
@@ -78,7 +82,7 @@ class WordPress_GitHub_Sync_Payload {
 	 * @return string
 	 */
 	public function get_commit_id() {
-		return $this->data->head_commit->id;
+		return $this->data->head_commit ? $this->data->head_commit->id : null;
 	}
 
 	/**
