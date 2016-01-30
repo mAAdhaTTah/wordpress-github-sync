@@ -165,16 +165,13 @@ class WordPress_GitHub_Sync_Import_Test extends WordPress_GitHub_Sync_TestCase {
 	}
 
 	public function test_should_save_ID_as_post_id() {
+		$id = $this->factory->post->create();
 		$this->blob_content = 'Post content.';
-		$this->blob_meta    = array(
-			'ID' => 1
-		);
-		$this->post_meta    = array(
-			'_sha' => $this->sha,
-		);
+		$this->blob_meta    = array( 'ID' => $id );
+		$this->post_meta    = array( '_sha' => $this->sha );
 		$this->post_args    = array(
 			'post_content' => $this->blob_content,
-			'ID'           => 1,
+			'ID'           => $id,
 		);
 
 		$this->validate_meta();
