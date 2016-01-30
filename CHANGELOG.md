@@ -2,6 +2,10 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [1.6.1] ###
+
+* Fixed bug where post_meta with the same name as built-in meta keys were getting overwritten
+
 ### [1.6.0] ###
 
 * New filters:
@@ -111,6 +115,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
   [#121]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/121
   [#127]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/127
   [Unreleased]: https://github.com/mAAdhaTTah/wordpress-github-sync
+  [1.6.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.6.1
   [1.6.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.6.0
   [1.5.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.5.1
   [1.5.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.5.0
