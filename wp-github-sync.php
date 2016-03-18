@@ -163,6 +163,8 @@ class WordPress_GitHub_Sync {
 		add_action( 'wp_ajax_nopriv_wpghs_sync_request', array( $this->controller, 'pull_posts' ) );
 		add_action( 'wpghs_export', array( $this->controller, 'export_all' ) );
 		add_action( 'wpghs_import', array( $this->controller, 'import_master' ) );
+
+		do_action( 'wpghs_boot', $this );
 	}
 
 	/**
