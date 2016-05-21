@@ -100,9 +100,9 @@ WordPress <--> GitHub Sync is also capable of importing posts directly from GitH
 
 and fill it out with the data related to the post you're writing. Save the post and commit it directly to the repository. After the post is added to WordPress, an additional commit will be added to the repository, updating the new post with the new information from the database.
 
-Note that WordPrss<-->GitHub Sync will *only* import posts from the `master` branch. Changes on other branches will be ignored.
+Note that WordPress <--> GitHub Sync will *only* import posts from the `master` branch. Changes on other branches will be ignored.
 
-If WPGHS cannot find the author for a given import, it will fallback to the default user as set on the settings page. **Make sure you set this user before you begin importing posts from GitHub.** Without it set, WPGHS will default to no user being set for the author as well as unknown-author revisions.
+If WordPress <--> GitHub Sync cannot find the author for a given import, it will fallback to the default user as set on the settings page. **Make sure you set this user before you begin importing posts from GitHub.** Without it set, WordPress <--> GitHub Sync will default to no user being set for the author as well as unknown-author revisions.
 
 ### Custom Post Type & Status Support ###
 
