@@ -161,6 +161,18 @@ If you'd like to include an edit link without modifying your theme directly, you
       return $content;
     }, 1000 );
 
+#### Shortcodes (v >= XXXX) ####
+
+If you wish to add either the URL or a link back to the URL to an individual post, without editing themes, you can add a shortcode anywhere in your post;
+
+* `[wpghs]` - (default) inserts an anchor tag (`<a>`) with href set to the view URL and link text 'View this post on GitHub'.
+* `[wpghs type='link' text='abc'] - inserts anchor tag (`<a>`) with href set to the view URL and link text 'abc'.
+* `[wpghs type='link'] - same as the default case.
+* `[wpghs type='url'] - inserts the bare URL.
+* `[wpghs type='url' text='abc'] - inserts the bare URL (text is ignored).
+
+All other values for `type` are ignored, defaulting to `link`.
+
 ### Additional Customizations ###
 
 There are a number of other customizations available in WordPress <--> GitHub Sync, including the commit message and YAML front-matter. Want more detail? Check out the [wiki](https://github.com/mAAdhaTTah/wordpress-github-sync/wiki).
