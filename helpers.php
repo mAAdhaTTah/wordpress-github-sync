@@ -93,7 +93,7 @@ function write_wpghs_link( $atts ) {
          $output .= get_the_github_view_url();
    }
 
-   return($output);
+   return $output;
 
 }
 add_shortcode( 'wpghs', 'write_wpghs_link' );
