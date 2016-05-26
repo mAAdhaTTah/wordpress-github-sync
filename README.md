@@ -167,7 +167,7 @@ If you wish to add either the bare URL or a link referencing the URL to an indiv
 
 `[wpghs]`
 
-The following attributes can also be included in the shortcode
+The following optional attributes can also be included in the shortcode
 * `target=`
    + `'view'` (default)  the url used will be the *view* URL (`/blob/`). 
    + `'edit'`            the url used will be the *edit* URL (`/edit/`).
@@ -183,6 +183,8 @@ For example,
 `[wpghs target='view' type='link' text='Here is my post on GitHub']` will produce a HTML anchor tag with href set to the 'view' URL of the post on GitHub, and the link text set to 'Here is my post on GitHub', i.e.
 
 `<a href="https://github.com/USERNAME/REPO/blob/master/_posts/YOURPOST.md">Here is my post on GitHub</a>`
+
+Any or all of the attributes can be left out; defaults will take their place.
 
 ### Additional Customizations ###
 
