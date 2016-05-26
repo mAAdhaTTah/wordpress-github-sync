@@ -170,7 +170,7 @@ If you wish to add either the bare URL or a link referencing the URL to an indiv
 The following attributes can also be included in the shortcode
 * `target=`
    + `'view'` (default)  the url used will be the *view* URL (`/blob/`). 
-   + `'edit'`            the url used will be the *edit* URL (`/edit/`.
+   + `'edit'`            the url used will be the *edit* URL (`/edit/`).
 * `type=`
    + `'link'` (default)  an anchor tag (`<a>`) with href set to the requested URL will be inserted.
    + `'url'`             the the bare requested URL will be inserted.
