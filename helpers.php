@@ -91,38 +91,43 @@ function write_wpghs_link( $atts ) {
 	$output = '';
 
 	switch( $target ) {
-		case 'view': 
+		case 'view': {
 			$getter = get_the_github_view_url();
-			if(!empty( $text )) {
+			if( ! empty( $text )) {
 				$linktext = $text;
 			} else {
 				$linktext = 'View this post on GitHub';
 			}
 			break;
-		case 'edit': 
+		}
+		case 'edit': {
 			$getter = get_the_github_edit_url();
-			if( !empty( $text ) ) {
+			if( ! empty( $text ) ) {
 				$linktext = $text;
 			} else {
 				$linktext = 'Edit this post on GitHub';
 			}
 			break;
-		default:
+		}
+		default: {
 			$getter = get_the_github_view_url();
 			$linktext = 'View this post on GitHub';
 			break;
+		}
 	}
 
 	switch( $type ) {
-		case 'link': 
+		case 'link': {
 			$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
 			break;
-		case 'url': 
-			$output .= $getter;
-			break;
-		default:
+			case 'url': 
+				$output .= $getter;
+				break;
+		}
+		default: {
 			$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
 			break;
+		}
 	}
 
 	return $output;
