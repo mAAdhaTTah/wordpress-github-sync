@@ -74,7 +74,7 @@ add_shortcode( 'get_the_github_edit_url', 'get_the_github_edit_url' );
  *
  * @return string
  */
-function write_wpghs_link( $atts ) {
+function write_wpghs_link( $atts ) { 
 
 	$args = shortcode_atts(
 		array(
@@ -90,47 +90,49 @@ function write_wpghs_link( $atts ) {
 
 	$output = '';
 
-	switch( $target ) {
-		case 'view': {
+	switch( $target ) { 
+		case 'view': { 
 			$getter = get_the_github_view_url();
-			if( ! empty( $text )) {
+			if( ! empty( $text ) ) {
 				$linktext = $text;
-			} else {
+			} else { 
 				$linktext = 'View this post on GitHub';
 			}
 			break;
 		}
-		case 'edit': {
+		case 'edit': { 
 			$getter = get_the_github_edit_url();
 			if( ! empty( $text ) ) {
 				$linktext = $text;
-			} else {
+			} else { 
 				$linktext = 'Edit this post on GitHub';
 			}
 			break;
 		}
-		default: {
+		default: { 
 			$getter = get_the_github_view_url();
 			$linktext = 'View this post on GitHub';
 			break;
 		}
 	}
 
-	switch( $type ) {
-		case 'link': {
+	switch( $type ) { 
+		case 'link': { 
 			$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
 			break;
-			case 'url': 
-				$output .= $getter;
-				break;
 		}
-		default: {
-			$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
+		case 'url': { 
+			$output .= $getter;
 			break;
 		}
 	}
+	default: { 
+		$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
+		break;
+	}
+}
 
-	return $output;
+return $output;
 
 }
 add_shortcode( 'wpghs', 'write_wpghs_link' );
