@@ -91,38 +91,38 @@ function write_wpghs_link( $atts ) {
 	$output = '';
 
 	switch( $target ) {
-		case 'view': 
-			$getter = get_the_github_view_url();
-			if(!empty( $text )) {
-				$linktext = $text;
-			} else {
-				$linktext = 'View this post on GitHub';
-			}
-			break;
-		case 'edit': 
-			$getter = get_the_github_edit_url();
-			if( !empty( $text ) ) {
-				$linktext = $text;
-			} else {
-				$linktext = 'Edit this post on GitHub';
-			}
-			break;
-		default:
-			$getter = get_the_github_view_url();
+	case 'view': 
+		$getter = get_the_github_view_url();
+		if(!empty( $text )) {
+			$linktext = $text;
+		} else {
 			$linktext = 'View this post on GitHub';
-			break;
+		}
+		break;
+	case 'edit': 
+		$getter = get_the_github_edit_url();
+		if( !empty( $text ) ) {
+			$linktext = $text;
+		} else {
+			$linktext = 'Edit this post on GitHub';
+		}
+		break;
+	default:
+		$getter = get_the_github_view_url();
+		$linktext = 'View this post on GitHub';
+		break;
 	}
 
 	switch( $type ) {
-		case 'link': 
-			$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
-			break;
-		case 'url': 
-			$output .= $getter;
-			break;
-		default:
-			$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
-			break;
+	case 'link': 
+		$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
+		break;
+	case 'url': 
+		$output .= $getter;
+		break;
+	default:
+		$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
+		break;
 	}
 
 	return $output;
