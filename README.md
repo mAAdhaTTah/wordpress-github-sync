@@ -176,7 +176,7 @@ The following attributes can also be included in the shortcode
    + `'url'`             the the bare requested URL will be inserted.
 * `text=`
    + `''` (default)      link text (where `type='link'`, ignored otherwise) will be set to 'View this post on GitHub'.
-   + `'<text>'`          link text (where `type='link'`, ignored otherwise) will be set to '<text>' (the supplied text).
+   + `'text'`          link text (where `type='link'`, ignored otherwise) will be set to 'text' (the supplied text).
 
 For example, 
 
