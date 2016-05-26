@@ -90,10 +90,10 @@ function write_wpghs_link( $atts ) {
 
 	$output = '';
 
-	switch( $target ) { 
+	switch ( $target ) { 
 		case 'view': { 
 			$getter = get_the_github_view_url();
-			if( ! empty( $text ) ) {
+			if ( ! empty( $text ) ) { 
 				$linktext = $text;
 			} else { 
 				$linktext = 'View this post on GitHub';
@@ -102,7 +102,7 @@ function write_wpghs_link( $atts ) {
 		}
 		case 'edit': { 
 			$getter = get_the_github_edit_url();
-			if( ! empty( $text ) ) {
+			if ( ! empty( $text ) ) { 
 				$linktext = $text;
 			} else { 
 				$linktext = 'Edit this post on GitHub';
@@ -116,7 +116,7 @@ function write_wpghs_link( $atts ) {
 		}
 	}
 
-	switch( $type ) { 
+	switch ( $type ) { 
 		case 'link': { 
 			$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
 			break;
@@ -125,14 +125,13 @@ function write_wpghs_link( $atts ) {
 			$output .= $getter;
 			break;
 		}
+		default: { 
+			$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
+			break;
+		}
 	}
-	default: { 
-		$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
-		break;
-	}
-}
 
-return $output;
+	return $output;
 
 }
 add_shortcode( 'wpghs', 'write_wpghs_link' );
