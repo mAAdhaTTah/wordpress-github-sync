@@ -163,15 +163,26 @@ If you'd like to include an edit link without modifying your theme directly, you
 
 #### Shortcodes (v >= XXXX) ####
 
-If you wish to add either the URL or a link back to the URL to an individual post, without editing themes, you can add a [shortcode](https://codex.wordpress.org/Shortcode_API) anywhere in your post;
+If you wish to add either the bare URL or a link referencing the URL to an individual post, without editing themes, you can add a [shortcode](https://codex.wordpress.org/Shortcode_API) anywhere in your post;
 
-* `[wpghs]` - (default) inserts an anchor tag (`<a>`) with href set to the view URL and link text 'View this post on GitHub'.
-* `[wpghs type='link' text='abc']` - inserts anchor tag (`<a>`) with href set to the view URL and link text 'abc'.
-* `[wpghs type='link']` - same as the default case.
-* `[wpghs type='url']` - inserts the bare URL.
-* `[wpghs type='url' text='abc']` - inserts the bare URL (text is ignored).
+`[wpghs]`
 
-All other values for `type` are ignored, defaulting to `link`.
+The following attributes can also be included in the shortcode
+* `target=`
+   + `'view'` (default)  the url used will be the *view* URL (`/blob/`). 
+   + `'edit'`            the url used will be the *edit* URL (`/edit/`.
+* `type=`
+   + `'link'` (default)  an anchor tag (`<a>`) with href set to the requested URL will be inserted.
+   + `'url'`             the the bare requested URL will be inserted.
+* `text=`
+   + `''` (default)      link text (where `type='link'`, ignored otherwise) will be set to 'View this post on GitHub'.
+   + `'<text>'`          link text (where `type='link'`, ignored otherwise) will be set to '<text>' (the supplied text).
+
+For example, 
+
+`[wpghs target='view' type='link' text='Here is my post on GitHub']` will produce a HTML anchor tag with href set to the 'view' URL of the post on GitHub, and the link text set to 'Here is my post on GitHub', i.e.
+
+`<a href="https://github.com/USERNAME/REPO/blob/master/_posts/YOURPOST.md">Here is my post on GitHub</a>`
 
 ### Additional Customizations ###
 
