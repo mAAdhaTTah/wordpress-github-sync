@@ -161,6 +161,31 @@ If you'd like to include an edit link without modifying your theme directly, you
       return $content;
     }, 1000 );
 
+#### Shortcodes (v >= XXXX) ####
+
+If you wish to add either the bare URL or a link referencing the URL to an individual post, without editing themes, you can add a [shortcode](https://codex.wordpress.org/Shortcode_API) anywhere in your post;
+
+`[wpghs]`
+
+The following optional attributes can also be included in the shortcode
+* `target=`
+   + `'view'` (default)  the url used will be the *view* URL (`/blob/`). 
+   + `'edit'`            the url used will be the *edit* URL (`/edit/`).
+* `type=`
+   + `'link'` (default)  an anchor tag (`<a>`) with href set to the requested URL will be inserted.
+   + `'url'`             the the bare requested URL will be inserted.
+* `text=`
+   + `''` (default)      link text (where `type='link'`, ignored otherwise) will be set to 'View this post on GitHub'.
+   + `'text'`          link text (where `type='link'`, ignored otherwise) will be set to 'text' (the supplied text).
+
+For example, 
+
+`[wpghs target='view' type='link' text='Here is my post on GitHub']` will produce a HTML anchor tag with href set to the 'view' URL of the post on GitHub, and the link text set to 'Here is my post on GitHub', i.e.
+
+`<a href="https://github.com/USERNAME/REPO/blob/master/_posts/YOURPOST.md">Here is my post on GitHub</a>`
+
+Any or all of the attributes can be left out; defaults will take their place.
+
 ### Additional Customizations ###
 
 There are a number of other customizations available in WordPress <--> GitHub Sync, including the commit message and YAML front-matter. Want more detail? Check out the [wiki](https://github.com/mAAdhaTTah/wordpress-github-sync/wiki).
