@@ -13,7 +13,6 @@
 function get_the_github_view_link() {
 	return '<a href="' . get_the_github_view_url() . '">' . apply_filters( 'wpghs_view_link_text', 'View this post on GitHub.' ) . '</a>';
 }
-add_shortcode( 'get_the_github_view_link', 'get_the_github_view_link' );
 
 /**
  * Returns the URL to view the current post on GitHub.
@@ -25,7 +24,6 @@ function get_the_github_view_url() {
 
 	return $wpghs_post->github_view_url();
 }
-add_shortcode( 'get_the_github_view_url', 'get_the_github_view_url' );
 
 /**
  * Returns the HTML markup to edit the current post on GitHub.
@@ -35,7 +33,6 @@ add_shortcode( 'get_the_github_view_url', 'get_the_github_view_url' );
 function get_the_github_edit_link() {
 	return '<a href="' . get_the_github_edit_url() . '">' . apply_filters( 'wpghs_edit_link_text', 'Edit this post on GitHub.' ) . '</a>';
 }
-add_shortcode( 'get_the_github_edit_link', 'get_the_github_edit_link' );
 
 /**
  * Returns the URL to edit the current post on GitHub.
@@ -47,25 +44,10 @@ function get_the_github_edit_url() {
 
 	return $wpghs_post->github_edit_url();
 }
-add_shortcode( 'get_the_github_edit_url', 'get_the_github_edit_url' );
 
 
 /**
- * EXAMPLE FROM https://codex.wordpress.org/Shortcode_API
- * // [bartag foo="foo-value"]
- * function bartag_func( $atts ) {
- *	 $a = shortcode_atts( array(
- *		 'foo' => 'something',
- *		 'bar' => 'something else',
- *	 ), $atts );
- * 
- *	 return "foo = {$a['foo']}";
- * }
- * add_shortcode( 'bartag', 'bartag_func' );
- */
-
-/**
- * Function with attributes
+ * Common WPGHS function with attributes and shortcode
  *   - type: 'link' (default) to return a HTML anchor tag with text, or 'url' for bare URL.
  *   - target: 'view' (default) or 'edit' to return the respective link/url.
  *   - text: text to be included in the link. Ignored if type='url'.
