@@ -2,6 +2,11 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [Unreleased] ###
+
+* Add GitHub link shortcode (props @jonocarroll!)
+* Add boot hook (props @kennyfraser!)
+
 ### [1.6.1] ###
 
 * Fixed bug where post_meta with the same name as built-in meta keys were getting overwritten
@@ -58,7 +63,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
 ### [1.3.4] ###
 
 * Add German translation (props @lsinger).
-* Update folder names to default to untranslated. 
+* Update folder names to default to untranslated.
 
 ### [1.3.3] ###
 
