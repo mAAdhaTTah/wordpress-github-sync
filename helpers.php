@@ -51,12 +51,12 @@ function get_the_github_edit_url() {
  *   - type: 'link' (default) to return a HTML anchor tag with text, or 'url' for bare URL.
  *   - target: 'view' (default) or 'edit' to return the respective link/url.
  *   - text: text to be included in the link. Ignored if type='url'.
- * 
+ *
  * Returns either a HTML formatted anchor tag or the bare URL of the current post on GitHub.
  *
  * @return string
  */
-function write_wpghs_link( $atts ) { 
+function write_wpghs_link( $atts ) {
 
 	$args = shortcode_atts(
 		array(
@@ -72,42 +72,42 @@ function write_wpghs_link( $atts ) {
 
 	$output = '';
 
-	switch ( $target ) { 
-		case 'view': { 
+	switch ( $target ) {
+		case 'view': {
 			$getter = get_the_github_view_url();
-			if ( ! empty( $text ) ) { 
+			if ( ! empty( $text ) ) {
 				$linktext = $text;
-			} else { 
+			} else {
 				$linktext = 'View this post on GitHub';
 			}
 			break;
 		}
-		case 'edit': { 
+		case 'edit': {
 			$getter = get_the_github_edit_url();
-			if ( ! empty( $text ) ) { 
+			if ( ! empty( $text ) ) {
 				$linktext = $text;
-			} else { 
+			} else {
 				$linktext = 'Edit this post on GitHub';
 			}
 			break;
 		}
-		default: { 
+		default: {
 			$getter = get_the_github_view_url();
 			$linktext = 'View this post on GitHub';
 			break;
 		}
 	}
 
-	switch ( $type ) { 
-		case 'link': { 
+	switch ( $type ) {
+		case 'link': {
 			$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
 			break;
 		}
-		case 'url': { 
+		case 'url': {
 			$output .= $getter;
 			break;
 		}
-		default: { 
+		default: {
 			$output .= '<a href="' . $getter . '">' . $linktext . '</a>';
 			break;
 		}
