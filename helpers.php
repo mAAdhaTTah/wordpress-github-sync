@@ -116,4 +116,3 @@ function write_wpghs_link( $atts ) {
 	return $output;
 
 }
-add_shortcode( 'wpghs', 'write_wpghs_link' );

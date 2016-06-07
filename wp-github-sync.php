@@ -164,6 +164,8 @@ class WordPress_GitHub_Sync {
 		add_action( 'wpghs_export', array( $this->controller, 'export_all' ) );
 		add_action( 'wpghs_import', array( $this->controller, 'import_master' ) );
 
+		add_shortcode( 'wpghs', 'write_wpghs_link' );
+
 		do_action( 'wpghs_boot', $this );
 	}
 
