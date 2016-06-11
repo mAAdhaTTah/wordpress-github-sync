@@ -2,7 +2,7 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
-### [Unreleased] ###
+### [1.7.0] ###
 
 * Add GitHub link shortcode (props @jonocarroll!)
 * Add boot hook (props @kennyfraser!)
@@ -120,6 +120,7 @@ This change log follows the [Keep a Changelog standards]. Versions follows [Sema
   [#121]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/121
   [#127]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/127
   [Unreleased]: https://github.com/mAAdhaTTah/wordpress-github-sync
+  [1.7.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.7.0
   [1.6.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.6.1
   [1.6.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.6.0
   [1.5.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.5.1
