@@ -2,6 +2,13 @@
 
 This change log follows the [Keep a Changelog standards]. Versions follows [Semantic Versioning].
 
+### [1.7.2] ###
+
+* Fix messages (props @synchrophoto!) 
+* Fix Markdown when importing w/ Jetpack (props @lite3!)
+* Fix bug in HTTP request on 4.6+
+* Update dependencies
+
 ### [1.7.0] ###
 
 * Add GitHub link shortcode (props @jonocarroll!)
