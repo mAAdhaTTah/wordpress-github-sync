@@ -145,7 +145,7 @@ class WordPress_GitHub_Sync_Blob {
 			preg_match( '/(^---(.*?)---$)?(.*)/ms', $this->content(), $matches );
 			array_pop( $matches );
 
-			$meta = cyps_load( $matches[2] );
+			$meta = spyc_load( $matches[2] );
 			if ( isset( $meta['permalink'] ) ) {
 				$meta['permalink'] = str_replace( home_url(), '', $meta['permalink'] );
 			}
