@@ -154,9 +154,12 @@ class WordPress_GitHub_Sync_Database {
 
 		foreach ( $posts as $post ) {
 			$args    = apply_filters( 'wpghs_pre_import_args', $post->get_args(), $post );
+			
+			remove_filter('content_save_pre', 'wp_filter_post_kses');
 			$post_id = $post->is_new() ?
 				wp_insert_post( $args, true ) :
 				wp_update_post( $args, true );
+			add_filter('content_save_pre', 'wp_filter_post_kses');
 
 			if ( is_wp_error( $post_id ) ) {
 				if ( ! $error ) {

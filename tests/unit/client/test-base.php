@@ -81,7 +81,7 @@ abstract class WordPress_GitHub_Sync_Base_Client_Test extends WordPress_GitHub_S
 	protected function set_get_refs_heads_master( $succeed ) {
 		$this->set_endpoint(
 			function ( $request ) {
-				if ( '[]' !== $request['body'] ) {
+				if ( '[]' === $request['body'] ) {
 					return false;
 				}
 
@@ -93,7 +93,7 @@ abstract class WordPress_GitHub_Sync_Base_Client_Test extends WordPress_GitHub_S
 	protected function set_get_commits( $succeed ) {
 		$this->set_endpoint(
 			function ( $request ) {
-				if ( '[]' !== $request['body'] ) {
+				if ( '[]' === $request['body'] ) {
 					return false;
 				}
 
@@ -105,7 +105,7 @@ abstract class WordPress_GitHub_Sync_Base_Client_Test extends WordPress_GitHub_S
 	protected function set_get_trees( $succeed ) {
 		$this->set_endpoint(
 			function ( $request ) {
-				if ( '[]' !== $request['body'] ) {
+				if ( '[]' === $request['body'] ) {
 					return false;
 				}
 
@@ -124,7 +124,7 @@ abstract class WordPress_GitHub_Sync_Base_Client_Test extends WordPress_GitHub_S
 		foreach ( $shas as $sha ) {
 			$this->set_endpoint(
 				function ( $request ) {
-					if ( '[]' !== $request['body'] ) {
+					if ( '[]' === $request['body'] ) {
 						return false;
 					}
 
