@@ -48,10 +48,13 @@ class WordPress_GitHub_Sync_Base_Client {
 			'headers' => array(
 				'Authorization' => 'token ' . $this->oauth_token(),
 			),
-			'body'    => function_exists( 'wp_json_encode' ) ?
-				wp_json_encode( $body ) :
-				json_encode( $body ),
 		);
+
+		if ( 'GET' !== $method ) {
+			$args['body'] = function_exists( 'wp_json_encode' ) ?
+				wp_json_encode( $body ) :
+				json_encode( $body );
+		}
 
 		$response = wp_remote_request( $endpoint, $args );
 		$status   = wp_remote_retrieve_header( $response, 'status' );
