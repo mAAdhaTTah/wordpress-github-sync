@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the WordPress GitHub Sync package.
 msgid ""
 msgstr ""
-"Project-Id-Version: WordPress GitHub Sync 1.7.1\n"
+"Project-Id-Version: WordPress GitHub Sync 1.7.2\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/wp-github-sync\n"
-"POT-Creation-Date: 2016-12-07 02:59:01+00:00\n"
+"POT-Creation-Date: 2016-12-10 20:16:38+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -65,15 +65,15 @@ msgid "Export to GitHub completed successfully."
 msgstr ""
 
 #: lib/admin.php:129
-msgid "Import to GitHub started."
+msgid "Import from GitHub started."
 msgstr ""
 
 #: lib/admin.php:136
-msgid "Import to GitHub failed with error:"
+msgid "Import from GitHub failed with error:"
 msgstr ""
 
 #: lib/admin.php:143
-msgid "Import to GitHub completed successfully."
+msgid "Import from GitHub completed successfully."
 msgstr ""
 
 #: lib/admin.php:154 views/options.php:9
@@ -120,23 +120,23 @@ msgstr ""
 msgid "Successfully imported and cached commit %s."
 msgstr ""
 
-#: lib/client/base.php:64
+#: lib/client/base.php:67
 msgid "Method %s to endpoint %s failed with error: %s"
 msgstr ""
 
-#: lib/client/base.php:84
+#: lib/client/base.php:87
 msgid "WordPress-GitHub-Sync needs an auth token. Please update your settings."
 msgstr ""
 
-#: lib/client/base.php:93
+#: lib/client/base.php:96
 msgid "WordPress-GitHub-Sync needs a repository. Please update your settings."
 msgstr ""
 
-#: lib/client/base.php:102
+#: lib/client/base.php:105
 msgid "WordPress-GitHub-Sync needs a properly formed repository. Please update your settings."
 msgstr ""
 
-#: lib/client/base.php:141 lib/payload.php:54
+#: lib/client/base.php:144 lib/payload.php:54
 msgid "Sync branch not set. Filter `wpghs_sync_branch` misconfigured."
 msgstr ""
 
@@ -169,31 +169,31 @@ msgstr ""
 msgid "Post for sha %s not found."
 msgstr ""
 
-#: lib/database.php:191
+#: lib/database.php:194
 msgid "Successfully saved posts."
 msgstr ""
 
-#: lib/database.php:253
+#: lib/database.php:256
 msgid "Post not found for path %s."
 msgstr ""
 
-#: lib/database.php:271
+#: lib/database.php:274
 msgid "Failed to delete post ID %d."
 msgstr ""
 
-#: lib/database.php:279
+#: lib/database.php:282
 msgid "Successfully deleted post ID %d."
 msgstr ""
 
-#: lib/database.php:370
+#: lib/database.php:373
 msgid "Commit user not found for email %s"
 msgstr ""
 
-#: lib/database.php:443
+#: lib/database.php:446
 msgid "No change for post ID %d."
 msgstr ""
 
-#: lib/database.php:451
+#: lib/database.php:454
 msgid "Successfully updated post ID %d."
 msgstr ""
 

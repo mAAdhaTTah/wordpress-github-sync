@@ -198,7 +198,7 @@ class WordPress_GitHub_Sync_Export {
 			return $result;
 		}
 
-		return __( 'Export to GitHub completed successfully.', 'wordpress-github-sync' );
+		return __( 'Export to GitHub completed successfully.', 'wp-github-sync' );
 	}
 
 	/**
@@ -232,7 +232,7 @@ class WordPress_GitHub_Sync_Export {
 			}
 		}
 
-		return __( 'Export to GitHub completed successfully.', 'wordpress-github-sync' );
+		return __( 'Export to GitHub completed successfully.', 'wp-github-sync' );
 	}
 
 	/**
@@ -255,7 +255,7 @@ class WordPress_GitHub_Sync_Export {
 		$tag = apply_filters( 'wpghs_commit_msg_tag', 'wpghs' );
 
 		if ( ! $tag ) {
-			throw new Exception( __( 'Commit message tag not set. Filter `wpghs_commit_msg_tag` misconfigured.', 'wordpress-github-sync' ) );
+			throw new Exception( __( 'Commit message tag not set. Filter `wpghs_commit_msg_tag` misconfigured.', 'wp-github-sync' ) );
 		}
 
 		return ' - ' . $tag;

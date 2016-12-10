@@ -37,42 +37,42 @@ class WordPress_GitHub_Sync_Admin {
 		);
 
 		register_setting( WordPress_GitHub_Sync::$text_domain, 'wpghs_host' );
-		add_settings_field( 'wpghs_host', __( 'GitHub hostname', 'wordpress-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
+		add_settings_field( 'wpghs_host', __( 'GitHub hostname', 'wp-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
 				'default'   => 'https://api.github.com',
 				'name'      => 'wpghs_host',
-				'help_text' => __( 'The GitHub host to use. This only needs to be changed to support a GitHub Enterprise installation.', 'wordpress-github-sync' ),
+				'help_text' => __( 'The GitHub host to use. This only needs to be changed to support a GitHub Enterprise installation.', 'wp-github-sync' ),
 			)
 		);
 
 		register_setting( WordPress_GitHub_Sync::$text_domain, 'wpghs_repository' );
-		add_settings_field( 'wpghs_repository', __( 'Repository', 'wordpress-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
+		add_settings_field( 'wpghs_repository', __( 'Repository', 'wp-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
 				'default'   => '',
 				'name'      => 'wpghs_repository',
-				'help_text' => __( 'The GitHub repository to commit to, with owner (<code>[OWNER]/[REPOSITORY]</code>), e.g., <code>github/hubot.github.com</code>. The repository should contain an initial commit, which is satisfied by including a README when you create the repository on GitHub.', 'wordpress-github-sync' ),
+				'help_text' => __( 'The GitHub repository to commit to, with owner (<code>[OWNER]/[REPOSITORY]</code>), e.g., <code>github/hubot.github.com</code>. The repository should contain an initial commit, which is satisfied by including a README when you create the repository on GitHub.', 'wp-github-sync' ),
 			)
 		);
 
 		register_setting( WordPress_GitHub_Sync::$text_domain, 'wpghs_oauth_token' );
-		add_settings_field( 'wpghs_oauth_token', __( 'Oauth Token', 'wordpress-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
+		add_settings_field( 'wpghs_oauth_token', __( 'Oauth Token', 'wp-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
 				'default'   => '',
 				'name'      => 'wpghs_oauth_token',
-				'help_text' => __( "A <a href='https://github.com/settings/tokens/new'>personal oauth token</a> with <code>public_repo</code> scope.", 'wordpress-github-sync' ),
+				'help_text' => __( "A <a href='https://github.com/settings/tokens/new'>personal oauth token</a> with <code>public_repo</code> scope.", 'wp-github-sync' ),
 			)
 		);
 
 		register_setting( WordPress_GitHub_Sync::$text_domain, 'wpghs_secret' );
-		add_settings_field( 'wpghs_secret', __( 'Webhook Secret', 'wordpress-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
+		add_settings_field( 'wpghs_secret', __( 'Webhook Secret', 'wp-github-sync' ), array( $this, 'field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
 				'default'   => '',
 				'name'      => 'wpghs_secret',
-				'help_text' => __( "The webhook's secret phrase. This should be password strength, as it is used to verify the webhook's payload.", 'wordpress-github-sync' ),
+				'help_text' => __( "The webhook's secret phrase. This should be password strength, as it is used to verify the webhook's payload.", 'wp-github-sync' ),
 			)
 		);
 
 		register_setting( WordPress_GitHub_Sync::$text_domain, 'wpghs_default_user' );
-		add_settings_field( 'wpghs_default_user', __( 'Default Import User', 'wordpress-github-sync' ), array( &$this, 'user_field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
+		add_settings_field( 'wpghs_default_user', __( 'Default Import User', 'wp-github-sync' ), array( &$this, 'user_field_callback' ), WordPress_GitHub_Sync::$text_domain, 'general', array(
 				'default'   => '',
 				'name'      => 'wpghs_default_user',
-				'help_text' => __( 'The fallback user for import, in case WordPress <--> GitHub Sync cannot find the committer in the database.', 'wordpress-github-sync' ),
+				'help_text' => __( 'The fallback user for import, in case WordPress <--> GitHub Sync cannot find the committer in the database.', 'wp-github-sync' ),
 			)
 		);
 	}
@@ -105,42 +105,42 @@ class WordPress_GitHub_Sync_Admin {
 
 		if ( 'yes' === get_option( '_wpghs_export_started' ) ) { ?>
 			<div class="updated">
-				<p><?php esc_html_e( 'Export to GitHub started.', 'wordpress-github-sync' ); ?></p>
+				<p><?php esc_html_e( 'Export to GitHub started.', 'wp-github-sync' ); ?></p>
 			</div><?php
 			delete_option( '_wpghs_export_started' );
 		}
 
 		if ( $message = get_option( '_wpghs_export_error' ) ) { ?>
 			<div class="error">
-				<p><?php esc_html_e( 'Export to GitHub failed with error:', 'wordpress-github-sync' ); ?> <?php echo esc_html( $message );?></p>
+				<p><?php esc_html_e( 'Export to GitHub failed with error:', 'wp-github-sync' ); ?> <?php echo esc_html( $message );?></p>
 			</div><?php
 			delete_option( '_wpghs_export_error' );
 		}
 
 		if ( 'yes' === get_option( '_wpghs_export_complete' ) ) { ?>
 			<div class="updated">
-				<p><?php esc_html_e( 'Export to GitHub completed successfully.', 'wordpress-github-sync' );?></p>
+				<p><?php esc_html_e( 'Export to GitHub completed successfully.', 'wp-github-sync' );?></p>
 			</div><?php
 			delete_option( '_wpghs_export_complete' );
 		}
 
 		if ( 'yes' === get_option( '_wpghs_import_started' ) ) { ?>
 			<div class="updated">
-			<p><?php esc_html_e( 'Import from GitHub started.', 'wordpress-github-sync' ); ?></p>
+			<p><?php esc_html_e( 'Import from GitHub started.', 'wp-github-sync' ); ?></p>
 			</div><?php
 			delete_option( '_wpghs_import_started' );
 		}
 
 		if ( $message = get_option( '_wpghs_import_error' ) ) { ?>
 			<div class="error">
-			<p><?php esc_html_e( 'Import from GitHub failed with error:', 'wordpress-github-sync' ); ?> <?php echo esc_html( $message );?></p>
+			<p><?php esc_html_e( 'Import from GitHub failed with error:', 'wp-github-sync' ); ?> <?php echo esc_html( $message );?></p>
 			</div><?php
 			delete_option( '_wpghs_import_error' );
 		}
 
 		if ( 'yes' === get_option( '_wpghs_import_complete' ) ) { ?>
 			<div class="updated">
-			<p><?php esc_html_e( 'Import from GitHub completed successfully.', 'wordpress-github-sync' );?></p>
+			<p><?php esc_html_e( 'Import from GitHub completed successfully.', 'wp-github-sync' );?></p>
 			</div><?php
 			delete_option( '_wpghs_import_complete' );
 		}
@@ -151,8 +151,8 @@ class WordPress_GitHub_Sync_Admin {
 	 */
 	public function add_admin_menu() {
 		add_options_page(
-			__( 'WordPress <--> GitHub Sync', 'wordpress-github-sync' ),
-			__( 'GitHub Sync', 'wordpress-github-sync' ),
+			__( 'WordPress <--> GitHub Sync', 'wp-github-sync' ),
+			__( 'GitHub Sync', 'wp-github-sync' ),
 			'manage_options',
 			WordPress_GitHub_Sync::$text_domain,
 			array( $this, 'settings_page' )
