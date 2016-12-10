@@ -11,7 +11,7 @@
  * @return string
  */
 function get_the_github_view_link() {
-	return '<a href="' . get_the_github_view_url() . '">' . apply_filters( 'wpghs_view_link_text', 'View this post on GitHub.' ) . '</a>';
+	return '<a href="' . get_the_github_view_url() . '">' . apply_filters( 'wpghs_view_link_text', __( 'View this post on GitHub.', 'wp-github-sync' ) ) . '</a>';
 }
 
 /**
@@ -31,7 +31,7 @@ function get_the_github_view_url() {
  * @return string
  */
 function get_the_github_edit_link() {
-	return '<a href="' . get_the_github_edit_url() . '">' . apply_filters( 'wpghs_edit_link_text', 'Edit this post on GitHub.' ) . '</a>';
+	return '<a href="' . get_the_github_edit_url() . '">' . apply_filters( 'wpghs_edit_link_text', __( 'Edit this post on GitHub.', 'wp-github-sync' ) ) . '</a>';
 }
 
 /**
@@ -78,7 +78,7 @@ function write_wpghs_link( $atts ) {
 			if ( ! empty( $text ) ) {
 				$linktext = $text;
 			} else {
-				$linktext = 'View this post on GitHub';
+				$linktext = __( 'View this post on GitHub', 'wp-github-sync' );
 			}
 			break;
 		}
@@ -87,13 +87,13 @@ function write_wpghs_link( $atts ) {
 			if ( ! empty( $text ) ) {
 				$linktext = $text;
 			} else {
-				$linktext = 'Edit this post on GitHub';
+				$linktext = __( 'Edit this post on GitHub', 'wp-github-sync' );
 			}
 			break;
 		}
 		default: {
 			$getter = get_the_github_view_url();
-			$linktext = 'View this post on GitHub';
+			$linktext = __( 'View this post on GitHub', 'wp-github-sync' );
 			break;
 		}
 	}
