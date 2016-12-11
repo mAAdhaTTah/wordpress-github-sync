@@ -22,7 +22,7 @@ class WordPress_GitHub_Sync_Persist_Client extends WordPress_GitHub_Sync_Base_Cl
 				'no_commit',
 				__(
 					'There were no changes, so no additional commit was added.',
-					'wordpress-github-sync'
+					'wp-github-sync'
 				)
 			);
 		}

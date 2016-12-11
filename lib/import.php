@@ -67,7 +67,7 @@ class WordPress_GitHub_Sync_Import {
 			return $error;
 		}
 
-		return __( 'Payload processed', 'wordpress-github-sync' );
+		return __( 'Payload processed', 'wp-github-sync' );
 	}
 
 	/**
@@ -92,7 +92,7 @@ class WordPress_GitHub_Sync_Import {
 		}
 
 		if ( $commit->already_synced() ) {
-			return new WP_Error( 'commit_synced', __( 'Already synced this commit.', 'wordpress-github-sync' ) );
+			return new WP_Error( 'commit_synced', __( 'Already synced this commit.', 'wp-github-sync' ) );
 		}
 
 		$posts = array();

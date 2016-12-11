@@ -17,7 +17,7 @@ Ever wish you could collaboratively author content for your WordPress site (or e
 
 Looking to tinker with Jekyll, but wish you could use WordPress's best-of-breed web editing interface instead of Atom? (gasp!)
 
-Well, now you can! Introducing [WordPress <--> GitHub Sync](https://github.com/benbalter/wordpress-github-sync)!
+Well, now you can! Introducing [WordPress <--> GitHub Sync](https://github.com/mAAdhaTTah/wordpress-github-sync)!
 
 ### WordPress <--> GitHub Sync does three things: ###
 

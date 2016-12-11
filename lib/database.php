@@ -59,7 +59,7 @@ class WordPress_GitHub_Sync_Database {
 		if ( ! $post_ids ) {
 			return new WP_Error(
 				'no_results',
-				__( 'Querying for supported posts returned no results.', 'wordpress-github-sync' )
+				__( 'Querying for supported posts returned no results.', 'wp-github-sync' )
 			);
 		}
 
@@ -87,7 +87,7 @@ class WordPress_GitHub_Sync_Database {
 				sprintf(
 					__(
 						'Post ID %s is not supported by WPGHS. See wiki to find out how to add support.',
-						'wordpress-github-sync'
+						'wp-github-sync'
 					),
 					$post_id
 				)
@@ -122,7 +122,7 @@ class WordPress_GitHub_Sync_Database {
 				sprintf(
 					__(
 						'Post for sha %s not found.',
-						'wordpress-github-sync'
+						'wp-github-sync'
 					),
 					$sha
 				)
@@ -191,7 +191,7 @@ class WordPress_GitHub_Sync_Database {
 			return $error;
 		}
 
-		return __( 'Successfully saved posts.', 'wordpress-github-sync' );
+		return __( 'Successfully saved posts.', 'wp-github-sync' );
 	}
 
 	/**
@@ -253,7 +253,7 @@ class WordPress_GitHub_Sync_Database {
 			return new WP_Error(
 				'path_not_found',
 				sprintf(
-					__( 'Post not found for path %s.', 'wordpress-github-sync' ),
+					__( 'Post not found for path %s.', 'wp-github-sync' ),
 					$path
 				)
 			);
@@ -271,7 +271,7 @@ class WordPress_GitHub_Sync_Database {
 				return new WP_Error(
 					'db_error',
 					sprintf(
-						__( 'Failed to delete post ID %d.', 'wordpress-github-sync' ),
+						__( 'Failed to delete post ID %d.', 'wp-github-sync' ),
 						$post_id
 					)
 				);
@@ -279,7 +279,7 @@ class WordPress_GitHub_Sync_Database {
 		}
 
 		return sprintf(
-			__( 'Successfully deleted post ID %d.', 'wordpress-github-sync' ),
+			__( 'Successfully deleted post ID %d.', 'wp-github-sync' ),
 			$post_id
 		);
 	}
@@ -370,7 +370,7 @@ class WordPress_GitHub_Sync_Database {
 			return new WP_Error(
 				'user_not_found',
 				sprintf(
-					__( 'Commit user not found for email %s', 'wordpress-github-sync' ),
+					__( 'Commit user not found for email %s', 'wp-github-sync' ),
 					$email
 				)
 			);
@@ -443,7 +443,7 @@ class WordPress_GitHub_Sync_Database {
 
 		if ( 0 === $result ) {
 			return sprintf(
-				__( 'No change for post ID %d.', 'wordpress-github-sync' ),
+				__( 'No change for post ID %d.', 'wp-github-sync' ),
 				$post_id
 			);
 		}
@@ -451,7 +451,7 @@ class WordPress_GitHub_Sync_Database {
 		clean_post_cache( $post_id );
 
 		return sprintf(
-			__( 'Successfully updated post ID %d.', 'wordpress-github-sync' ),
+			__( 'Successfully updated post ID %d.', 'wp-github-sync' ),
 			$post_id
 		);
 	}

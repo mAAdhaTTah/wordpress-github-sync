@@ -37,14 +37,14 @@ class WordPress_GitHub_Sync_Controller {
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
-				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' ), 'Controller::pull_posts()' )
+				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wp-github-sync' ), 'Controller::pull_posts()' )
 			) );
 		}
 
 		if ( ! $this->app->request()->is_secret_valid() ) {
 			return $this->app->response()->error( new WP_Error(
 				'invalid_headers',
-				__( 'Failed to validate secret.', 'wordpress-github-sync' )
+				__( 'Failed to validate secret.', 'wp-github-sync' )
 			) );
 		}
 
@@ -54,7 +54,7 @@ class WordPress_GitHub_Sync_Controller {
 			return $this->app->response()->error( new WP_Error(
 				'invalid_payload',
 				sprintf(
-					__( "%s won't be imported.", 'wordpress-github-sync' ),
+					__( "%s won't be imported.", 'wp-github-sync' ),
 					strtolower( $payload->get_commit_id() ) ? : '[Missing Commit ID]'
 				)
 			) );
@@ -84,7 +84,7 @@ class WordPress_GitHub_Sync_Controller {
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
-				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' ), 'Controller::import_master()' )
+				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wp-github-sync' ), 'Controller::import_master()' )
 			) );
 		}
 
@@ -116,7 +116,7 @@ class WordPress_GitHub_Sync_Controller {
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
-				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' ), 'Controller::export_all()' )
+				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wp-github-sync' ), 'Controller::export_all()' )
 			) );
 		}
 
@@ -150,7 +150,7 @@ class WordPress_GitHub_Sync_Controller {
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
-				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' ), 'Controller::export_post()' )
+				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wp-github-sync' ), 'Controller::export_post()' )
 			) );
 		}
 
@@ -178,7 +178,7 @@ class WordPress_GitHub_Sync_Controller {
 		if ( ! $this->app->semaphore()->is_open() ) {
 			return $this->app->response()->error( new WP_Error(
 				'semaphore_locked',
-				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wordpress-github-sync' ), 'Controller::delete_post()' )
+				sprintf( __( '%s : Semaphore is locked, import/export already in progress.', 'wp-github-sync' ), 'Controller::delete_post()' )
 			) );
 		}
 

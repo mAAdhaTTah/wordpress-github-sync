@@ -51,7 +51,7 @@ class WordPress_GitHub_Sync_Payload {
 		$sync_branch = apply_filters( 'wpghs_sync_branch', 'master' );
 
 		if ( ! $sync_branch ) {
-			throw new Exception( __( 'Sync branch not set. Filter `wpghs_sync_branch` misconfigured.', 'wordpress-github-sync' ) );
+			throw new Exception( __( 'Sync branch not set. Filter `wpghs_sync_branch` misconfigured.', 'wp-github-sync' ) );
 		}
 
 		if ( $sync_branch !== $payload_branch ) {
@@ -62,7 +62,7 @@ class WordPress_GitHub_Sync_Payload {
 		$tag = apply_filters( 'wpghs_commit_msg_tag', 'wpghs' );
 
 		if ( ! $tag ) {
-			throw new Exception( __( 'Commit message tag not set. Filter `wpghs_commit_msg_tag` misconfigured.', 'wordpress-github-sync' ) );
+			throw new Exception( __( 'Commit message tag not set. Filter `wpghs_commit_msg_tag` misconfigured.', 'wp-github-sync' ) );
 		}
 
 		if ( $tag === substr( $this->message(), -1 * strlen( $tag ) ) ) {
