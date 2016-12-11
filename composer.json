@@ -44,7 +44,7 @@
     "sniff": "phpcs --runtime-set installed_paths vendor/wp-coding-standards/wpcs -p ./ --standard=WordPress --report=full --extensions=php --ignore=*/tests/*,*/vendor/*",
     "clean": "phpcbf --runtime-set installed_paths vendor/wp-coding-standards/wpcs -p ./ --standard=WordPress --report=full --extensions=php --ignore=*/tests/*,*/vendor/*",
     "test": "phpunit",
-    "genpot": "vendor/websharks/wp-i18n-tools/makepot.php wp-plugin . $(pwd)/languages/wordpress-github-sync.pot",
+    "genpot": "vendor/websharks/wp-i18n-tools/makepot.php wp-plugin . $(pwd)/languages/wp-github-sync.pot",
     "post-install-cmd": [
       "xrstf\\Composer52\\Generator::onPostInstallCmd"
     ],
