@@ -183,7 +183,7 @@ class WordPress_GitHub_Sync_Admin {
 			WordPress_GitHub_Sync::$instance->start_import();
 		}
 
-		wp_redirect( admin_url( 'options-general.php?page=wordpress-github-sync' ) );
+		wp_redirect( admin_url( 'options-general.php?page=wp-github-sync' ) );
 		die;
 	}
 }
