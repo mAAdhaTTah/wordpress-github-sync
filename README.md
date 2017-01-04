@@ -1,9 +1,9 @@
 # WordPress <--> GitHub Sync #
-**Contributors:** JamesDiGioia, benbalter   
+**Contributors:** JamesDiGioia, benbalter  
 **Tags:** github, git, version control, content, collaboration, publishing  
 **Requires at least:** 3.9  
 **Tested up to:** 4.7  
-**Stable tag:** 1.7.4  
+**Stable tag:** 1.7.5  
 **License:** GPLv2  
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -21,9 +21,9 @@ Well, now you can! Introducing [WordPress <--> GitHub Sync](https://github.com/m
 
 ### WordPress <--> GitHub Sync does three things: ###
 
-1. Allows content publishers to version their content in GitHub, exposing "who made what change when" to readers
-2. Allows readers to submit proposed improvements to WordPress-served content via GitHub's Pull Request model
-3. Allows non-technical writers to draft and edit a Jekyll site in WordPress's best-of-breed editing interface
+1.  Allows content publishers to version their content in GitHub, exposing "who made what change when" to readers
+2.  Allows readers to submit proposed improvements to WordPress-served content via GitHub's Pull Request model
+3.  Allows non-technical writers to draft and edit a Jekyll site in WordPress's best-of-breed editing interface
 
 ### WordPress <--> GitHub sync might be able to do some other cool things: ###
 
@@ -74,7 +74,7 @@ Install the plugin and activate it via WordPress's plugin settings page.
 
 ### Configuring the plugin ###
 
-1. [Create a personal oauth token](https://github.com/settings/tokens/new) with the `public_repo` scope. If you'd prefer not to use your account, you can create another GitHub account for this. 
+1. [Create a personal oauth token](https://github.com/settings/tokens/new) with the `public_repo` scope. If you'd prefer not to use your account, you can create another GitHub account for this.
 2. Configure your GitHub host, repository, secret (defined in the next step),  and OAuth Token on the WordPress <--> GitHub sync settings page within WordPress's administrative interface. Make sure the repository has an initial commit or the export will fail.
 3. Create a WebHook within your repository with the provided callback URL and callback secret, using `application/json` as the content type. To set up a webhook on GitHub, head over to the **Settings** page of your repository, and click on **Webhooks & services**. After that, click on **Add webhook**.
 4. Click `Export to GitHub` or if you use WP-CLI, run `wp wpghs export all #` from the command line, where # = the user ID you'd like to commit as.
@@ -122,14 +122,14 @@ In `wp-content`, create or open the `mu-plugins` folder and create a plugin file
      * Author URI:   https://jamesdigioia.com/
      * License:      GPL2
      */
-    
+
     add_filter('wpghs_whitelisted_post_types', function ($supported_post_types) {
       return array_merge($supported_post_types, array(
         // add your custom post types here
         'gistpen'
       ));
     });
-    
+
     add_filter('wpghs_whitelisted_post_statuses', function ($supported_post_statuses) {
       return array_merge($supported_post_statuses, array(
         // additional statuses available: https://codex.wordpress.org/Post_Status
@@ -169,7 +169,7 @@ If you wish to add either the bare URL or a link referencing the URL to an indiv
 
 The following optional attributes can also be included in the shortcode
 * `target=`
-   + `'view'` (default)  the url used will be the *view* URL (`/blob/`). 
+   + `'view'` (default)  the url used will be the *view* URL (`/blob/`).
    + `'edit'`            the url used will be the *edit* URL (`/edit/`).
 * `type=`
    + `'link'` (default)  an anchor tag (`<a>`) with href set to the requested URL will be inserted.
@@ -178,7 +178,7 @@ The following optional attributes can also be included in the shortcode
    + `''` (default)      link text (where `type='link'`, ignored otherwise) will be set to 'View this post on GitHub'.
    + `'text'`          link text (where `type='link'`, ignored otherwise) will be set to 'text' (the supplied text).
 
-For example, 
+For example,
 
 `[wpghs target='view' type='link' text='Here is my post on GitHub']` will produce a HTML anchor tag with href set to the 'view' URL of the post on GitHub, and the link text set to 'Here is my post on GitHub', i.e.
 
