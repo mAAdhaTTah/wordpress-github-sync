@@ -152,7 +152,10 @@ class WordPress_GitHub_Sync_Database {
 		 */
 		$error = false;
 
+		do_action( 'wpghs_pre_save_loop_action' );
+
 		foreach ( $posts as $post ) {
+			do_action( 'wpghs_pre_save_action', $post );
 			$args    = apply_filters( 'wpghs_pre_import_args', $post->get_args(), $post );
 			
 			remove_filter('content_save_pre', 'wp_filter_post_kses');
@@ -186,6 +189,7 @@ class WordPress_GitHub_Sync_Database {
 				update_post_meta( $post_id, $key, $value );
 			}
 		}
+		do_action( 'wpghs_post_save_loop_action' );
 
 		if ( $error ) {
 			return $error;
