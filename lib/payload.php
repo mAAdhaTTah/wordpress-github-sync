@@ -77,15 +77,6 @@ class WordPress_GitHub_Sync_Payload {
 	}
 
 	/**
-	 * Returns the head commit.
-	 *
-	 * @return string
-	 */
-	public function get_commit() {
-		return $this->data->head_commit;
-	}
-
-	/**
 	 * Returns the sha of the head commit.
 	 *
 	 * @return string
