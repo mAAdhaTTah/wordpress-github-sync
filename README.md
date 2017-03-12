@@ -155,7 +155,7 @@ All four of these functions must be used in the loop. If you'd like to retrieve 
 If you'd like to include an edit link without modifying your theme directly, you can add one of these functions to `the_content` like so:
 
     add_filter( 'the_content', function( $content ) {
-      if( is_page() || is_single() ) {
+      if ( get_post_type() == 'post' && ( ! in_array( 'get_the_excerpt', $GLOBALS['wp_current_filter'] )) ) {
         $content .= get_the_github_edit_link();
       }
       return $content;
