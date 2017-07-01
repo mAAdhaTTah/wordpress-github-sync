@@ -24,6 +24,13 @@ class WordPress_GitHub_Sync_Payload {
 	protected $data;
 
 	/**
+	 * Payload error.
+	 *
+	 * @var null|string
+	 */
+	protected $error = null;
+
+	/**
 	 * WordPress_GitHub_Sync_Payload constructor.
 	 *
 	 * @param WordPress_GitHub_Sync $app      Application container.
@@ -32,6 +39,29 @@ class WordPress_GitHub_Sync_Payload {
 	public function __construct( WordPress_GitHub_Sync $app, $raw_data ) {
 		$this->app  = $app;
 		$this->data = json_decode( $raw_data );
+
+		if ($this->data === null) {
+			switch (json_last_error()) {
+				case JSON_ERROR_DEPTH:
+					$this->error = __( 'Maximum stack depth exceeded', 'wp-github-sync' );
+					break;
+				case JSON_ERROR_STATE_MISMATCH:
+					$this->error = __( 'Underflow or the modes mismatch', 'wp-github-sync' );
+					break;
+				case JSON_ERROR_CTRL_CHAR:
+					$this->error = __( 'Unexpected control character found', 'wp-github-sync' );
+					break;
+				case JSON_ERROR_SYNTAX:
+					$this->error = __( 'Syntax error, malformed JSON', 'wp-github-sync' );
+					break;
+				case JSON_ERROR_UTF8:
+					$this->error = __( 'Malformed UTF-8 characters, possibly incorrectly encoded', 'wp-github-sync' );
+					break;
+				default:
+					$this->error = __( 'Unknown error', 'wp-github-sync' );
+					break;
+			}
+		}
 	}
 
 	/**
@@ -110,6 +140,24 @@ class WordPress_GitHub_Sync_Payload {
 	 */
 	public function get_repository_name() {
 		return $this->data->repository->full_name;
+	}
+
+	/**
+	 * Return whether the payload has an error.
+	 *
+	 * @return bool
+	 */
+	public function has_error() {
+		return $this->error !== null;
+	}
+
+	/**
+	 * Return the payload error string.
+	 *
+	 * @return string|null
+	 */
+	public function get_error() {
+		return $this->error;
 	}
 
 	/**

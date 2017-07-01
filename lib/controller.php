@@ -50,6 +50,17 @@ class WordPress_GitHub_Sync_Controller {
 
 		$payload = $this->app->request()->payload();
 
+		if ( $payload->has_error() ) {
+			return $this->app->response()->error( new WP_Error(
+				'invalid_payload',
+				sprintf(
+					__( "%s won't be imported. Error: %s", 'wp-github-sync' ),
+					strtolower( $payload->get_commit_id() ) ? : '[Missing Commit ID]',
+					$payload->get_error()
+				)
+			) );
+		}
+
 		if ( ! $payload->should_import() ) {
 			return $this->app->response()->error( new WP_Error(
 				'invalid_payload',
