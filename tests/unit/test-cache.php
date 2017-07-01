@@ -89,5 +89,8 @@ class WordPress_GitHub_Sync_Cache_Test extends WordPress_GitHub_Sync_TestCase {
 		parent::tearDown();
 
 		$this->assertFalse( get_option( '_wpghs_api_cache' ) );
+		delete_transient( 'wpghs_' . md5( 'blobs_' . $this->sha ) );
+		delete_transient( 'wpghs_' . md5( 'trees_' . $this->sha ) );
+		delete_transient( 'wpghs_' . md5( 'commits_' . $this->sha ) );
 	}
 }
