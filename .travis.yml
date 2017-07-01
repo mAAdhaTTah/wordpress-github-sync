@@ -19,6 +19,7 @@ env:
     - WP_VERSION=3.9 WP_MULTISITE=1
 
 before_script:
+    - phpenv config-rm xdebug.ini
     - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
     - composer self-update
     - composer install
