@@ -331,17 +331,6 @@ class WordPress_GitHub_Sync_Post {
 			'published'    => 'publish' === $this->status() ? true : false,
 		);
 
-		//convert traditional post_meta values, hide hidden values, skip already populated values
-		foreach ( get_post_custom( $this->id ) as $key => $value ) {
-
-			if ( '_' === substr( $key, 0, 1 ) || isset( $meta[ $key ] ) ) {
-				continue;
-			}
-
-			$meta[ $key ] = $value;
-
-		}
-
 		return apply_filters( 'wpghs_post_meta', $meta, $this );
 	}
 
