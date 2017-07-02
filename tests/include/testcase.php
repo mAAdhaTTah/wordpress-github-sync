@@ -164,6 +164,7 @@ abstract class WordPress_GitHub_Sync_TestCase extends WP_HTTP_TestCase {
 	}
 
 	public function tearDown() {
+		parent::tearDown();
 		Mockery::close();
 	}
 }

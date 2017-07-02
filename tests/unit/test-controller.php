@@ -85,6 +85,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->once()
 			->andReturn( $this->payload );
 		$this->payload
+			->shouldReceive( 'has_error' )
+			->once()
+			->andReturn( false );
+		$this->payload
 			->shouldReceive( 'should_import' )
 			->once()
 			->andReturn( false );
@@ -113,6 +117,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->shouldReceive( 'payload' )
 			->once()
 			->andReturn( $this->payload );
+		$this->payload
+			->shouldReceive( 'has_error' )
+			->once()
+			->andReturn( false );
 		$this->payload
 			->shouldReceive( 'should_import' )
 			->once()
@@ -143,6 +151,10 @@ class WordPress_GitHub_Sync_Controller_Test extends WordPress_GitHub_Sync_TestCa
 			->shouldReceive( 'payload' )
 			->once()
 			->andReturn( $this->payload );
+		$this->payload
+			->shouldReceive( 'has_error' )
+			->once()
+			->andReturn( false );
 		$this->payload
 			->shouldReceive( 'should_import' )
 			->once()

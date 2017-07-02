@@ -55,6 +55,10 @@ class WordPress_GitHub_Sync_Payload_Test extends WordPress_GitHub_Sync_TestCase 
 	}
 
 	public function test_should_show_error() {
+		$this->fetch
+			->shouldReceive( 'repository' )
+			->never();
+
 		$payload = new WordPress_GitHub_Sync_Payload(
 			$this->app,
 			"This isn't valid JSON"

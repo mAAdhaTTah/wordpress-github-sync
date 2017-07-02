@@ -2,6 +2,11 @@
 
 This change log follows the [Keep a Changelog standards][]. Versions follows [Semantic Versioning][].
 
+### [2.0.0][] ###
+
+* **POSSIBLY BREAKING**: Remove handling of custom post meta
+    * If you were relying on WPGHS to export custom post meta, use `wpghs_post_meta` filter & `wpghs_pre_import_meta` to handle the meta yourself. See the [documentation][] for more information.
+
 ### [1.7.5][] ###
 
 * Fix plugin slug (props @gmays)
@@ -131,6 +136,7 @@ This change log follows the [Keep a Changelog standards][]. Versions follows [Se
   [#121]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/121
   [#127]: https://github.com/mAAdhaTTah/wordpress-github-sync/issues/127
   [Unreleased]: https://github.com/mAAdhaTTah/wordpress-github-sync
+  [2.0.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/2.0.0
   [1.7.5]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.7.5
   [1.7.2]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.7.2
   [1.7.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.7.0
@@ -151,3 +157,4 @@ This change log follows the [Keep a Changelog standards][]. Versions follows [Se
   [1.0.2]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.0.2
   [1.0.1]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.0.1
   [1.0.0]: https://github.com/mAAdhaTTah/wordpress-github-sync/releases/tag/1.0.0
+  [documentation]: https://github.com/mAAdhaTTah/wordpress-github-sync/wiki/Customizing-WordPress-GitHub-Sync-with-Filters
