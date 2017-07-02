@@ -1,5 +1,5 @@
 {
-  "name": "maadhattah/wordpress-github-sync",
+  "name": "maadhattah/wp-github-sync",
   "description": "A WordPress plugin to sync content with a GitHub repository (or Jekyll site)",
   "type": "wordpress-plugin",
   "minimum-stability": "stable",
