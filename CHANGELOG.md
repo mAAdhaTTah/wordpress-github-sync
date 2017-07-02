@@ -10,6 +10,7 @@ This change log follows the [Keep a Changelog standards][]. Versions follows [Se
     * This should ensure better fidelity to the original filename.
 * Don't export `post_date` if post isn't published.
     * `post_date` means the time the post was published. If it's not published, it shouldn't have a `post_date`.
+* Overwrite post_date from markdown, allowing remote user to modify publish date.
 
 ### [1.7.5][] ###
 
