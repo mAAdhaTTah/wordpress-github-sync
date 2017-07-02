@@ -8,6 +8,8 @@ This change log follows the [Keep a Changelog standards][]. Versions follows [Se
     * If you were relying on WPGHS to export custom post meta, use `wpghs_post_meta` filter & `wpghs_pre_import_meta` to handle the meta yourself. See the [documentation][] for more information.
 * Switch from `sanitize_title` to `sanitize_file_name`.
     * This should ensure better fidelity to the original filename.
+* Don't export `post_date` if post isn't published.
+    * `post_date` means the time the post was published. If it's not published, it shouldn't have a `post_date`.
 
 ### [1.7.5][] ###
 
