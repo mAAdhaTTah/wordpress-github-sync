@@ -1,14 +1,14 @@
-# Copyright (C) 2016 WordPress GitHub Sync
+# Copyright (C) 2017 WordPress GitHub Sync
 # This file is distributed under the same license as the WordPress GitHub Sync package.
 msgid ""
 msgstr ""
-"Project-Id-Version: WordPress GitHub Sync 1.7.4\n"
+"Project-Id-Version: WordPress GitHub Sync 2.0.0\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/wp-github-sync\n"
-"POT-Creation-Date: 2016-12-11 19:45:59+00:00\n"
+"POT-Creation-Date: 2017-07-02 22:16:47+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2017-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
@@ -152,7 +152,7 @@ msgstr ""
 msgid "WordPress-GitHub-Sync needs a properly formed repository. Please update your settings."
 msgstr ""
 
-#: lib/client/base.php:144 lib/payload.php:54
+#: lib/client/base.php:144 lib/payload.php:84
 msgid "Sync branch not set. Filter `wpghs_sync_branch` misconfigured."
 msgstr ""
 
@@ -160,8 +160,8 @@ msgstr ""
 msgid "There were no changes, so no additional commit was added."
 msgstr ""
 
-#: lib/controller.php:40 lib/controller.php:87 lib/controller.php:119
-#: lib/controller.php:153 lib/controller.php:181
+#: lib/controller.php:40 lib/controller.php:98 lib/controller.php:130
+#: lib/controller.php:164 lib/controller.php:192
 msgid "%s : Semaphore is locked, import/export already in progress."
 msgstr ""
 
@@ -170,6 +170,10 @@ msgid "Failed to validate secret."
 msgstr ""
 
 #: lib/controller.php:57
+msgid "%s won't be imported. Error: %s"
+msgstr ""
+
+#: lib/controller.php:68
 msgid "%s won't be imported."
 msgstr ""
 
@@ -213,7 +217,7 @@ msgstr ""
 msgid "Successfully updated post ID %d."
 msgstr ""
 
-#: lib/export.php:258 lib/payload.php:65
+#: lib/export.php:258 lib/payload.php:95
 msgid "Commit message tag not set. Filter `wpghs_commit_msg_tag` misconfigured."
 msgstr ""
 
@@ -223,6 +227,30 @@ msgstr ""
 
 #: lib/import.php:95
 msgid "Already synced this commit."
+msgstr ""
+
+#: lib/payload.php:46
+msgid "Maximum stack depth exceeded"
+msgstr ""
+
+#: lib/payload.php:49
+msgid "Underflow or the modes mismatch"
+msgstr ""
+
+#: lib/payload.php:52
+msgid "Unexpected control character found"
+msgstr ""
+
+#: lib/payload.php:55
+msgid "Syntax error, malformed JSON"
+msgstr ""
+
+#: lib/payload.php:58
+msgid "Malformed UTF-8 characters, possibly incorrectly encoded"
+msgstr ""
+
+#: lib/payload.php:61
+msgid "Unknown error"
 msgstr ""
 
 #: views/options.php:16
@@ -241,7 +269,7 @@ msgstr ""
 msgid "Import from GitHub"
 msgstr ""
 
-#: wp-github-sync.php:217
+#: wp-github-sync.php:231
 msgid "To set up your site to sync with GitHub, update your <a href=\"%s\">settings</a> and click \"Export to GitHub.\""
 msgstr ""
 #. Plugin Name of the plugin/theme
