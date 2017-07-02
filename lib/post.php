@@ -210,6 +210,8 @@ class WordPress_GitHub_Sync_Post {
 			$filename = $this->get_name() . '.md';
 		}
 
+		$filename = sanitize_file_name( $filename );
+
 		return apply_filters( 'wpghs_filename', $filename, $this );
 	}
 
@@ -223,7 +225,7 @@ class WordPress_GitHub_Sync_Post {
 			return $this->name();
 		}
 
-		return sanitize_title( get_the_title( $this->post ) );
+		return get_the_title( $this->post );
 	}
 
 	/**
