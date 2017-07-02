@@ -9,9 +9,12 @@
  * License: GPLv2
  * Domain Path: /languages
  * Text Domain: wp-github-sync
+ *
+ * @package wp-github-sync
  */
 
-/*  Copyright 2014  James DiGioia  (email : jamesorodig@gmail.com)
+/**
+		Copyright 2014  James DiGioia  (email : jamesorodig@gmail.com)
 
 		This program is free software; you can redistribute it and/or modify
 		it under the terms of the GNU General Public License, version 2, as
@@ -25,7 +28,7 @@
 		You should have received a copy of the GNU General Public License
 		along with this program; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+ */
 
 // If the functions have already been autoloaded, don't reload.
 // This fixes function duplication during unit testing.
@@ -36,34 +39,45 @@ if ( ! function_exists( 'get_the_github_view_link' ) && file_exists( $path ) ) {
 
 add_action( 'plugins_loaded', array( new WordPress_GitHub_Sync, 'boot' ) );
 
+/**
+ * Class WordPress_GitHub_Sync
+ *
+ * Main application class for the plugin. Responsible for bootstrapping
+ * any hooks and instantiating all service classes.
+ */
 class WordPress_GitHub_Sync {
 
 	/**
-	 * Object instance
+	 * Object instance.
+	 *
 	 * @var self
 	 */
 	public static $instance;
 
 	/**
-	 * Language text domain
+	 * Language text domain.
+	 *
 	 * @var string
 	 */
 	public static $text_domain = 'wp-github-sync';
 
 	/**
-	 * Current version
+	 * Current version.
+	 *
 	 * @var string
 	 */
 	public static $version = '1.7.5';
 
 	/**
-	 * Controller object
+	 * Controller object.
+	 *
 	 * @var WordPress_GitHub_Sync_Controller
 	 */
 	public $controller;
 
 	/**
-	 * Controller object
+	 * Admin object.
+	 *
 	 * @var WordPress_GitHub_Sync_Admin
 	 */
 	public $admin;
@@ -351,10 +365,11 @@ class WordPress_GitHub_Sync {
 	/**
 	 * Print to WP_CLI if in CLI environment or
 	 * write to debug.log if WP_DEBUG is enabled
+	 *
 	 * @source http://www.stumiller.me/sending-output-to-the-wordpress-debug-log/
 	 *
-	 * @param mixed $msg
-	 * @param string $write
+	 * @param mixed  $msg   Message text.
+	 * @param string $write How to write the message, if CLI.
 	 */
 	public static function write_log( $msg, $write = 'line' ) {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
@@ -375,7 +390,7 @@ class WordPress_GitHub_Sync {
 	/**
 	 * Kicks of an import or export cronjob.
 	 *
-	 * @param $type
+	 * @param string $type Cron to kick off.
 	 */
 	protected function start_cron( $type ) {
 		update_option( '_wpghs_' . $type . '_started', 'yes' );
