@@ -40,6 +40,10 @@ class WordPress_GitHub_Sync_Payload {
 		$this->app  = $app;
 
 		$this->data = $this->get_payload_from_raw_response( $raw_data );
+		if ( false === $this->data ) {
+			// Bail here, error message is already set in the method above.
+			return;
+		}
 
 		if ( null === $this->data ) {
 			switch ( json_last_error() ) {
