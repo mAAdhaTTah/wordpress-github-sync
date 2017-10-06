@@ -38,10 +38,11 @@ class WordPress_GitHub_Sync_Payload {
 	 */
 	public function __construct( WordPress_GitHub_Sync $app, $raw_data ) {
 		$this->app  = $app;
-		$this->data = json_decode( $raw_data );
 
-		if ($this->data === null) {
-			switch (json_last_error()) {
+		$this->data = $this->get_payload_from_raw_response( $raw_data );
+
+		if ( null === $this->data ) {
+			switch ( json_last_error() ) {
 				case JSON_ERROR_DEPTH:
 					$this->error = __( 'Maximum stack depth exceeded', 'wp-github-sync' );
 					break;
@@ -62,6 +63,43 @@ class WordPress_GitHub_Sync_Payload {
 					break;
 			}
 		}
+	}
+
+
+	/**
+	 * Attempts to get the JSON decoded string.
+	 *
+	 * @param string $raw_data A raw string from php://input
+	 *
+	 * @see    WordPress_GitHub_Sync_Request::read_raw_data()
+	 *
+	 * @return Object|false An object from JSON Decode or false if failure.
+	 *
+	 * @author JayWood <jjwood2004@gmail.com>
+	 */
+	private function get_payload_from_raw_response( $raw_data ) {
+
+		/*
+		 * Try this the old way first, despite this not working in some servers. Assuming there's a flag
+		 * at the Nginx or Apache level that auto-parses encoded strings.
+		 */
+		$maybe_decoded = json_decode( $raw_data );
+		if ( null !== $maybe_decoded ) {
+			return $maybe_decoded;
+		}
+
+		/*
+		 * GitHub returns a raw string with Action and Payload keys by default, we have to parse that string
+		 * using parse_str() and then grab the payload.
+		 */
+		parse_str( $raw_data, $decoded_data );
+
+		if ( ! isset( $decoded_data['payload'] ) ) {
+			$this->error = __( 'No payload available from GH response.', 'wp-github-sync' );
+			return false;
+		}
+
+		return json_decode( $decoded_data['payload'] );
 	}
 
 	/**
