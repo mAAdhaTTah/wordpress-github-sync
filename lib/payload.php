@@ -38,12 +38,7 @@ class WordPress_GitHub_Sync_Payload {
 	 */
 	public function __construct( WordPress_GitHub_Sync $app, $raw_data ) {
 		$this->app  = $app;
-
 		$this->data = $this->get_payload_from_raw_response( $raw_data );
-		if ( false === $this->data ) {
-			// Bail here, error message is already set in the method above.
-			return;
-		}
 
 		if ( null === $this->data ) {
 			switch ( json_last_error() ) {
@@ -77,7 +72,7 @@ class WordPress_GitHub_Sync_Payload {
 	 *
 	 * @see    WordPress_GitHub_Sync_Request::read_raw_data()
 	 *
-	 * @return Object|false An object from JSON Decode or false if failure.
+	 * @return Object|null An object from JSON Decode or false if failure.
 	 *
 	 * @author JayWood <jjwood2004@gmail.com>
 	 */
@@ -99,8 +94,7 @@ class WordPress_GitHub_Sync_Payload {
 		parse_str( $raw_data, $decoded_data );
 
 		if ( ! isset( $decoded_data['payload'] ) ) {
-			$this->error = __( 'No payload available from GH response.', 'wp-github-sync' );
-			return false;
+			return null;
 		}
 
 		return json_decode( $decoded_data['payload'] );
