@@ -187,7 +187,13 @@ class WordPress_GitHub_Sync_Import {
 			}
 
 			if ( array_key_exists( 'post_date', $meta ) ) {
+
+				if ( empty( $meta['post_date'] ) ) {
+					$meta['post_date'] = current_time( 'mysql' );
+				}
+
 				$args['post_date'] = $meta['post_date'];
+
 				$args['post_date_gmt'] = get_gmt_from_date( $meta['post_date'] );
 				unset( $meta['post_date'] );
 			}
