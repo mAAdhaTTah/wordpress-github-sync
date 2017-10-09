@@ -41,7 +41,8 @@ class WordPress_GitHub_Sync_Import {
 		 */
 		$error = false;
 
-		$result = $this->commit( $this->app->api()->fetch()->commit( $payload->get_commit_id() ) );
+		$commits = $payload->get_commits();
+		$result = $this->commit( $this->app->api()->fetch()->commit( $payload->get_commit_id() ), $commits );
 
 		if ( is_wp_error( $result ) ) {
 			$error = $result;
@@ -76,7 +77,7 @@ class WordPress_GitHub_Sync_Import {
 	 * @return string|WP_Error
 	 */
 	public function master() {
-		return $this->commit( $this->app->api()->fetch()->master() );
+		return $this->commit( $this->app->api()->fetch()->master(), null );
 	}
 
 	/**
@@ -86,7 +87,20 @@ class WordPress_GitHub_Sync_Import {
 	 *
 	 * @return string|WP_Error
 	 */
-	protected function commit( $commit ) {
+	protected function commit( $commit , $commits_array) {
+		$head_commit = array();
+		$mod_files = array();
+		$update_all = true;
+		foreach ( $commits_array as $commit_obj ) {
+			if ( $commit_obj != null ) {
+				$next_commit = json_decode(json_encode($commit_obj), true);
+				if ( array_key_exists( 'modified', $next_commit ) ) {
+					$mod_files = array_merge($mod_files, $next_commit['modified']);
+					$update_all = false;
+				}
+			}
+		}
+
 		if ( is_wp_error( $commit ) ) {
 			return $commit;
 		}
@@ -103,10 +117,20 @@ class WordPress_GitHub_Sync_Import {
 				continue;
 			}
 
-			$posts[] = $post = $this->blob_to_post( $blob );
+			$post = $this->blob_to_post( $blob );
+
+			$found = $update_all;
+			foreach ( $mod_files as $modified_file ) {
+				if ($blob->path() == $modified_file) {
+					$found = true;
+				}
+			}
 
 			if ( $post->is_new() ) {
+				$posts[] = $post;
 				$new[] = $post;
+			} elseif ( $found ) {
+				$posts[] = $post;
 			}
 		}
 
