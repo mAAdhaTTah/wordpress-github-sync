@@ -197,6 +197,16 @@ class WordPress_GitHub_Sync_Import {
 				$args['post_date_gmt'] = get_gmt_from_date( $meta['post_date'] );
 				unset( $meta['post_date'] );
 			}
+			
+			if ( array_key_exists( 'post_excerpt', $meta ) ) {
+				$args['post_excerpt'] = $meta['post_excerpt'];
+				unset( $meta['post_excerpt'] );
+			}
+
+			if ( array_key_exists( 'author', $meta ) ) {
+				$args['post_author'] = ( $author = get_user_by( 'login', $meta['author'] ) ) ? $author->ID : '';
+				unset( $meta['author'] );
+			}
 		}
 
 		$meta['_sha'] = $blob->sha();
