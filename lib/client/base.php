@@ -138,7 +138,7 @@ class WordPress_GitHub_Sync_Base_Client {
 	 * API endpoint for the master branch reference
 	 */
 	public function reference_endpoint() {
-		$sync_branch = apply_filters( 'wpghs_sync_branch', 'master' );
+		$sync_branch = apply_filters( 'wpghs_sync_branch', 'main' );
 
 		if ( ! $sync_branch ) {
 			throw new Exception( __( 'Sync branch not set. Filter `wpghs_sync_branch` misconfigured.', 'wp-github-sync' ) );
